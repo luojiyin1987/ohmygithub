@@ -4,17 +4,17 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/auth',
     name: 'auth',
-    component: () => import('./pages/auth/AuthPage.vue')
+    component: () => import('./pages/auth/auth-page.vue')
   },
   {
     path: '/',
     name: 'workspace-root',
-    component: () => import('./pages/workspace/WorkspacePage.vue')
+    component: () => import('./pages/workspace/workspace-page.vue')
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'workspace',
-    component: () => import('./pages/workspace/WorkspacePage.vue')
+    component: () => import('./pages/workspace/workspace-page.vue')
   }
 ]
 

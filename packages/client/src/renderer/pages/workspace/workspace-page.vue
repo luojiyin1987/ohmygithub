@@ -10,9 +10,9 @@ import {
   Star,
 } from 'lucide-vue-next'
 import { SidebarInset, SidebarProvider } from '@oh-my-github/ui'
-import { useWorkspaceTabs } from './composables/useWorkspaceTabs'
-import WorkspaceSidebar from './components/WorkspaceSidebar.vue'
-import WorkspaceTabs from './components/WorkspaceTabs.vue'
+import { useWorkspaceTabs } from './composables/use-workspace-tabs'
+import WorkspaceSidebar from './components/workspace-sidebar.vue'
+import WorkspaceTabs from './components/workspace-tabs.vue'
 
 const isSidebarOpen = ref(true)
 const isWindowFullscreen = ref(false)

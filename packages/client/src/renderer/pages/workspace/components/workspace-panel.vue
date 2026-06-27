@@ -3,7 +3,7 @@ import type { WorkspaceMessageParams, WorkspaceTab } from '../types'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Badge } from '@oh-my-github/ui'
-import { getWorkspaceTabView } from '../tabPresentation'
+import { getWorkspaceTabView } from '../tab-presentation'
 
 const props = defineProps<{
   tab: WorkspaceTab

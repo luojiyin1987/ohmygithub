@@ -7,6 +7,10 @@ description: Primary Web development skill for apps/web — white-floating-card 
 > Treat `@memohai/ui` as `@oh-my-github/ui` and `apps/web` as this repository's Electron
 > renderer/UI surface. The design-language rules are intentionally inherited.
 
+# Client File Naming
+
+- Vue and TypeScript filenames in `packages/client` must use bbq/kebab-case, not PascalCase or camelCase. Examples: `workspace-page.vue`, `workspace-tabs.vue`, `use-workspace-tabs.ts`.
+
 # Memoh Web — Page Development & Design Language
 
 ## Non-negotiables — read this even if you skim the rest
