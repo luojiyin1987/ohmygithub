@@ -2,14 +2,15 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { Github } from 'lucide-vue-next'
-import { Alert, AlertDescription, Button, Card, CardContent, Input } from '@oh-my-github/ui'
+import { Copy, Github } from 'lucide-vue-next'
+import { Alert, AlertDescription, Button, Card, CardContent, Input, Spinner } from '@oh-my-github/ui'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
 const authState = ref<AuthState>()
+const deviceSessionId = ref('')
 const deviceCode = ref('')
 const verificationUri = ref('')
 const errorMessage = ref('')
@@ -38,12 +39,14 @@ async function loginWithGitHub(): Promise<void> {
   }
 
   errorMessage.value = ''
+  deviceSessionId.value = ''
   deviceCode.value = ''
   verificationUri.value = ''
   oauthStatus.value = 'opening'
 
   try {
     const result = await window.ohMyGithub.auth.startDeviceFlow((details) => {
+      deviceSessionId.value = details.sessionId
       deviceCode.value = details.userCode
       verificationUri.value = details.verificationUri
       oauthStatus.value = 'waiting'
@@ -53,6 +56,20 @@ async function loginWithGitHub(): Promise<void> {
     await router.replace(resolveRedirectPath())
   } catch (error) {
     oauthStatus.value = 'idle'
+    errorMessage.value = resolveErrorMessage(error)
+  }
+}
+
+async function copyCodeAndOpenGitHub(): Promise<void> {
+  if (!window.ohMyGithub?.auth || !deviceSessionId.value) {
+    return
+  }
+
+  errorMessage.value = ''
+
+  try {
+    await window.ohMyGithub.auth.copyCodeAndOpenDeviceFlow(deviceSessionId.value)
+  } catch (error) {
     errorMessage.value = resolveErrorMessage(error)
   }
 }
@@ -119,48 +136,49 @@ function resolveErrorMessage(error: unknown): string {
         </div>
 
         <Button
+          v-if="!showTokenForm"
           :disabled="!canUseOAuth"
           :loading="isOAuthLoading"
           block
-          loading-mode="leading"
+          loading-mode="manual"
           size="lg"
           type="button"
           @click="loginWithGitHub"
         >
-          <Github class="size-4" />
+          <Spinner v-if="isOAuthLoading" />
+          <Github v-else class="size-4" />
           {{ t('auth.loginWithGitHub') }}
         </Button>
 
         <p
-          v-if="isAuthLoaded && hasAuthBridge && !canUseOAuth"
+          v-if="!showTokenForm && isAuthLoaded && hasAuthBridge && !canUseOAuth"
           class="text-center text-body text-muted-foreground"
         >
           {{ t('auth.missingClientId') }}
         </p>
 
         <div
-          v-if="deviceCode"
+          v-if="!showTokenForm && deviceCode"
           class="grid gap-2 rounded-lg border border-border bg-card p-4 text-center"
         >
           <p class="text-body text-muted-foreground">{{ t('auth.browserOpened') }}</p>
           <div class="rounded-md bg-accent px-3 py-2 text-title font-semibold text-foreground">
             {{ deviceCode }}
           </div>
+          <Button
+            block
+            type="button"
+            variant="secondary"
+            @click="copyCodeAndOpenGitHub"
+          >
+            <Copy class="size-4" />
+            {{ t('auth.copyCodeAndOpenGitHub') }}
+          </Button>
           <p class="text-body text-muted-foreground">
             {{ t('auth.waitingForAuthorization') }}
             <span v-if="verificationUri">{{ verificationUri }}</span>
           </p>
         </div>
-
-        <Button
-          class="justify-self-center"
-          size="text"
-          type="button"
-          variant="link"
-          @click="toggleTokenForm"
-        >
-          {{ t('auth.usePersonalToken') }}
-        </Button>
 
         <form
           v-if="showTokenForm"
@@ -183,6 +201,16 @@ function resolveErrorMessage(error: unknown): string {
             {{ t('auth.saveToken') }}
           </Button>
         </form>
+
+        <Button
+          class="justify-self-center"
+          size="text"
+          type="button"
+          variant="link"
+          @click="toggleTokenForm"
+        >
+          {{ showTokenForm ? t('auth.useOAuth') : t('auth.usePersonalToken') }}
+        </Button>
 
         <Alert v-if="errorMessage" variant="destructive">
           <AlertDescription>{{ errorMessage }}</AlertDescription>

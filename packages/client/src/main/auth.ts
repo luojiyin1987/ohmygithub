@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { AuthApi, defaultGitHubOAuthScopes, type GitHubAuthViewer } from '@oh-my-github/api'
-import { ipcMain, shell } from 'electron'
+import { clipboard, ipcMain, shell } from 'electron'
 
 export type AuthMethod = 'oauth_device' | 'personal_token'
 
@@ -58,6 +58,9 @@ export function registerAuthIpc(): void {
   ipcMain.handle('auth:complete-device-flow', (_event, sessionId: string) =>
     completeDeviceFlow(sessionId)
   )
+  ipcMain.handle('auth:copy-code-and-open-device-flow', (_event, sessionId: string) =>
+    copyCodeAndOpenDeviceFlow(sessionId)
+  )
   ipcMain.handle('auth:save-personal-token', (_event, token: string) => savePersonalToken(token))
   ipcMain.handle('auth:logout', () => {
     rmSync(authPath, { force: true })
@@ -77,8 +80,6 @@ async function startDeviceFlow(): Promise<DeviceFlowResult> {
     scopes: [...defaultGitHubOAuthScopes]
   })
 
-  void shell.openExternal(authorization.verificationUriComplete ?? authorization.verificationUri)
-
   const sessionId = randomUUID()
   pendingDeviceFlows.set(sessionId, {
     clientId,
@@ -97,6 +98,17 @@ async function startDeviceFlow(): Promise<DeviceFlowResult> {
     verificationUri: authorization.verificationUri,
     verificationUriComplete: authorization.verificationUriComplete
   }
+}
+
+async function copyCodeAndOpenDeviceFlow(sessionId: string): Promise<void> {
+  const flow = pendingDeviceFlows.get(sessionId)
+
+  if (!flow) {
+    throw new Error('GitHub device flow session was not found')
+  }
+
+  clipboard.writeText(flow.userCode)
+  await shell.openExternal(flow.verificationUri)
 }
 
 async function completeDeviceFlow(sessionId: string): Promise<DeviceFlowResult> {

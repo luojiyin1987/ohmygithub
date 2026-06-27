@@ -1,6 +1,7 @@
 {
   "auth": {
-    "browserOpened": "GitHub opened in your browser. Enter this code to authorize the app.",
+    "browserOpened": "Copy this code, then open GitHub to authorize the app.",
+    "copyCodeAndOpenGitHub": "Copy code and open GitHub",
     "electronRequired": "Authentication is only available in the desktop app window.",
     "errors": {
       "unknown": "Something went wrong."
@@ -11,7 +12,8 @@
     "subtitle": "Connect your GitHub account to start triage.",
     "title": "Sign in",
     "tokenPlaceholder": "Personal GitHub token",
-    "usePersonalToken": "or use personal github token",
+    "useOAuth": "Use OAuth",
+    "usePersonalToken": "Use personal GitHub token",
     "waitingForAuthorization": "Waiting for authorization at"
   },
   "workspace": {

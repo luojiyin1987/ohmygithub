@@ -58,6 +58,7 @@ interface Window {
         verificationUri: string
         verificationUriComplete?: string
       }>
+      copyCodeAndOpenDeviceFlow: (sessionId: string) => Promise<void>
       savePersonalToken: (token: string) => Promise<AuthState>
       logout: () => Promise<AuthState>
     }

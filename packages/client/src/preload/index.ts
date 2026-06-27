@@ -13,6 +13,8 @@ const api = {
       onStarted?.(details)
       return ipcRenderer.invoke('auth:complete-device-flow', details.sessionId)
     },
+    copyCodeAndOpenDeviceFlow: (sessionId: string) =>
+      ipcRenderer.invoke('auth:copy-code-and-open-device-flow', sessionId),
     savePersonalToken: (token: string) => ipcRenderer.invoke('auth:save-personal-token', token),
     logout: () => ipcRenderer.invoke('auth:logout')
   },
