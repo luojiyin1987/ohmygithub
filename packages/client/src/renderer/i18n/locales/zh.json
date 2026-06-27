@@ -62,6 +62,27 @@
   },
   "workspace": {
     "title": "Workspace",
+    "bookmarks": {
+      "addToFolder": "添加到 {title}",
+      "addToRoot": "添加到书签",
+      "addCurrent": "收藏当前页面",
+      "cancel": "取消",
+      "createFolder": "创建分类",
+      "empty": "没有书签",
+      "folderErrors": {
+        "duplicate": "已经有同名分类。",
+        "empty": "请输入分类名称。"
+      },
+      "folderName": "分类名称",
+      "folderNamePlaceholder": "工作、稍后阅读、参考...",
+      "moveToFolder": "移动到 {title}",
+      "moveToRoot": "移动到书签",
+      "newFolder": "新建书签分类",
+      "newFolderDescription": "创建一个一级书签分类。",
+      "remove": "移除书签",
+      "removeCurrent": "取消收藏当前页面",
+      "title": "书签"
+    },
     "userMenu": {
       "appearance": "外观",
       "logout": "退出登录",

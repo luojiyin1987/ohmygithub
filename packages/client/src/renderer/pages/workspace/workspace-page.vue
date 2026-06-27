@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { WorkspaceTab } from './types'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { SidebarInset, SidebarProvider } from '@oh-my-github/ui'
+import { useWorkspaceBookmarks } from './composables/use-workspace-bookmarks'
 import { useWorkspaceOrganizations } from './composables/use-workspace-organizations'
 import { useWorkspaceTabs } from './composables/use-workspace-tabs'
 import WorkspaceSidebar from './components/workspace-sidebar.vue'
@@ -33,6 +35,17 @@ const organizations = computed(() => organizationsQuery.data.value ?? [])
 const organizationsLoading = computed(() => organizationsQuery.isLoading.value)
 const organizationsError = computed(() => Boolean(organizationsQuery.error.value))
 const sidebarWidthValue = computed(() => `${sidebarWidth.value}px`)
+const organizationsByLogin = computed(() => {
+  return new Map(organizations.value.map((organization) => [organization.login, organization]))
+})
+const {
+  bookmarkedUrls,
+  bookmarks,
+  createFolder: createBookmarkFolder,
+  folders: bookmarkFolders,
+  removeBookmark,
+  addBookmark,
+} = useWorkspaceBookmarks()
 
 onMounted(async () => {
   try {
@@ -98,6 +111,23 @@ function stopSidebarResize(): void {
   document.body.style.userSelect = ''
   window.removeEventListener('pointermove', resizeSidebar)
 }
+
+function addTabBookmark(input: {
+  folderId: string | null
+  tab: WorkspaceTab
+  title: string
+}): void {
+  const organization = input.tab.type === 'org' && input.tab.owner
+    ? organizationsByLogin.value.get(input.tab.owner)
+    : undefined
+
+  addBookmark({
+    folderId: input.folderId,
+    organization,
+    tab: input.tab,
+    title: input.title,
+  })
+}
 </script>
 
 <template>
@@ -108,6 +138,9 @@ function stopSidebarResize(): void {
   >
     <WorkspaceSidebar
       :active-url="activeUrl"
+      :bookmark-folders="bookmarkFolders"
+      :bookmarks="bookmarks"
+      :create-bookmark-folder="createBookmarkFolder"
       :is-fullscreen="isWindowFullscreen"
       :organizations="organizations"
       :organizations-error="organizationsError"
@@ -122,10 +155,15 @@ function stopSidebarResize(): void {
       <div class="flex h-full min-h-0 flex-col bg-background">
         <WorkspaceTabs
           :active-url="activeUrl"
+          :bookmark-folders="bookmarkFolders"
+          :bookmarks="bookmarks"
+          :bookmarked-urls="bookmarkedUrls"
           :is-fullscreen="isWindowFullscreen"
           :tabs="tabs"
+          @bookmark="addTabBookmark"
           @close="closeTab"
           @create="createTab"
+          @remove-bookmark="removeBookmark"
           @select="selectTab"
         />
       </div>

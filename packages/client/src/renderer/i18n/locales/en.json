@@ -62,6 +62,27 @@
   },
   "workspace": {
     "title": "Workspace",
+    "bookmarks": {
+      "addToFolder": "Add to {title}",
+      "addToRoot": "Add to Bookmarks",
+      "addCurrent": "Bookmark current page",
+      "cancel": "Cancel",
+      "createFolder": "Create folder",
+      "empty": "No bookmarks",
+      "folderErrors": {
+        "duplicate": "A folder with this name already exists.",
+        "empty": "Enter a folder name."
+      },
+      "folderName": "Folder name",
+      "folderNamePlaceholder": "Work, Later, Reference...",
+      "moveToFolder": "Move to {title}",
+      "moveToRoot": "Move to Bookmarks",
+      "newFolder": "New bookmark folder",
+      "newFolderDescription": "Create a top-level bookmark folder.",
+      "remove": "Remove Bookmark",
+      "removeCurrent": "Remove current bookmark",
+      "title": "Bookmarks"
+    },
     "userMenu": {
       "appearance": "Appearance",
       "logout": "Log Out",

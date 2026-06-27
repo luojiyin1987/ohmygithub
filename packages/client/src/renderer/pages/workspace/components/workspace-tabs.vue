@@ -1,21 +1,53 @@
 <script setup lang="ts">
-import type { WorkspaceMessageParams, WorkspaceTab } from '../types'
+import type {
+  WorkspaceBookmark,
+  WorkspaceBookmarkFolder,
+  WorkspaceMessageParams,
+  WorkspaceTab,
+} from '../types'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ArrowLeft, ArrowRight, PanelLeftClose, PanelLeftOpen, Plus, X } from 'lucide-vue-next'
-import { Button, Tabs, TabsContent, TabsList, TabsTrigger, useSidebar } from '@oh-my-github/ui'
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bookmark,
+  Check,
+  Folder,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  X,
+} from 'lucide-vue-next'
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  useSidebar,
+} from '@oh-my-github/ui'
 import { getWorkspaceTabView } from '../tab-presentation'
 import WorkspacePanel from './workspace-panel.vue'
 
 const props = defineProps<{
-  tabs: WorkspaceTab[]
   activeUrl: string
+  bookmarkFolders: WorkspaceBookmarkFolder[]
+  bookmarks: WorkspaceBookmark[]
+  bookmarkedUrls: Set<string>
   isFullscreen: boolean
+  tabs: WorkspaceTab[]
 }>()
 
 const emit = defineEmits<{
+  bookmark: [input: { folderId: string | null; tab: WorkspaceTab; title: string }]
   close: [url: string]
   create: []
+  removeBookmark: [url: string]
   select: [url: string]
 }>()
 
@@ -25,6 +57,7 @@ const isMac = navigator.platform.toLowerCase().includes('mac')
 const scrollHost = ref<HTMLElement>()
 const scrollMetrics = ref({ clientWidth: 0, scrollLeft: 0, scrollWidth: 0 })
 const isDraggingScrollbar = ref(false)
+const bookmarkMenuItemClass = 'h-7 !gap-1.5 !px-2 !py-1 !text-body'
 let resizeObserver: ResizeObserver | undefined
 let dragStartX = 0
 let dragStartScrollLeft = 0
@@ -37,6 +70,15 @@ const sidebarLabel = computed(() =>
 const shouldReserveTrafficLights = computed(() => (
   isMac && state.value === 'collapsed' && !props.isFullscreen
 ))
+const activeTab = computed(() => props.tabs.find((tab) => tab.url === props.activeUrl) ?? props.tabs[0])
+const activeBookmark = computed(() => {
+  const tab = activeTab.value
+  return tab ? props.bookmarks.find((bookmark) => bookmark.url === tab.url) : undefined
+})
+const isActiveTabBookmarked = computed(() => activeTab.value ? props.bookmarkedUrls.has(activeTab.value.url) : false)
+const activeBookmarkLabel = computed(() =>
+  t(isActiveTabBookmarked.value ? 'workspace.bookmarks.removeCurrent' : 'workspace.bookmarks.addCurrent'),
+)
 const hasTabOverflow = computed(() => scrollMetrics.value.scrollWidth > scrollMetrics.value.clientWidth + 1)
 const scrollbarThumbStyle = computed(() => {
   const { clientWidth, scrollLeft, scrollWidth } = scrollMetrics.value
@@ -74,6 +116,38 @@ function tabTitle(tab: WorkspaceTab): string {
   }
 
   return view.title
+}
+
+function bookmarkRootLabel(): string {
+  return t(isActiveTabBookmarked.value ? 'workspace.bookmarks.moveToRoot' : 'workspace.bookmarks.addToRoot')
+}
+
+function bookmarkFolderLabel(folder: WorkspaceBookmarkFolder): string {
+  return t(isActiveTabBookmarked.value ? 'workspace.bookmarks.moveToFolder' : 'workspace.bookmarks.addToFolder', {
+    title: folder.title,
+  })
+}
+
+function isCurrentBookmarkFolder(folderId: string | null): boolean {
+  return activeBookmark.value?.folderId === folderId
+}
+
+function bookmarkActiveTab(folderId: string | null): void {
+  const tab = activeTab.value
+  if (!tab) return
+
+  emit('bookmark', {
+    folderId,
+    tab,
+    title: tabTitle(tab),
+  })
+}
+
+function removeActiveBookmark(): void {
+  const tab = activeTab.value
+  if (!tab) return
+
+  emit('removeBookmark', tab.url)
 }
 
 function updateScrollMetrics(): void {
@@ -190,6 +264,75 @@ watch(
       >
         <ArrowRight class="size-3.5" />
       </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <Button
+            :aria-label="activeBookmarkLabel"
+            class="size-7"
+            :disabled="!activeTab"
+            size="icon-sm"
+            type="button"
+            variant="ghost"
+          >
+            <Bookmark
+              class="size-3.5"
+              :class="isActiveTabBookmarked ? 'fill-current text-foreground' : 'fill-none'"
+            />
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent
+          align="center"
+          class="w-44 !gap-0.5 !p-1"
+          side="bottom"
+          :side-offset="4"
+        >
+          <DropdownMenuItem
+            :class="bookmarkMenuItemClass"
+            :disabled="isCurrentBookmarkFolder(null)"
+            @select="bookmarkActiveTab(null)"
+          >
+            <Bookmark class="size-3.5" />
+            <span class="min-w-0 flex-1 truncate">{{ bookmarkRootLabel() }}</span>
+            <Check
+              v-if="isCurrentBookmarkFolder(null)"
+              class="ml-auto size-3"
+            />
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator
+            v-if="bookmarkFolders.length > 0"
+            class="!my-0.5"
+          />
+
+          <DropdownMenuItem
+            v-for="folder in bookmarkFolders"
+            :key="folder.id"
+            :class="bookmarkMenuItemClass"
+            :disabled="isCurrentBookmarkFolder(folder.id)"
+            @select="bookmarkActiveTab(folder.id)"
+          >
+            <Folder class="size-3.5" />
+            <span class="min-w-0 flex-1 truncate">{{ bookmarkFolderLabel(folder) }}</span>
+            <Check
+              v-if="isCurrentBookmarkFolder(folder.id)"
+              class="ml-auto size-3"
+            />
+          </DropdownMenuItem>
+
+          <template v-if="isActiveTabBookmarked">
+            <DropdownMenuSeparator class="!my-0.5" />
+            <DropdownMenuItem
+              :class="bookmarkMenuItemClass"
+              variant="destructive"
+              @select="removeActiveBookmark"
+            >
+              <X class="size-3.5" />
+              <span>{{ t('workspace.bookmarks.remove') }}</span>
+            </DropdownMenuItem>
+          </template>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <div class="mx-1 h-4 w-px shrink-0 bg-border" />
 
@@ -374,9 +517,9 @@ watch(
 }
 
 .workspace-tab-close {
-  margin-right: 0.1875rem;
   width: 1.375rem;
   height: 1.375rem;
   color: inherit;
 }
+
 </style>

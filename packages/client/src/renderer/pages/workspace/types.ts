@@ -34,6 +34,26 @@ export interface WorkspaceTab {
   draftId?: string
 }
 
+export interface WorkspaceBookmarkFolder {
+  id: string
+  title: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface WorkspaceBookmark {
+  id: string
+  url: string
+  type: WorkspaceTabType
+  title: string
+  folderId: string | null
+  owner?: string
+  repo?: string
+  draftId?: string
+  avatarUrl?: string
+  avatarFallback?: string
+}
+
 export interface WorkspaceSidebarTreeItemLoader {
   type: 'organization-repositories'
   owner: string

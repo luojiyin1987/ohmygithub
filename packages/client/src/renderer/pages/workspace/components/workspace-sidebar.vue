@@ -1,9 +1,23 @@
 <script setup lang="ts">
-import type { WorkspaceSidebarTreeItem } from '../types'
-import { computed, reactive } from 'vue'
+import type {
+  WorkspaceBookmark,
+  WorkspaceBookmarkFolder,
+  WorkspaceSidebarTreeItem,
+} from '../types'
+import type { CreateBookmarkFolderResult } from '../composables/use-workspace-bookmarks'
+import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Inbox, Search } from 'lucide-vue-next'
+import { Folder, Inbox, Plus, Search } from 'lucide-vue-next'
 import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
@@ -18,9 +32,13 @@ import {
 } from '@oh-my-github/ui'
 import WorkspaceSidebarTree from './workspace-sidebar-tree.vue'
 import WorkspaceUserPanel from './workspace-user-panel.vue'
+import { getWorkspaceTabView } from '../tab-presentation'
 
 const props = defineProps<{
   activeUrl: string
+  bookmarkFolders: WorkspaceBookmarkFolder[]
+  bookmarks: WorkspaceBookmark[]
+  createBookmarkFolder: (title: string) => CreateBookmarkFolderResult
   isFullscreen: boolean
   organizations: GitHubOrganization[]
   organizationsError: boolean
@@ -38,6 +56,9 @@ const { t } = useI18n()
 const { state } = useSidebar()
 const expandedIds = reactive(new Set<string>())
 const visibleCounts = reactive(new Map<string, number>())
+const isBookmarkFolderDialogOpen = ref(false)
+const bookmarkFolderTitle = ref('')
+const bookmarkFolderError = ref<'duplicate' | 'empty' | null>(null)
 const hasOrganizations = computed(() => props.organizations.length > 0)
 const showOrganizationsLoading = computed(() => props.organizationsLoading && !hasOrganizations.value)
 const showOrganizationsError = computed(() => props.organizationsError && !hasOrganizations.value)
@@ -49,6 +70,33 @@ const sidebarStyle = computed<Record<string, string>>(() => ({
   marginLeft: state.value === 'expanded' ? '0px' : `-${props.width}px`,
   transition: 'margin-left 200ms cubic-bezier(0.32, 0.72, 0, 1)',
 }))
+const rootBookmarks = computed(() => props.bookmarks.filter((bookmark) => bookmark.folderId === null))
+const bookmarkItems = computed<WorkspaceSidebarTreeItem[]>(() => {
+  const folderItems = props.bookmarkFolders.map((folder) => {
+    const children = props.bookmarks
+      .filter((bookmark) => bookmark.folderId === folder.id)
+      .map(bookmarkToTreeItem)
+
+    return {
+      id: `bookmark-folder:${folder.id}`,
+      label: folder.title,
+      icon: Folder,
+      canExpand: children.length > 0,
+      forceExpanded: children.some((child) => child.isActive),
+      children,
+    }
+  })
+
+  return [
+    ...folderItems,
+    ...rootBookmarks.value.map(bookmarkToTreeItem),
+  ]
+})
+const showBookmarksEmpty = computed(() => props.bookmarkFolders.length === 0 && props.bookmarks.length === 0)
+const bookmarkFolderErrorMessage = computed(() => {
+  if (!bookmarkFolderError.value) return ''
+  return t(`workspace.bookmarks.folderErrors.${bookmarkFolderError.value}`)
+})
 
 const organizationItems = computed<WorkspaceSidebarTreeItem[]>(() => {
   return props.organizations.map((organization) => {
@@ -91,6 +139,74 @@ function toggleExpanded(id: string): void {
 function setVisibleCount(listId: string, visibleCount: number): void {
   visibleCounts.set(listId, visibleCount)
 }
+
+function collectForceExpandedIds(items: WorkspaceSidebarTreeItem[]): string[] {
+  const ids: string[] = []
+
+  for (const item of items) {
+    if (item.forceExpanded) {
+      ids.push(item.id)
+    }
+
+    if (item.children?.length) {
+      ids.push(...collectForceExpandedIds(item.children))
+    }
+  }
+
+  return ids
+}
+
+function expandActiveAncestors(): void {
+  for (const id of collectForceExpandedIds([...bookmarkItems.value, ...organizationItems.value])) {
+    expandedIds.add(id)
+  }
+}
+
+function bookmarkToTreeItem(bookmark: WorkspaceBookmark): WorkspaceSidebarTreeItem {
+  const view = getWorkspaceTabView(bookmark)
+
+  return {
+    id: `bookmark:${bookmark.id}`,
+    label: bookmark.title,
+    url: bookmark.url,
+    icon: bookmark.avatarUrl ? undefined : view.icon,
+    avatarUrl: bookmark.avatarUrl,
+    avatarFallback: bookmark.avatarFallback,
+    isActive: props.activeUrl === bookmark.url,
+  }
+}
+
+function submitBookmarkFolder(): void {
+  const result = props.createBookmarkFolder(bookmarkFolderTitle.value)
+
+  if (!result.ok) {
+    bookmarkFolderError.value = result.reason
+    return
+  }
+
+  isBookmarkFolderDialogOpen.value = false
+}
+
+function resetBookmarkFolderDialog(): void {
+  bookmarkFolderTitle.value = ''
+  bookmarkFolderError.value = null
+}
+
+watch(isBookmarkFolderDialogOpen, (isOpen) => {
+  if (!isOpen) {
+    resetBookmarkFolderDialog()
+  }
+})
+
+watch(bookmarkFolderTitle, () => {
+  bookmarkFolderError.value = null
+})
+
+watch(
+  () => [props.activeUrl, bookmarkItems.value, organizationItems.value],
+  expandActiveAncestors,
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -138,6 +254,43 @@ function setVisibleCount(listId: string, visibleCount: number): void {
     </SidebarHeader>
 
     <SidebarContent>
+      <SidebarGroup class="px-2 py-1">
+        <div class="flex h-7 items-center gap-1 px-2 pr-1">
+          <SidebarGroupLabel class="h-6 flex-1 px-0 text-caption">
+            {{ t('workspace.bookmarks.title') }}
+          </SidebarGroupLabel>
+          <button
+            :aria-label="t('workspace.bookmarks.newFolder')"
+            class="flex size-5 shrink-0 items-center justify-center text-muted-foreground outline-hidden transition-colors hover:text-foreground focus-visible:text-foreground"
+            type="button"
+            @click="isBookmarkFolderDialogOpen = true"
+          >
+            <Plus class="size-3.5" />
+          </button>
+        </div>
+
+        <SidebarGroupContent>
+          <p
+            v-if="showBookmarksEmpty"
+            class="px-2 py-1.5 text-caption text-muted-foreground"
+          >
+            {{ t('workspace.bookmarks.empty') }}
+          </p>
+
+          <WorkspaceSidebarTree
+            v-else
+            :active-url="activeUrl"
+            :expanded-ids="expandedIds"
+            :items="bookmarkItems"
+            list-id="bookmarks"
+            :visible-counts="visibleCounts"
+            @select="emit('select', $event)"
+            @show-more="setVisibleCount"
+            @toggle="toggleExpanded"
+          />
+        </SidebarGroupContent>
+      </SidebarGroup>
+
       <SidebarGroup class="px-2 py-1">
         <SidebarGroupLabel class="h-6 px-2 text-caption">
           {{ t('workspace.sidebar.groups.organizations') }}
@@ -198,6 +351,53 @@ function setVisibleCount(listId: string, visibleCount: number): void {
       <span class="block h-full w-full transition-colors group-hover:bg-border group-focus-visible:bg-sidebar-ring" />
     </button>
   </aside>
+
+  <Dialog v-model:open="isBookmarkFolderDialogOpen">
+    <DialogContent class="sm:max-w-sm">
+      <DialogHeader>
+        <DialogTitle>{{ t('workspace.bookmarks.newFolder') }}</DialogTitle>
+        <DialogDescription class="sr-only">
+          {{ t('workspace.bookmarks.newFolderDescription') }}
+        </DialogDescription>
+      </DialogHeader>
+
+      <form
+        class="space-y-4"
+        @submit.prevent="submitBookmarkFolder"
+      >
+        <div class="space-y-2">
+          <Label for="workspace-bookmark-folder-title">
+            {{ t('workspace.bookmarks.folderName') }}
+          </Label>
+          <Input
+            id="workspace-bookmark-folder-title"
+            v-model="bookmarkFolderTitle"
+            autocomplete="off"
+            :placeholder="t('workspace.bookmarks.folderNamePlaceholder')"
+          />
+          <p
+            v-if="bookmarkFolderErrorMessage"
+            class="text-caption text-destructive"
+          >
+            {{ bookmarkFolderErrorMessage }}
+          </p>
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="ghost"
+            @click="isBookmarkFolderDialogOpen = false"
+          >
+            {{ t('workspace.bookmarks.cancel') }}
+          </Button>
+          <Button type="submit">
+            {{ t('workspace.bookmarks.createFolder') }}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <style scoped>

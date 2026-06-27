@@ -38,7 +38,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const isExpanded = computed(() => props.item.forceExpanded || props.expandedIds.has(props.item.id))
+const isExpanded = computed(() => props.expandedIds.has(props.item.id))
 const hasChevron = computed(() => props.item.canExpand || Boolean(props.item.children?.length))
 const repositoryOwner = computed(() => props.item.childrenLoader?.owner ?? '')
 
