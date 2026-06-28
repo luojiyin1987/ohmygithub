@@ -39,6 +39,12 @@ type GitHubRepository = {
   url: string
 }
 
+type GitHubRepositoryViewerState = {
+  isStarred: boolean
+  isWatching: boolean
+  starCount: number
+}
+
 type GitHubCiState = 'pending' | 'success' | 'failure'
 
 type GitHubPullRequestState = 'draft' | 'merged' | 'open' | 'cannot_merge'
@@ -123,6 +129,11 @@ interface Window {
       listPullRequestCategory: (category: GitHubPullRequestCategory) => Promise<GitHubPullRequest[]>
       listViewerPullRequests: () => Promise<GitHubPullRequest[]>
       listRepositoryPullRequests: (owner: string, repo: string) => Promise<GitHubPullRequest[]>
+    }
+    repositories: {
+      getViewerState: (owner: string, repo: string) => Promise<GitHubRepositoryViewerState>
+      setStarred: (owner: string, repo: string, starred: boolean) => Promise<void>
+      setWatching: (owner: string, repo: string, watching: boolean) => Promise<void>
     }
     auth: {
       get: () => Promise<AuthState>

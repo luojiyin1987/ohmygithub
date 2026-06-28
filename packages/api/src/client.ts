@@ -3,6 +3,7 @@ import { AuthApi } from './modules/auth'
 import { InboxApi } from './modules/inbox'
 import { IssuesApi } from './modules/issues'
 import { PullsApi } from './modules/pulls'
+import { RepositoriesApi } from './modules/repositories'
 import { createOctokit, type GitHubOctokit } from './transport'
 import type {
   GitHubApiOptions,
@@ -21,6 +22,7 @@ export interface GitHubApi extends GitHubClient {
   readonly inbox: InboxApi
   readonly issues: IssuesApi
   readonly pulls: PullsApi
+  readonly repositories: RepositoriesApi
 }
 
 export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
@@ -30,6 +32,7 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
   const inbox = new InboxApi(octokit)
   const issues = new IssuesApi(octokit)
   const pulls = new PullsApi(octokit)
+  const repositories = new RepositoriesApi(octokit)
 
   return {
     octokit,
@@ -38,8 +41,12 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
     inbox,
     issues,
     pulls,
+    repositories,
     listViewerOrganizations: () => accounts.listViewerOrganizations(),
     listOrganizationRepositories: (owner) => accounts.listOrganizationRepositories(owner),
+    getRepositoryViewerState: (options) => repositories.getViewerState(options),
+    setRepositoryStarred: (options) => repositories.setStarred(options),
+    setRepositoryWatching: (options) => repositories.setWatching(options),
     listNotifications: () => inbox.listNotifications(),
     listPullRequests: () => inbox.listPullRequests(),
     listIssues: () => inbox.listIssues(),

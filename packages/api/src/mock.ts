@@ -4,10 +4,14 @@ import type {
   GitHubOrganization,
   GitHubPullRequest,
   GitHubRepository,
+  GitHubRepositoryViewerState,
   GitHubWorkspaceItem,
   ListIssueCategoryOptions,
   ListPullRequestCategoryOptions,
-  ListRepositoryWorkspaceItemsOptions
+  ListRepositoryWorkspaceItemsOptions,
+  RepositoryOptions,
+  SetRepositoryStarredOptions,
+  SetRepositoryWatchingOptions
 } from './types'
 
 const items: GitHubWorkspaceItem[] = [
@@ -126,6 +130,8 @@ const issuesByRepository: Record<string, GitHubIssue[]> = {
   'vuejs/core': createMockIssues('vuejs', 'core', ['Regression in suspense hydration']),
 }
 
+const viewerStateByRepository = new Map<string, GitHubRepositoryViewerState>()
+
 export class MockGitHubClient implements GitHubClient {
   async listViewerOrganizations(): Promise<GitHubOrganization[]> {
     return organizations
@@ -183,6 +189,28 @@ export class MockGitHubClient implements GitHubClient {
     return issuesByRepository[`${options.owner}/${options.repo}`] ?? []
   }
 
+  async getRepositoryViewerState(options: RepositoryOptions): Promise<GitHubRepositoryViewerState> {
+    return readRepositoryViewerState(options)
+  }
+
+  async setRepositoryStarred(options: SetRepositoryStarredOptions): Promise<void> {
+    const current = readRepositoryViewerState(options)
+    const starDelta = options.starred === current.isStarred ? 0 : options.starred ? 1 : -1
+
+    viewerStateByRepository.set(repositoryKey(options), {
+      ...current,
+      isStarred: options.starred,
+      starCount: Math.max(0, current.starCount + starDelta),
+    })
+  }
+
+  async setRepositoryWatching(options: SetRepositoryWatchingOptions): Promise<void> {
+    viewerStateByRepository.set(repositoryKey(options), {
+      ...readRepositoryViewerState(options),
+      isWatching: options.watching,
+    })
+  }
+
   async listNotifications(): Promise<GitHubWorkspaceItem[]> {
     return items
   }
@@ -194,6 +222,22 @@ export class MockGitHubClient implements GitHubClient {
   async listIssues(): Promise<GitHubWorkspaceItem[]> {
     return items.filter((item) => item.kind === 'issue')
   }
+}
+
+function readRepositoryViewerState(options: RepositoryOptions): GitHubRepositoryViewerState {
+  return viewerStateByRepository.get(repositoryKey(options)) ?? {
+    isStarred: false,
+    isWatching: false,
+    starCount: mockRepositoryStarCount(options),
+  }
+}
+
+function repositoryKey(options: RepositoryOptions): string {
+  return `${options.owner}/${options.repo}`
+}
+
+function mockRepositoryStarCount(options: RepositoryOptions): number {
+  return Array.from(repositoryKey(options)).reduce((count, character) => count + character.charCodeAt(0), 0)
 }
 
 function createMockRepositories(owner: string, names: string[]): GitHubRepository[] {

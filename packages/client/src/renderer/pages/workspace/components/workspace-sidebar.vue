@@ -91,6 +91,10 @@ const sidebarStyle = computed<Record<string, string>>(() => ({
   width: `${props.width}px`,
   marginLeft: state.value === 'expanded' ? '0px' : `-${props.width}px`,
   transition: 'margin-left 200ms cubic-bezier(0.32, 0.72, 0, 1)',
+  '--sidebar-primary': 'var(--foreground)',
+  '--sidebar-ring': 'var(--border)',
+  '--color-sidebar-primary': 'var(--foreground)',
+  '--color-sidebar-ring': 'var(--border)',
 }))
 const rootBookmarks = computed(() => props.bookmarks.filter((bookmark) => bookmark.folderId === null))
 const bookmarkItems = computed<WorkspaceSidebarTreeItem[]>(() => {
@@ -655,6 +659,10 @@ watch(
 }
 
 :deep([data-workspace-sidebar] [data-sidebar="menu-button"]:focus-visible) {
+  box-shadow: none !important;
+}
+
+:deep([data-workspace-sidebar] [data-sidebar="menu-sub-button"]:focus-visible) {
   box-shadow: none !important;
 }
 </style>

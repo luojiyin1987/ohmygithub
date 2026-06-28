@@ -327,6 +327,7 @@ watch(
       <SidebarMenuSubItem v-if="showMoreChildren">
         <SidebarMenuSubButton
           as="button"
+          class="w-full justify-start"
           size="sm"
           type="button"
           @click="showMoreItems"
@@ -421,6 +422,7 @@ watch(
       <SidebarMenuSubItem v-if="showMoreChildren">
         <SidebarMenuSubButton
           as="button"
+          class="w-full justify-start"
           size="sm"
           type="button"
           @click="showMoreItems"

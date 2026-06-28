@@ -66,22 +66,67 @@
     }
   },
   "repository": {
-    "description": "{repository} 已作为仓库工作页打开。真实仓库数据会在这里继续接入。",
+    "description": "{repository} 的仓库导航已经准备好。真实仓库数据会在这里继续接入。",
     "eyebrow": "仓库",
+    "ownerFallback": "Owner",
+    "sidebar": {
+      "navigation": "仓库导航",
+      "subtitle": "仓库"
+    },
+    "actions": {
+      "fork": "Fork",
+      "star": "Star",
+      "starred": "Starred",
+      "watch": "Watch",
+      "watching": "Watching"
+    },
     "sections": {
-      "activity": {
-        "description": "后续可以把 checks、pull requests 和最近事件收束成仓库动态。",
-        "title": "动态"
+      "actions": {
+        "title": "Actions"
+      },
+      "files": {
+        "title": "Files"
+      },
+      "issues": {
+        "title": "Issues"
       },
       "overview": {
         "description": "这里会成为仓库概览，后续补上分支、议题和工作流入口。",
         "title": "概览"
+      },
+      "pullRequests": {
+        "title": "Pull Requests"
+      },
+      "settings": {
+        "title": "Settings"
       }
+    },
+    "overview": {
+      "basicInfo": "基本信息",
+      "documents": "仓库文档"
     },
     "summary": {
       "branches": "分支",
       "stars": "Stars",
       "visibility": "可见性"
+    },
+    "documents": {
+      "contributing": {
+        "description": "接入仓库文件后，这里会展示贡献指南。",
+        "title": "CONTRIBUTING"
+      },
+      "license": {
+        "description": "接入仓库文件后，这里会展示许可证信息。",
+        "title": "LICENSE"
+      },
+      "readme": {
+        "description": "接入仓库文件后，这里会展示 README 预览。",
+        "title": "README"
+      }
+    },
+    "empty": {
+      "description": "这个页面现在先保持为空，后续可以直接在这里继续微调。",
+      "title": "{section} 已准备好"
     },
     "values": {
       "placeholder": "未接入"

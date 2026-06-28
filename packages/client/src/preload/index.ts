@@ -23,6 +23,14 @@ const api = {
     listRepositoryPullRequests: (owner: string, repo: string) =>
       ipcRenderer.invoke('pulls:list-repository', owner, repo)
   },
+  repositories: {
+    getViewerState: (owner: string, repo: string) =>
+      ipcRenderer.invoke('repositories:get-viewer-state', owner, repo),
+    setStarred: (owner: string, repo: string, starred: boolean) =>
+      ipcRenderer.invoke('repositories:set-starred', owner, repo, starred),
+    setWatching: (owner: string, repo: string, watching: boolean) =>
+      ipcRenderer.invoke('repositories:set-watching', owner, repo, watching)
+  },
   auth: {
     get: () => ipcRenderer.invoke('auth:get'),
     startDeviceFlow: async (onStarted?: (details: unknown) => void) => {

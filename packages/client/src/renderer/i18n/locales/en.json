@@ -66,22 +66,67 @@
     }
   },
   "repository": {
-    "description": "{repository} is open as a repository workspace. Real repository data will be connected here later.",
+    "description": "{repository} is ready for repository navigation. Real repository data will be connected here later.",
     "eyebrow": "Repository",
+    "ownerFallback": "Owner",
+    "sidebar": {
+      "navigation": "Repository navigation",
+      "subtitle": "Repository"
+    },
+    "actions": {
+      "fork": "Fork",
+      "star": "Star",
+      "starred": "Starred",
+      "watch": "Watch",
+      "watching": "Watching"
+    },
     "sections": {
-      "activity": {
-        "description": "A future repository activity stream can collect checks, pull requests, and recent events.",
-        "title": "Activity"
+      "actions": {
+        "title": "Actions"
+      },
+      "files": {
+        "title": "Files"
+      },
+      "issues": {
+        "title": "Issues"
       },
       "overview": {
         "description": "This placeholder will become the repository overview with branches, issues, and workflow entry points.",
         "title": "Overview"
+      },
+      "pullRequests": {
+        "title": "Pull Requests"
+      },
+      "settings": {
+        "title": "Settings"
       }
+    },
+    "overview": {
+      "basicInfo": "Basic information",
+      "documents": "Repository documents"
     },
     "summary": {
       "branches": "Branches",
       "stars": "Stars",
       "visibility": "Visibility"
+    },
+    "documents": {
+      "contributing": {
+        "description": "Contribution guidelines will appear here once repository files are connected.",
+        "title": "CONTRIBUTING"
+      },
+      "license": {
+        "description": "License details will appear here once repository files are connected.",
+        "title": "LICENSE"
+      },
+      "readme": {
+        "description": "The README preview will appear here once repository files are connected.",
+        "title": "README"
+      }
+    },
+    "empty": {
+      "description": "This section is intentionally empty for now so it can be refined in place later.",
+      "title": "{section} is ready"
     },
     "values": {
       "placeholder": "Not connected"

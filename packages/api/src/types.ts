@@ -32,6 +32,12 @@ export interface GitHubRepository {
   url: string
 }
 
+export interface GitHubRepositoryViewerState {
+  isStarred: boolean
+  isWatching: boolean
+  starCount: number
+}
+
 export type GitHubCiState = 'pending' | 'success' | 'failure'
 
 export type GitHubPullRequestState =
@@ -151,6 +157,9 @@ export interface GitHubClient {
   listRepositoryIssues(options: ListRepositoryWorkspaceItemsOptions): Promise<GitHubIssue[]>
   listViewerOrganizations(): Promise<GitHubOrganization[]>
   listOrganizationRepositories(owner: string): Promise<GitHubRepository[]>
+  getRepositoryViewerState(options: RepositoryOptions): Promise<GitHubRepositoryViewerState>
+  setRepositoryStarred(options: SetRepositoryStarredOptions): Promise<void>
+  setRepositoryWatching(options: SetRepositoryWatchingOptions): Promise<void>
 }
 
 export interface GitHubApiOptions {
@@ -185,4 +194,17 @@ export interface ListIssueCategoryOptions extends ListWorkspaceItemsOptions {
 export interface ListRepositoryWorkspaceItemsOptions extends ListWorkspaceItemsOptions {
   owner: string
   repo: string
+}
+
+export interface RepositoryOptions {
+  owner: string
+  repo: string
+}
+
+export interface SetRepositoryStarredOptions extends RepositoryOptions {
+  starred: boolean
+}
+
+export interface SetRepositoryWatchingOptions extends RepositoryOptions {
+  watching: boolean
 }
