@@ -48,16 +48,18 @@ const panelStyle = computed<Record<string, string>>(() => ({
 
       <div
         v-if="content"
-        class="min-h-0 overflow-auto"
+        class="workspace-right-panel-scrollbar h-full min-h-0 overflow-auto"
       >
         <div
           v-if="content.type === 'code'"
-          class="p-3"
+          class="workspace-right-panel-code min-h-full"
         >
           <ShikiCode
             :code="content.code"
             :filename="content.filename"
             :language="content.language"
+            :padded="true"
+            :themed-background="true"
           />
         </div>
 
@@ -148,6 +150,18 @@ const panelStyle = computed<Record<string, string>>(() => ({
   transform-origin: right center;
   width: min(var(--workspace-right-panel-width), 70vw);
   max-width: 48rem;
+}
+
+.workspace-right-panel-code :deep(.rich-content-code),
+.workspace-right-panel-code :deep(.shiki) {
+  min-height: 100%;
+}
+
+.workspace-right-panel-code :deep(.shiki) {
+  box-sizing: border-box;
+  min-width: 100%;
+  overflow: visible !important;
+  width: max-content;
 }
 
 .workspace-right-panel-enter-active,

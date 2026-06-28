@@ -1,7 +1,12 @@
 /// <reference types="vite/client" />
 
+type KeyboardShortcutOverride = {
+  accelerator: string | null
+  disabled: boolean
+}
+
 type LocalConfig = {
-  schemaVersion: 1
+  schemaVersion: 2
   github: {
     activeAccountLogin: string | null
   }
@@ -11,6 +16,15 @@ type LocalConfig = {
   ui: {
     locale: 'en' | 'zh'
     theme: 'auto' | 'light' | 'dark'
+    colorScheme: 'default' | 'ocean' | 'forest' | 'rose' | 'amber'
+    uiFontSizePx: number
+    codeFontSizePx: number
+    uiFontFamily: string
+    codeFontFamily: string
+    shikiThemeLight: string
+    shikiThemeDark: string
+    mermaidTheme: 'auto' | 'default' | 'dark' | 'forest' | 'neutral'
+    keyboardShortcuts: Record<string, KeyboardShortcutOverride>
   }
 }
 
@@ -246,6 +260,8 @@ type GitHubPullRequestSearchState = 'open' | 'closed' | 'all'
 
 type GitHubIssueState = 'open' | 'completed' | 'not_planned'
 
+type GitHubIssueSearchState = 'open' | 'closed' | 'all'
+
 type GitHubPullRequestCategory = 'created-by-me' | 'needs-review' | 'inbox' | 'mentioned-me'
 
 type GitHubIssueCategory = 'created-by-me' | 'inbox' | 'mentioned-me'
@@ -311,6 +327,24 @@ type GitHubIssue = {
   hasUpdates: boolean
 }
 
+type SearchRepositoryIssuesOptions = {
+  owner: string
+  repo: string
+  page?: number
+  perPage?: number
+  search?: string
+  state?: GitHubIssueSearchState
+}
+
+type GitHubIssueSearchResult = {
+  items: GitHubIssue[]
+  totalCount: number
+  page: number
+  perPage: number
+  hasNextPage: boolean
+  incompleteResults: boolean
+}
+
 type AuthState = {
   isAuthenticated: boolean
   path: string
@@ -344,6 +378,7 @@ interface Window {
       listIssueCategory: (category: GitHubIssueCategory) => Promise<GitHubIssue[]>
       listViewerIssues: () => Promise<GitHubIssue[]>
       listRepositoryIssues: (owner: string, repo: string) => Promise<GitHubIssue[]>
+      searchRepositoryIssues: (options: SearchRepositoryIssuesOptions) => Promise<GitHubIssueSearchResult>
     }
     pulls: {
       listPullRequestCategory: (category: GitHubPullRequestCategory) => Promise<GitHubPullRequest[]>

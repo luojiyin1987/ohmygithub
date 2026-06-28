@@ -50,3 +50,46 @@ export function useRepositoryIssuesQuery(
     },
   })
 }
+
+export function useRepositoryIssueSearchQuery(
+  owner: MaybeRefOrGetter<string>,
+  repo: MaybeRefOrGetter<string>,
+  state: MaybeRefOrGetter<GitHubIssueSearchState>,
+  search: MaybeRefOrGetter<string>,
+  page: MaybeRefOrGetter<number>,
+  perPage: MaybeRefOrGetter<number>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubIssueSearchResult>({
+    key: () => [
+      'github',
+      'repository-issue-search',
+      toValue(owner),
+      toValue(repo),
+      toValue(state),
+      toValue(search),
+      toValue(page),
+      toValue(perPage),
+    ],
+    enabled: () => Boolean(toValue(owner)) && Boolean(toValue(repo)) && toValue(enabled),
+    staleTime: 1000 * 30,
+    gcTime: 1000 * 60 * 5,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    query: async () => {
+      if (!window.ohMyGithub?.issues) {
+        throw new Error('GitHub issues bridge is unavailable')
+      }
+
+      return window.ohMyGithub.issues.searchRepositoryIssues({
+        owner: toValue(owner),
+        repo: toValue(repo),
+        state: toValue(state),
+        search: toValue(search),
+        page: toValue(page),
+        perPage: toValue(perPage),
+      })
+    },
+  })
+}

@@ -4,6 +4,7 @@ import type { MonacoLanguage, MonacoOptions, MonacoTheme } from 'stream-monaco'
 import { ensureMonacoWorkers, useMonaco } from 'stream-monaco'
 import { useCodeTheme } from '../index'
 import { resolveCodeLanguage } from '../index'
+import { useSettingsStore } from '../../stores/settings'
 
 const props = withDefaults(defineProps<{
   modelValue: string
@@ -23,6 +24,7 @@ const emit = defineEmits<{
 }>()
 
 const editorElement = ref<HTMLElement>()
+const settingsStore = useSettingsStore()
 const { activeTheme, themes } = useCodeTheme()
 let isUpdatingFromOutside = false
 
@@ -37,7 +39,7 @@ const monaco = useMonaco({
   automaticLayout: true,
   autoScrollInitial: false,
   autoScrollOnUpdate: false,
-  fontSize: 13,
+  fontSize: settingsStore.codeFontSizePx,
   lineNumbers: 'on',
   minimap: { enabled: false },
   padding: { bottom: 12, top: 12 },
@@ -96,6 +98,13 @@ watch(
 watch(activeTheme, (theme) => {
   void monaco.setTheme(theme as MonacoTheme, true)
 })
+
+watch(
+  () => settingsStore.codeFontSizePx,
+  (fontSize) => {
+    monaco.getEditorView()?.updateOptions({ fontSize })
+  }
+)
 </script>
 
 <template>

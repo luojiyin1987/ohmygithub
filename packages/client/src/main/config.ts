@@ -3,8 +3,13 @@ import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { ipcMain } from 'electron'
 
+export interface KeyboardShortcutOverride {
+  accelerator: string | null
+  disabled: boolean
+}
+
 export interface LocalConfig {
-  schemaVersion: 1
+  schemaVersion: 2
   github: {
     activeAccountLogin: string | null
   }
@@ -14,6 +19,15 @@ export interface LocalConfig {
   ui: {
     locale: 'en' | 'zh'
     theme: 'auto' | 'light' | 'dark'
+    colorScheme: 'default' | 'ocean' | 'forest' | 'rose' | 'amber'
+    uiFontSizePx: number
+    codeFontSizePx: number
+    uiFontFamily: string
+    codeFontFamily: string
+    shikiThemeLight: string
+    shikiThemeDark: string
+    mermaidTheme: 'auto' | 'default' | 'dark' | 'forest' | 'neutral'
+    keyboardShortcuts: Record<string, KeyboardShortcutOverride>
   }
 }
 
@@ -29,6 +43,13 @@ export type LocalConfigPatch = Partial<{
 }>
 
 const configPath = join(homedir(), '.oh-my-github', 'config.json')
+const DEFAULT_UI_FONT_SIZE_PX = 16
+const DEFAULT_CODE_FONT_SIZE_PX = 13
+const DEFAULT_SHIKI_THEME_LIGHT = 'github-light'
+const DEFAULT_SHIKI_THEME_DARK = 'github-dark'
+const MAX_FONT_FAMILY_LENGTH = 256
+const MAX_KEYBOARD_SHORTCUT_ID_LENGTH = 128
+const MAX_KEYBOARD_SHORTCUT_ACCELERATOR_LENGTH = 80
 
 export function initializeConfig(): LocalConfigInfo {
   const config = readConfig()
@@ -95,7 +116,7 @@ function mergeConfig(config: LocalConfig, patch: LocalConfigPatch): LocalConfig 
 
 function normalizeConfig(config: Partial<LocalConfig>): LocalConfig {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     github: {
       activeAccountLogin: config.github?.activeAccountLogin ?? null
     },
@@ -104,14 +125,23 @@ function normalizeConfig(config: Partial<LocalConfig>): LocalConfig {
     },
     ui: {
       locale: normalizeLocale(config.ui?.locale),
-      theme: normalizeTheme(config.ui?.theme)
+      theme: normalizeTheme(config.ui?.theme),
+      colorScheme: normalizeColorScheme(config.ui?.colorScheme),
+      uiFontSizePx: normalizePx(config.ui?.uiFontSizePx, DEFAULT_UI_FONT_SIZE_PX, 12, 20),
+      codeFontSizePx: normalizePx(config.ui?.codeFontSizePx, DEFAULT_CODE_FONT_SIZE_PX, 11, 20),
+      uiFontFamily: normalizeFontFamily(config.ui?.uiFontFamily),
+      codeFontFamily: normalizeFontFamily(config.ui?.codeFontFamily),
+      shikiThemeLight: normalizeNonEmptyString(config.ui?.shikiThemeLight, DEFAULT_SHIKI_THEME_LIGHT),
+      shikiThemeDark: normalizeNonEmptyString(config.ui?.shikiThemeDark, DEFAULT_SHIKI_THEME_DARK),
+      mermaidTheme: normalizeMermaidTheme(config.ui?.mermaidTheme),
+      keyboardShortcuts: normalizeKeyboardShortcuts(config.ui?.keyboardShortcuts)
     }
   }
 }
 
 function defaultConfig(): LocalConfig {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     github: {
       activeAccountLogin: null
     },
@@ -120,7 +150,16 @@ function defaultConfig(): LocalConfig {
     },
     ui: {
       locale: 'en',
-      theme: 'auto'
+      theme: 'auto',
+      colorScheme: 'default',
+      uiFontSizePx: DEFAULT_UI_FONT_SIZE_PX,
+      codeFontSizePx: DEFAULT_CODE_FONT_SIZE_PX,
+      uiFontFamily: '',
+      codeFontFamily: '',
+      shikiThemeLight: DEFAULT_SHIKI_THEME_LIGHT,
+      shikiThemeDark: DEFAULT_SHIKI_THEME_DARK,
+      mermaidTheme: 'auto',
+      keyboardShortcuts: {}
     }
   }
 }
@@ -145,6 +184,114 @@ function normalizeTheme(value: unknown): LocalConfig['ui']['theme'] {
   }
 
   return 'auto'
+}
+
+function normalizeColorScheme(value: unknown): LocalConfig['ui']['colorScheme'] {
+  if (value === 'ocean' || value === 'forest' || value === 'rose' || value === 'amber') {
+    return value
+  }
+
+  return 'default'
+}
+
+function normalizeMermaidTheme(value: unknown): LocalConfig['ui']['mermaidTheme'] {
+  if (value === 'default' || value === 'dark' || value === 'forest' || value === 'neutral') {
+    return value
+  }
+
+  return 'auto'
+}
+
+function normalizePx(value: unknown, fallback: number, min: number, max: number): number {
+  const parsed = Number(value)
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback
+  }
+
+  return Math.min(max, Math.max(min, Math.round(parsed)))
+}
+
+function normalizeFontFamily(value: unknown): string {
+  if (typeof value !== 'string') {
+    return ''
+  }
+
+  const normalized = value
+    .replace(/[\r\n\f]+/g, ' ')
+    .trim()
+    .slice(0, MAX_FONT_FAMILY_LENGTH)
+
+  const lastCode = normalized.charCodeAt(normalized.length - 1)
+
+  if (lastCode >= 0xd800 && lastCode <= 0xdbff) {
+    return normalized.slice(0, -1)
+  }
+
+  return normalized
+}
+
+function normalizeNonEmptyString(value: unknown, fallback: string): string {
+  if (typeof value !== 'string') {
+    return fallback
+  }
+
+  const normalized = value.trim()
+
+  return normalized ? normalized : fallback
+}
+
+function normalizeKeyboardShortcuts(value: unknown): Record<string, KeyboardShortcutOverride> {
+  if (!isRecord(value)) {
+    return {}
+  }
+
+  const result: Record<string, KeyboardShortcutOverride> = {}
+
+  for (const [commandId, rawOverride] of Object.entries(value)) {
+    if (!isValidKeyboardShortcutId(commandId) || !isRecord(rawOverride)) {
+      continue
+    }
+
+    const disabled = rawOverride.disabled === true
+    const accelerator = normalizeKeyboardShortcutAccelerator(rawOverride.accelerator)
+
+    if (!disabled && accelerator === null) {
+      continue
+    }
+
+    result[commandId] = {
+      accelerator,
+      disabled
+    }
+  }
+
+  return result
+}
+
+function normalizeKeyboardShortcutAccelerator(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const accelerator = value
+    .replace(/[\r\n\f]+/g, ' ')
+    .trim()
+    .slice(0, MAX_KEYBOARD_SHORTCUT_ACCELERATOR_LENGTH)
+
+  return accelerator ? accelerator : null
+}
+
+function isValidKeyboardShortcutId(value: string): boolean {
+  return (
+    value.length > 0 &&
+    value.length <= MAX_KEYBOARD_SHORTCUT_ID_LENGTH &&
+    /^[a-z][a-zA-Z0-9.-]*$/.test(value)
+  )
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function isMissingFileError(error: unknown): boolean {

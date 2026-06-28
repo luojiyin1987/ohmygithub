@@ -1606,7 +1606,10 @@
   --event-heartbeat-border: oklch(0.76 0.15 350 / 0.32);
 }
 
-:root[data-color-scheme]:not([data-color-scheme="memoh"]) {
+:root[data-color-scheme="ocean"],
+:root[data-color-scheme="forest"],
+:root[data-color-scheme="rose"],
+:root[data-color-scheme="amber"] {
   --background: oklch(0.984 0.004 var(--scheme-hue));
   --background-chrome: oklch(0.978 0.004 var(--scheme-hue));
   --foreground: oklch(0.21 0.004 var(--scheme-hue));
@@ -1634,7 +1637,10 @@
   --segment-track: oklch(0.945 0.005 var(--scheme-hue));
 }
 
-.dark[data-color-scheme]:not([data-color-scheme="memoh"]) {
+.dark[data-color-scheme="ocean"],
+.dark[data-color-scheme="forest"],
+.dark[data-color-scheme="rose"],
+.dark[data-color-scheme="amber"] {
   --background: oklch(0.152 0.006 var(--scheme-hue));
   --foreground: oklch(0.90 0.004 var(--scheme-hue));
   --card: oklch(0.21 0.006 var(--scheme-hue));

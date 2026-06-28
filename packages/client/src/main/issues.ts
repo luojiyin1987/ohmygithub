@@ -1,4 +1,9 @@
-import { createGitHubApi, type GitHubIssueCategory } from '@oh-my-github/api'
+import {
+  createGitHubApi,
+  type GitHubIssueCategory,
+  type GitHubIssueSearchState,
+  type SearchRepositoryIssuesOptions,
+} from '@oh-my-github/api'
 import { ipcMain } from 'electron'
 import { getAuthenticatedAccessToken } from './auth'
 import { resolveGitHubProxyUrl } from './proxy'
@@ -10,6 +15,9 @@ export function registerIssuesIpc(): void {
   ipcMain.handle('issues:list-viewer', () => listViewerIssues())
   ipcMain.handle('issues:list-repository', (_event, owner: string, repo: string) =>
     listRepositoryIssues(owner, repo)
+  )
+  ipcMain.handle('issues:search-repository', (_event, options: SearchRepositoryIssuesOptions) =>
+    searchRepositoryIssues(options)
   )
 }
 
@@ -49,6 +57,45 @@ async function listRepositoryIssues(owner: string, repo: string) {
     owner: normalizedOwner,
     repo: normalizedRepo
   })
+}
+
+async function searchRepositoryIssues(options: SearchRepositoryIssuesOptions) {
+  const normalizedOptions = normalizeSearchRepositoryIssuesOptions(options)
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.issues.searchRepositoryIssues(normalizedOptions)
+}
+
+function normalizeSearchRepositoryIssuesOptions(
+  options: SearchRepositoryIssuesOptions
+): SearchRepositoryIssuesOptions {
+  const normalizedOwner = options.owner.trim()
+  const normalizedRepo = options.repo.trim()
+
+  if (!normalizedOwner || !normalizedRepo) {
+    throw new Error('Repository owner and name are required')
+  }
+
+  return {
+    owner: normalizedOwner,
+    repo: normalizedRepo,
+    state: normalizeIssueSearchState(options.state),
+    search: typeof options.search === 'string' ? options.search.trim() : '',
+    page: normalizePositiveInteger(options.page, 1),
+    perPage: normalizePositiveInteger(options.perPage, 20),
+  }
+}
+
+function normalizeIssueSearchState(state: GitHubIssueSearchState | undefined): GitHubIssueSearchState {
+  if (state === 'closed' || state === 'all') return state
+
+  return 'open'
+}
+
+function normalizePositiveInteger(value: number | undefined, fallback: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
+
+  return Math.max(1, Math.round(value))
 }
 
 async function createAuthenticatedGitHubApi() {

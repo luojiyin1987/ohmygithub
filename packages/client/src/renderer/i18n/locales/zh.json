@@ -47,10 +47,138 @@
     "description": "应用设置",
     "navigation": "设置导航",
     "sections": {
-      "interface": "Interface"
+      "interface": "界面"
     },
     "tabs": {
-      "appearance": "Appearance"
+      "appearance": "外观",
+      "keyboard": "键盘"
+    },
+    "appearance": {
+      "codeFontFamily": "代码字体",
+      "codeFontFamilyDescription": "替换默认代码字体。",
+      "codeFontSize": "代码字号",
+      "codeFontSizeDescription": "应用于编辑器和渲染后的代码块。",
+      "codeHighlight": "代码高亮",
+      "codeHighlightDescription": "分别选择浅色和深色模式下的 Shiki 主题。",
+      "colorScheme": "配色方案",
+      "colorSchemes": {
+        "amber": "琥珀",
+        "forest": "森林",
+        "default": "默认",
+        "ocean": "海洋",
+        "rose": "玫瑰"
+      },
+      "diagrams": "图表",
+      "interface": "界面",
+      "language": "语言",
+      "languagePlaceholder": "选择语言",
+      "languages": {
+        "en": "English",
+        "zh": "简体中文"
+      },
+      "mermaidTheme": "Mermaid 主题",
+      "mermaidThemeDescription": "应用于渲染后的 Mermaid 图表。",
+      "mermaidThemes": {
+        "auto": "自动",
+        "dark": "深色",
+        "default": "默认",
+        "forest": "森林",
+        "neutral": "中性"
+      },
+      "shikiThemeDark": "深色主题",
+      "shikiThemeEmpty": "未找到主题。",
+      "shikiThemeLight": "浅色主题",
+      "shikiThemeSearch": "搜索主题...",
+      "theme": "主题",
+      "typography": "字体",
+      "uiFontFamily": "界面字体",
+      "uiFontFamilyDescription": "替换默认界面字体。",
+      "uiFontSize": "界面字号",
+      "uiFontSizeDescription": "缩放界面文字和控件。"
+    },
+    "keyboard": {
+      "cancel": "取消",
+      "change": "修改",
+      "conflict": "已经被「{command}」使用。",
+      "description": "查看并自定义导航、标签页、面板、书签和仓库分区的快捷键。",
+      "disable": "禁用",
+      "disabled": "已禁用",
+      "enable": "启用",
+      "recorderHint": "按下新的按键组合。",
+      "recorderInvalid": "请按字母、数字、符号或导航键，可搭配修饰键。",
+      "recorderPrompt": "正在录入快捷键",
+      "reset": "重置",
+      "errors": {
+        "load": "无法加载快捷键设置，默认快捷键仍可使用。",
+        "save": "无法保存快捷键设置。"
+      },
+      "groups": {
+        "global": "全局",
+        "workspace": "工作区",
+        "repository": "仓库"
+      },
+      "commands": {
+        "settingsOpen": {
+          "label": "打开设置",
+          "description": "打开应用设置窗口。"
+        },
+        "workspaceSearch": {
+          "label": "搜索或跳转",
+          "description": "打开工作区搜索和快速跳转窗口。"
+        },
+        "workspaceNewTab": {
+          "label": "新建标签页",
+          "description": "创建新的工作区标签页。"
+        },
+        "workspaceCloseTab": {
+          "label": "关闭标签页",
+          "description": "关闭当前工作区标签页。"
+        },
+        "workspaceGoBack": {
+          "label": "后退",
+          "description": "回到上一个工作区位置。"
+        },
+        "workspaceGoForward": {
+          "label": "前进",
+          "description": "前往下一个工作区位置。"
+        },
+        "workspaceToggleSidebar": {
+          "label": "切换侧边栏",
+          "description": "展开或收起左侧工作区侧边栏。"
+        },
+        "workspaceToggleRightPanel": {
+          "label": "切换预览面板",
+          "description": "打开或关闭右侧预览面板。"
+        },
+        "workspaceToggleBookmark": {
+          "label": "切换书签",
+          "description": "为当前标签页添加或移除书签。"
+        },
+        "repositorySectionOverview": {
+          "label": "仓库概览",
+          "description": "将当前仓库标签页切换到概览。"
+        },
+        "repositorySectionFiles": {
+          "label": "仓库文件",
+          "description": "将当前仓库标签页切换到文件。"
+        },
+        "repositorySectionPullRequests": {
+          "label": "仓库 Pull Requests",
+          "description": "将当前仓库标签页切换到 Pull Requests。"
+        },
+        "repositorySectionIssues": {
+          "label": "仓库 Issues",
+          "description": "将当前仓库标签页切换到 Issues。"
+        },
+        "repositorySectionActions": {
+          "label": "仓库 Actions",
+          "description": "将当前仓库标签页切换到 Actions。"
+        },
+        "repositorySectionSettings": {
+          "label": "仓库设置",
+          "description": "将当前仓库标签页切换到设置。"
+        }
+      }
     },
     "title": "设置"
   },
@@ -189,6 +317,43 @@
         "closed": "已关闭",
         "draft": "草稿",
         "merged": "已合并",
+        "open": "open"
+      }
+    },
+    "issues": {
+      "empty": {
+        "allDescription": "这个仓库没有符合当前筛选条件的 Issue。",
+        "closedDescription": "这个仓库没有已关闭的 Issue。",
+        "missingRepositoryDescription": "打开带有 owner 和仓库名的仓库后，才会加载 Issue。",
+        "missingRepositoryTitle": "没有选中仓库",
+        "openDescription": "这个仓库没有 open 状态的 Issue。",
+        "searchDescription": "没有 Issue 匹配当前搜索。",
+        "title": "没有 Issue"
+      },
+      "error": {
+        "description": "无法从 GitHub 加载 Issue。请检查连接后重试。",
+        "retry": "重试",
+        "title": "无法加载 Issue"
+      },
+      "filters": {
+        "all": "全部",
+        "closed": "已关闭",
+        "label": "筛选 Issue",
+        "open": "open"
+      },
+      "meta": {
+        "updated": "更新于 {date}"
+      },
+      "pagination": {
+        "incomplete": "GitHub 返回的搜索结果不完整，可以缩小搜索范围后重试。",
+        "summary": "第 {page} / {pageCount} 页 · 共 {totalCount} 条"
+      },
+      "search": {
+        "placeholder": "搜索 Issue"
+      },
+      "states": {
+        "completed": "已完成",
+        "not_planned": "不计划处理",
         "open": "open"
       }
     },

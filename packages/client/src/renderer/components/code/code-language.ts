@@ -35,6 +35,7 @@ const extensionLanguages = new Map<string, string>([
   ['svelte', 'svelte'],
   ['ts', 'typescript'],
   ['tsx', 'tsx'],
+  ['toml', 'toml'],
   ['vue', 'vue'],
   ['xml', 'xml'],
   ['yaml', 'yaml'],
@@ -68,6 +69,8 @@ export function getLanguageByFilename(filename: string | undefined): string {
   if (!name) return 'plaintext'
 
   const lastSegment = name.split(/[\\/]/).pop() ?? name
+  if (lastSegment === 'cargo.lock') return 'toml'
+
   if (extensionLanguages.has(lastSegment)) {
     return extensionLanguages.get(lastSegment) ?? 'plaintext'
   }

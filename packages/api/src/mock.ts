@@ -1,6 +1,7 @@
 import type {
   GitHubClient,
   GitHubIssue,
+  GitHubIssueSearchResult,
   GitHubOrganization,
   GitHubPullRequest,
   GitHubPullRequestSearchResult,
@@ -20,6 +21,7 @@ import type {
   RepositoryFilePreviewOptions,
   RepositoryFilesOptions,
   RepositoryOptions,
+  SearchRepositoryIssuesOptions,
   SearchRepositoryPullRequestsOptions,
   SearchWorkspaceOptions,
   SetRepositoryStarredOptions,
@@ -364,7 +366,34 @@ export class MockGitHubClient implements GitHubClient {
   }
 
   async listRepositoryIssues(options: ListRepositoryWorkspaceItemsOptions): Promise<GitHubIssue[]> {
-    return issuesByRepository[`${options.owner}/${options.repo}`] ?? []
+    return (issuesByRepository[`${options.owner}/${options.repo}`] ?? [])
+      .filter((issue) => issue.state === 'open')
+  }
+
+  async searchRepositoryIssues(options: SearchRepositoryIssuesOptions): Promise<GitHubIssueSearchResult> {
+    const issues = issuesByRepository[`${options.owner}/${options.repo}`] ?? []
+    const search = options.search?.trim().toLowerCase() ?? ''
+    const state = options.state ?? 'open'
+    const page = options.page ?? 1
+    const perPage = options.perPage ?? 20
+    const filtered = issues.filter((issue) => {
+      const matchesSearch = !search || issue.title.toLowerCase().includes(search)
+      const matchesState = state === 'all'
+        || issue.state === state
+        || (state === 'closed' && issue.state !== 'open')
+
+      return matchesSearch && matchesState
+    })
+    const offset = Math.max(0, page - 1) * perPage
+
+    return {
+      items: filtered.slice(offset, offset + perPage),
+      totalCount: filtered.length,
+      page,
+      perPage,
+      hasNextPage: offset + perPage < filtered.length,
+      incompleteResults: false,
+    }
   }
 
   async getRepositoryViewerState(options: RepositoryOptions): Promise<GitHubRepositoryViewerState> {
@@ -719,10 +748,14 @@ function mockFileContent(path: string, key: string): string {
 }
 
 function mockLanguageForPath(path: string): string {
-  if (path.endsWith('.css')) return 'css'
-  if (path.endsWith('.json')) return 'json'
-  if (path.endsWith('.vue')) return 'vue'
-  if (path.endsWith('.ts')) return 'typescript'
+  const normalizedPath = path.toLowerCase()
+
+  if (normalizedPath.endsWith('cargo.lock')) return 'toml'
+  if (normalizedPath.endsWith('.css')) return 'css'
+  if (normalizedPath.endsWith('.json')) return 'json'
+  if (normalizedPath.endsWith('.toml')) return 'toml'
+  if (normalizedPath.endsWith('.vue')) return 'vue'
+  if (normalizedPath.endsWith('.ts')) return 'typescript'
 
   return 'plaintext'
 }
@@ -789,7 +822,7 @@ function createMockIssues(owner: string, repo: string, titles: string[]): GitHub
     repository: `${owner}/${repo}`,
     number: index + 31,
     title,
-    state: 'open',
+    state: index === 2 ? 'not_planned' : index === 1 ? 'completed' : 'open',
     author: { login: index % 2 === 0 ? 'acbox' : 'arden' },
     updatedAt: new Date(Date.UTC(2026, 5, 26 - index, 10)).toISOString(),
     labels: index === 0 ? ['bug'] : ['triage'],

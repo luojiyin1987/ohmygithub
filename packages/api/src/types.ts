@@ -246,6 +246,8 @@ export type GitHubIssueState =
   | 'completed'
   | 'not_planned'
 
+export type GitHubIssueSearchState = 'open' | 'closed' | 'all'
+
 export type GitHubPullRequestCategory =
   | 'created-by-me'
   | 'needs-review'
@@ -295,6 +297,15 @@ export interface GitHubIssue {
   labels: string[]
   url: string
   hasUpdates: boolean
+}
+
+export interface GitHubIssueSearchResult {
+  items: GitHubIssue[]
+  totalCount: number
+  page: number
+  perPage: number
+  hasNextPage: boolean
+  incompleteResults: boolean
 }
 
 export interface GitHubDeviceAuthorization {
@@ -360,6 +371,7 @@ export interface GitHubClient {
   listIssueCategory(options: ListIssueCategoryOptions): Promise<GitHubIssue[]>
   listViewerIssues(options?: ListWorkspaceItemsOptions): Promise<GitHubIssue[]>
   listRepositoryIssues(options: ListRepositoryWorkspaceItemsOptions): Promise<GitHubIssue[]>
+  searchRepositoryIssues(options: SearchRepositoryIssuesOptions): Promise<GitHubIssueSearchResult>
   listViewerOrganizations(): Promise<GitHubOrganization[]>
   listOrganizationRepositories(owner: string): Promise<GitHubRepository[]>
   resolveWorkspaceGoto(input: string): Promise<GitHubWorkspaceGotoResult>
@@ -411,6 +423,13 @@ export interface SearchRepositoryPullRequestsOptions extends RepositoryOptions {
   perPage?: number
   search?: string
   state?: GitHubPullRequestSearchState
+}
+
+export interface SearchRepositoryIssuesOptions extends RepositoryOptions {
+  page?: number
+  perPage?: number
+  search?: string
+  state?: GitHubIssueSearchState
 }
 
 export interface SearchWorkspaceOptions {

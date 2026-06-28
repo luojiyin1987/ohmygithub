@@ -205,8 +205,8 @@ function isActiveItem(
   url: string,
   context: { activeItemId: string | null; activeUrl: string },
 ): boolean {
-  if (context.activeItemId) return context.activeItemId === itemId
   if (context.activeUrl === url) return true
+  if (context.activeItemId) return context.activeItemId === itemId
 
   return isBaseRepositoryUrlForActiveTab(context.activeUrl, url)
 }
@@ -214,5 +214,11 @@ function isActiveItem(
 function isBaseRepositoryUrlForActiveTab(activeUrl: string, url: string): boolean {
   const [activePath, activeQuery = ''] = activeUrl.split('?')
   const [path, query = ''] = url.split('?')
-  return !query && activePath === path && new URLSearchParams(activeQuery).has('tab')
+  const tab = new URLSearchParams(activeQuery).get('tab')
+
+  return !query
+    && activePath === path
+    && Boolean(tab)
+    && tab !== 'pull-requests'
+    && tab !== 'issues'
 }

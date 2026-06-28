@@ -4,6 +4,17 @@ import { useSettingsStore } from '../../stores/settings'
 import { normalizeCodeLanguage, resolveCodeLanguage } from './code-language'
 
 type Highlighter = HighlighterGeneric<BundledLanguage, BundledTheme>
+export type ShikiThemePair = {
+  light: BundledTheme
+  dark: BundledTheme
+}
+
+export type ShikiHighlightOptions = {
+  language?: string
+  filename?: string
+  theme?: BundledTheme
+  themes?: ShikiThemePair
+}
 
 let highlighterPromise: Promise<Highlighter> | null = null
 const loadedLanguages = new Set<string>(['plaintext'])
@@ -63,26 +74,34 @@ export function useShikiHighlighter() {
   const html = ref('')
   const loading = ref(false)
 
-  async function highlight(code: string, options: { language?: string; filename?: string } = {}) {
+  async function highlight(code: string, options: ShikiHighlightOptions = {}) {
     loading.value = true
 
     try {
       const highlighter = await getHighlighter()
       const language = await ensureLanguage(highlighter, resolveCodeLanguage(options))
-      const themes = {
+      const themes = options.themes ?? {
         light: settings.codeThemeLight as BundledTheme,
         dark: settings.codeThemeDark as BundledTheme
       }
 
-      await Promise.all([
-        ensureTheme(highlighter, themes.light),
-        ensureTheme(highlighter, themes.dark)
-      ])
+      if (options.theme) {
+        await ensureTheme(highlighter, options.theme)
+        html.value = highlighter.codeToHtml(code, {
+          lang: language as BundledLanguage,
+          theme: options.theme
+        })
+      } else {
+        await Promise.all([
+          ensureTheme(highlighter, themes.light),
+          ensureTheme(highlighter, themes.dark)
+        ])
 
-      html.value = highlighter.codeToHtml(code, {
-        lang: language as BundledLanguage,
-        themes
-      })
+        html.value = highlighter.codeToHtml(code, {
+          lang: language as BundledLanguage,
+          themes
+        })
+      }
     } catch {
       html.value = `<pre><code>${escapeHtml(code)}</code></pre>`
     } finally {

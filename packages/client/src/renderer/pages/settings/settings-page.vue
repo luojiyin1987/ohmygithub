@@ -3,11 +3,11 @@ import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import WorkspacePage from '../workspace/workspace-page.vue'
 import AppSettingsDialog from './components/app-settings-dialog.vue'
-
-type SettingsTabId = 'appearance'
-
-const DEFAULT_SETTINGS_TAB: SettingsTabId = 'appearance'
-const SETTINGS_TAB_IDS = new Set<string>([DEFAULT_SETTINGS_TAB])
+import {
+  DEFAULT_SETTINGS_TAB,
+  SETTINGS_TAB_IDS,
+  type SettingsTabId,
+} from './settings-tabs'
 
 const route = useRoute()
 const router = useRouter()

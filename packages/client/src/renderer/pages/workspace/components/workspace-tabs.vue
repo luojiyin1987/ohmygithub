@@ -143,6 +143,14 @@ function tabTitle(tab: WorkspaceTab): string {
   return view.title
 }
 
+function tabIdentity(tab: WorkspaceTab): string {
+  if (tab.type === 'repo' && tab.owner && tab.repo) {
+    return `repo:${tab.owner}/${tab.repo}`
+  }
+
+  return tab.url
+}
+
 function bookmarkRootLabel(): string {
   return t(isActiveTabBookmarked.value ? 'workspace.bookmarks.moveToRoot' : 'workspace.bookmarks.addToRoot')
 }
@@ -416,7 +424,7 @@ watch(
           <TabsList class="w-auto min-w-max border-b-0">
             <div
               v-for="tab in props.tabs"
-              :key="tab.url"
+              :key="tabIdentity(tab)"
               class="workspace-tab-chip"
               :data-active="activeUrl === tab.url ? 'true' : undefined"
             >
@@ -491,11 +499,12 @@ watch(
       <div class="min-w-0 flex-1 overflow-hidden">
         <TabsContent
           v-for="tab in props.tabs"
-          :key="tab.url"
+          :key="tabIdentity(tab)"
           class="h-full min-h-0 overflow-auto"
           :value="tab.url"
         >
           <WorkspacePanel
+            :is-active="tab.url === activeUrl"
             :tab="tab"
             @replace-active-url="emit('replaceActiveUrl', $event)"
             @search="emit('search')"

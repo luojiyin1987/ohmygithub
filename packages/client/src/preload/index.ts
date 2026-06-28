@@ -15,7 +15,9 @@ const api = {
     listIssueCategory: (category: string) => ipcRenderer.invoke('issues:list-category', category),
     listViewerIssues: () => ipcRenderer.invoke('issues:list-viewer'),
     listRepositoryIssues: (owner: string, repo: string) =>
-      ipcRenderer.invoke('issues:list-repository', owner, repo)
+      ipcRenderer.invoke('issues:list-repository', owner, repo),
+    searchRepositoryIssues: (options: unknown) =>
+      ipcRenderer.invoke('issues:search-repository', options)
   },
   pulls: {
     listPullRequestCategory: (category: string) => ipcRenderer.invoke('pulls:list-category', category),

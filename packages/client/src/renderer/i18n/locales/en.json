@@ -50,7 +50,135 @@
       "interface": "Interface"
     },
     "tabs": {
-      "appearance": "Appearance"
+      "appearance": "Appearance",
+      "keyboard": "Keyboard"
+    },
+    "appearance": {
+      "codeFontFamily": "Code font",
+      "codeFontFamilyDescription": "Overrides the default code font.",
+      "codeFontSize": "Code font size",
+      "codeFontSizeDescription": "Applies to editors and rendered code blocks.",
+      "codeHighlight": "Code highlighting",
+      "codeHighlightDescription": "Choose separate Shiki themes for light and dark mode.",
+      "colorScheme": "Color scheme",
+      "colorSchemes": {
+        "amber": "Amber",
+        "forest": "Forest",
+        "default": "Default",
+        "ocean": "Ocean",
+        "rose": "Rose"
+      },
+      "diagrams": "Diagrams",
+      "interface": "Interface",
+      "language": "Language",
+      "languagePlaceholder": "Select language",
+      "languages": {
+        "en": "English",
+        "zh": "简体中文"
+      },
+      "mermaidTheme": "Mermaid theme",
+      "mermaidThemeDescription": "Applies to rendered Mermaid diagrams.",
+      "mermaidThemes": {
+        "auto": "Auto",
+        "dark": "Dark",
+        "default": "Default",
+        "forest": "Forest",
+        "neutral": "Neutral"
+      },
+      "shikiThemeDark": "Dark theme",
+      "shikiThemeEmpty": "No themes found.",
+      "shikiThemeLight": "Light theme",
+      "shikiThemeSearch": "Search themes...",
+      "theme": "Theme",
+      "typography": "Typography",
+      "uiFontFamily": "Interface font",
+      "uiFontFamilyDescription": "Overrides the default interface font.",
+      "uiFontSize": "Interface font size",
+      "uiFontSizeDescription": "Scales interface text and controls."
+    },
+    "keyboard": {
+      "cancel": "Cancel",
+      "change": "Change",
+      "conflict": "Already used by {command}.",
+      "description": "Review and customize keyboard shortcuts for navigation, tabs, panels, bookmarks, and repository sections.",
+      "disable": "Disable",
+      "disabled": "Disabled",
+      "enable": "Enable",
+      "recorderHint": "Press the new key combination.",
+      "recorderInvalid": "Press a letter, number, symbol, or navigation key with optional modifiers.",
+      "recorderPrompt": "Recording shortcut",
+      "reset": "Reset",
+      "errors": {
+        "load": "Keyboard shortcuts could not be loaded. Defaults are still available.",
+        "save": "Keyboard shortcuts could not be saved."
+      },
+      "groups": {
+        "global": "Global",
+        "workspace": "Workspace",
+        "repository": "Repository"
+      },
+      "commands": {
+        "settingsOpen": {
+          "label": "Open Settings",
+          "description": "Open the application settings dialog."
+        },
+        "workspaceSearch": {
+          "label": "Search or go to",
+          "description": "Open the workspace search and quick navigation dialog."
+        },
+        "workspaceNewTab": {
+          "label": "New tab",
+          "description": "Create a new workspace tab."
+        },
+        "workspaceCloseTab": {
+          "label": "Close tab",
+          "description": "Close the active workspace tab."
+        },
+        "workspaceGoBack": {
+          "label": "Go back",
+          "description": "Navigate to the previous workspace location."
+        },
+        "workspaceGoForward": {
+          "label": "Go forward",
+          "description": "Navigate to the next workspace location."
+        },
+        "workspaceToggleSidebar": {
+          "label": "Toggle sidebar",
+          "description": "Expand or collapse the left workspace sidebar."
+        },
+        "workspaceToggleRightPanel": {
+          "label": "Toggle preview panel",
+          "description": "Open or close the right preview panel."
+        },
+        "workspaceToggleBookmark": {
+          "label": "Toggle bookmark",
+          "description": "Add or remove a bookmark for the active tab."
+        },
+        "repositorySectionOverview": {
+          "label": "Repository overview",
+          "description": "Switch the active repository tab to Overview."
+        },
+        "repositorySectionFiles": {
+          "label": "Repository files",
+          "description": "Switch the active repository tab to Files."
+        },
+        "repositorySectionPullRequests": {
+          "label": "Repository pull requests",
+          "description": "Switch the active repository tab to Pull Requests."
+        },
+        "repositorySectionIssues": {
+          "label": "Repository issues",
+          "description": "Switch the active repository tab to Issues."
+        },
+        "repositorySectionActions": {
+          "label": "Repository actions",
+          "description": "Switch the active repository tab to Actions."
+        },
+        "repositorySectionSettings": {
+          "label": "Repository settings",
+          "description": "Switch the active repository tab to Settings."
+        }
+      }
     },
     "title": "Settings"
   },
@@ -189,6 +317,43 @@
         "closed": "Closed",
         "draft": "Draft",
         "merged": "Merged",
+        "open": "Open"
+      }
+    },
+    "issues": {
+      "empty": {
+        "allDescription": "This repository does not have issues that match the current filters.",
+        "closedDescription": "This repository does not have closed issues.",
+        "missingRepositoryDescription": "Open a repository with an owner and name to load issues.",
+        "missingRepositoryTitle": "No repository selected",
+        "openDescription": "This repository does not have open issues.",
+        "searchDescription": "No issues match this search.",
+        "title": "No issues"
+      },
+      "error": {
+        "description": "GitHub issues could not be loaded. Check the connection and try again.",
+        "retry": "Retry",
+        "title": "Could not load issues"
+      },
+      "filters": {
+        "all": "All",
+        "closed": "Closed",
+        "label": "Filter issues",
+        "open": "Open"
+      },
+      "meta": {
+        "updated": "Updated {date}"
+      },
+      "pagination": {
+        "incomplete": "GitHub returned incomplete search results. Try narrowing the search.",
+        "summary": "Page {page} of {pageCount} · {totalCount} results"
+      },
+      "search": {
+        "placeholder": "Search issues"
+      },
+      "states": {
+        "completed": "Completed",
+        "not_planned": "Not planned",
         "open": "Open"
       }
     },

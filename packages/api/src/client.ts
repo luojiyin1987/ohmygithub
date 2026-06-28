@@ -11,6 +11,7 @@ import type {
   GitHubClient,
   GitHubWorkspaceGotoResult,
   GitHubIssue,
+  GitHubIssueSearchResult,
   GitHubOrganization,
   GitHubPullRequest,
   GitHubPullRequestSearchResult,
@@ -71,12 +72,14 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
     searchRepositoryPullRequests: (options) => pulls.searchRepositoryPullRequests(options),
     listIssueCategory: (options) => issues.listIssueCategory(options),
     listViewerIssues: (options) => issues.listViewerIssues(options),
-    listRepositoryIssues: (options) => issues.listRepositoryIssues(options)
+    listRepositoryIssues: (options) => issues.listRepositoryIssues(options),
+    searchRepositoryIssues: (options) => issues.searchRepositoryIssues(options)
   }
 }
 
 export type {
   GitHubIssue,
+  GitHubIssueSearchResult,
   GitHubOrganization,
   GitHubPullRequest,
   GitHubPullRequestSearchResult,

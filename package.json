@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "A faster GitHub workspace for notifications, pull requests, reviews, and actions.",
-  "packageManager": "pnpm@10.29.2",
+  "packageManager": "pnpm@11.7.0",
   "scripts": {
     "env:setup": "pnpm install && pnpm --filter @oh-my-github/client exec install-electron",
     "dev": "pnpm --filter @oh-my-github/client dev",
@@ -14,12 +14,5 @@
   "devDependencies": {
     "@types/node": "^24.0.7",
     "typescript": "^5.8.3"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "electron",
-      "esbuild",
-      "vue-demi"
-    ]
   }
 }

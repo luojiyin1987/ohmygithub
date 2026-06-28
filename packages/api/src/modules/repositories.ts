@@ -847,6 +847,7 @@ function languageForPath(path: string): string {
   const filename = path.toLowerCase().split('/').pop() ?? path.toLowerCase()
   const extension = filename.includes('.') ? filename.split('.').pop() ?? '' : ''
 
+  if (filename === 'cargo.lock') return 'toml'
   if (filename === 'dockerfile') return 'docker'
   if (extension === 'cjs' || extension === 'js' || extension === 'mjs') return 'javascript'
   if (extension === 'cts' || extension === 'mts' || extension === 'ts') return 'typescript'
@@ -854,6 +855,7 @@ function languageForPath(path: string): string {
   if (extension === 'hpp') return 'cpp'
   if (extension === 'md') return 'markdown'
   if (extension === 'sh') return 'shellscript'
+  if (extension === 'toml') return 'toml'
   if (extension === 'yml') return 'yaml'
 
   return extension || 'plaintext'

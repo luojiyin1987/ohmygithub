@@ -14,6 +14,7 @@ import NotFoundPage from '../../not-found/not-found-page.vue'
 import { getWorkspaceTabView } from '../tab-presentation'
 
 const props = defineProps<{
+  isActive: boolean
   tab: WorkspaceTab
 }>()
 
@@ -38,6 +39,7 @@ function translate(key: string, params?: WorkspaceMessageParams): string {
 
   <RepositoryPage
     v-else-if="tab.type === 'repo'"
+    :is-active="isActive"
     :tab="tab"
     @replace-active-url="emit('replaceActiveUrl', $event)"
   />

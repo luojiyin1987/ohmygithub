@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { WorkspaceTab } from '../workspace/types'
 import type { RepositoryOverviewInfoItem, RepositorySection, RepositorySectionId } from './components/types'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Activity,
   Archive,
@@ -32,13 +32,17 @@ import {
   EmptyTitle,
 } from '@oh-my-github/ui'
 import { useRepositoryOverviewQuery } from '../../composables/github/use-repositories'
+import type { KeyboardShortcutCommandId } from '../../keyboard/shortcut-definitions'
+import { registerKeyboardShortcutHandler } from '../../keyboard/shortcut-runtime'
 import { createRepositoryWorkspaceUrl } from '../workspace/workspace-url'
 import RepositoryOverview from './components/overview/repository-overview.vue'
 import PullRequestsSection from './components/pulls/section.vue'
+import IssuesSection from './components/issues/section.vue'
 import FilesPanel from './components/files/files-panel.vue'
 import RepositorySidebar from './components/repository-sidebar.vue'
 
 const props = defineProps<{
+  isActive: boolean
   tab: WorkspaceTab
 }>()
 
@@ -58,6 +62,7 @@ const repositorySections: readonly RepositorySection[] = [
 type RepositoryActionId = 'star' | 'watch'
 
 const { t } = useI18n()
+const route = useRoute()
 const router = useRouter()
 const activeSection = ref<RepositorySectionId>(props.tab.repositorySection ?? 'overview')
 const activeDocumentKind = ref<GitHubRepositoryDocumentKind>('readme')
@@ -65,6 +70,15 @@ const viewerState = ref<GitHubRepositoryViewerState | null>(null)
 const isViewerStateLoading = ref(false)
 const pendingRepositoryAction = ref<RepositoryActionId | null>(null)
 let viewerStateRequestId = 0
+const shortcutUnregisters: Array<() => void> = []
+const sectionShortcutIds: Record<RepositorySectionId, KeyboardShortcutCommandId> = {
+  overview: 'repository.section.overview',
+  files: 'repository.section.files',
+  pullRequests: 'repository.section.pullRequests',
+  issues: 'repository.section.issues',
+  actions: 'repository.section.actions',
+  settings: 'repository.section.settings',
+}
 
 const owner = computed(() => props.tab.owner ?? '')
 const repository = computed(() => props.tab.repo ?? props.tab.title)
@@ -248,6 +262,15 @@ const overviewDescription = computed(() =>
   overview.value?.description?.trim() || t('repository.overview.noDescription')
 )
 const missingScopesText = computed(() => overview.value?.missingScopes.join(', ') ?? '')
+const canUseRepositoryShortcuts = computed(() => props.isActive && route.name !== 'settings')
+
+onMounted(() => {
+  registerRepositoryShortcuts()
+})
+
+onBeforeUnmount(() => {
+  shortcutUnregisters.splice(0).forEach((unregister) => unregister())
+})
 
 function openOwner(): void {
   if (!owner.value) return
@@ -263,6 +286,23 @@ function setActiveSection(section: RepositorySectionId): void {
   if (nextUrl === props.tab.url) return
 
   emit('replaceActiveUrl', nextUrl)
+}
+
+function registerRepositoryShortcuts(): void {
+  if (shortcutUnregisters.length > 0) return
+
+  for (const section of repositorySections) {
+    shortcutUnregisters.push(
+      registerKeyboardShortcutHandler(
+        sectionShortcutIds[section.id],
+        () => {
+          setActiveSection(section.id)
+          return true
+        },
+        { enabled: () => canUseRepositoryShortcuts.value },
+      ),
+    )
+  }
 }
 
 function formatNumber(value: number): string {
@@ -425,6 +465,12 @@ watch(
 
         <PullRequestsSection
           v-else-if="activeSection === 'pullRequests'"
+          :owner="owner"
+          :repo="repository"
+        />
+
+        <IssuesSection
+          v-else-if="activeSection === 'issues'"
           :owner="owner"
           :repo="repository"
         />

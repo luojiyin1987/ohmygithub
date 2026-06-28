@@ -1,10 +1,13 @@
 import type { GitHubOctokit } from '../transport'
 import type {
   GitHubIssue,
+  GitHubIssueSearchResult,
+  GitHubIssueSearchState,
   GitHubIssueState,
   ListIssueCategoryOptions,
   ListRepositoryWorkspaceItemsOptions,
-  ListWorkspaceItemsOptions
+  ListWorkspaceItemsOptions,
+  SearchRepositoryIssuesOptions
 } from '../types'
 import {
   createWorkItemKey,
@@ -39,6 +42,20 @@ interface IssueByNumberResponse {
   repository: {
     issue: GraphQLIssueNode | null
   } | null
+}
+
+interface IssueNodesResponse {
+  nodes?: Array<GraphQLIssueNode | null> | null
+}
+
+interface SearchIssueItem {
+  node_id?: string | null
+}
+
+interface SearchIssuesResponse {
+  incomplete_results?: boolean
+  items?: SearchIssueItem[]
+  total_count?: number
 }
 
 const issueFields = `
@@ -103,6 +120,18 @@ const issueByNumberQuery = `
   ${issueFields}
 `
 
+const issueNodesQuery = `
+  query IssueNodes($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ...IssueFields
+    }
+  }
+
+  ${issueFields}
+`
+
+const MAX_SEARCH_RESULTS = 1000
+
 export class IssuesApi {
   constructor(private readonly octokit: GitHubOctokit) {}
 
@@ -147,6 +176,41 @@ export class IssuesApi {
     return mapIssueNodes(response.repository?.issues.nodes, unreadKeys)
   }
 
+  async searchRepositoryIssues(options: SearchRepositoryIssuesOptions): Promise<GitHubIssueSearchResult> {
+    const page = normalizePage(options.page)
+    const perPage = normalizeLimit(options.perPage)
+    const state = normalizeSearchState(options.state)
+    const searchQuery = repositorySearchQuery({
+      owner: options.owner,
+      repo: options.repo,
+      search: options.search,
+      state,
+    })
+    const response = await this.octokit.request('GET /search/issues', {
+      q: searchQuery,
+      sort: 'updated',
+      order: 'desc',
+      page,
+      per_page: perPage,
+    })
+    const payload = response.data as SearchIssuesResponse
+    const ids = (payload.items ?? [])
+      .map((item) => item.node_id)
+      .filter(isString)
+    const unreadKeys = await listUnreadWorkItemKeys(this.octokit)
+    const issues = await this.fetchIssueNodes(ids, unreadKeys)
+    const totalCount = payload.total_count ?? issues.length
+
+    return {
+      items: issues,
+      totalCount,
+      page,
+      perPage,
+      hasNextPage: page * perPage < Math.min(totalCount, MAX_SEARCH_RESULTS),
+      incompleteResults: Boolean(payload.incomplete_results),
+    }
+  }
+
   private async searchIssues(searchQuery: string, limit: number): Promise<GitHubIssue[]> {
     const response = await this.octokit.graphql<ViewerIssuesResponse>(
       viewerIssuesQuery,
@@ -176,6 +240,20 @@ export class IssuesApi {
 
     return response.repository?.issue ?? null
   }
+
+  private async fetchIssueNodes(
+    ids: string[],
+    unreadKeys: Set<string>
+  ): Promise<GitHubIssue[]> {
+    if (ids.length === 0) return []
+
+    const response = await this.octokit.graphql<IssueNodesResponse>(
+      issueNodesQuery,
+      { ids }
+    )
+
+    return mapIssueNodes(response.nodes, unreadKeys)
+  }
 }
 
 function isOpenIssueNode(node: GraphQLIssueNode | null): node is GraphQLIssueNode {
@@ -188,6 +266,45 @@ function categorySearchQuery(category: ListIssueCategoryOptions['category'], log
   }
 
   return `is:issue is:open archived:false mentions:${login} sort:updated-desc`
+}
+
+function repositorySearchQuery(options: {
+  owner: string
+  repo: string
+  search?: string
+  state: GitHubIssueSearchState
+}): string {
+  const parts = [
+    `repo:${options.owner}/${options.repo}`,
+    'is:issue',
+  ]
+
+  if (options.state === 'open') {
+    parts.push('is:open')
+  } else if (options.state === 'closed') {
+    parts.push('is:closed')
+  }
+
+  const search = options.search?.trim()
+  if (search) {
+    parts.push(search)
+  }
+
+  return parts.join(' ')
+}
+
+function normalizePage(value: number | undefined): number {
+  return Math.min(Math.max(Math.round(value ?? 1), 1), 50)
+}
+
+function normalizeSearchState(value: SearchRepositoryIssuesOptions['state']): GitHubIssueSearchState {
+  if (value === 'closed' || value === 'all') return value
+
+  return 'open'
+}
+
+function isString(value: string | null | undefined): value is string {
+  return Boolean(value)
 }
 
 function mapIssueNodes(

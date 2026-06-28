@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import type { WorkspaceTab } from './types'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { SidebarInset, SidebarProvider } from '@oh-my-github/ui'
 import { useWorkspaceBookmarks } from './composables/use-workspace-bookmarks'
 import { useOrganizationsQuery } from '../../composables/github/use-organizations'
+import { useRightPanel } from '../../composables/use-right-panel'
+import { registerKeyboardShortcutHandler } from '../../keyboard/shortcut-runtime'
 import { useWorkspaceTabs } from './composables/use-workspace-tabs'
+import { getWorkspaceTabView } from './tab-presentation'
 import WorkspaceSidebar from './components/workspace-sidebar.vue'
 import WorkspaceSearchDialog from './components/workspace-search-dialog.vue'
 import WorkspaceTabs from './components/workspace-tabs.vue'
@@ -21,10 +26,15 @@ const isWindowFullscreen = ref(false)
 const sidebarWidth = ref(readStoredSidebarWidth())
 const viewer = ref<AuthViewer | null>(null)
 let stopFullscreenListener: (() => void) | undefined
+const shortcutUnregisters: Array<() => void> = []
 let resizeStartX = 0
 let resizeStartWidth = 0
 
+const route = useRoute()
+const { t } = useI18n()
+const { toggleRightPanel } = useRightPanel()
 const {
+  activeTab,
   activeUrl,
   canGoBack,
   canGoForward,
@@ -53,8 +63,11 @@ const {
   removeBookmark,
   addBookmark,
 } = useWorkspaceBookmarks()
+const canUseWorkspaceShortcuts = computed(() => route.name !== 'settings' && !isSearchDialogOpen.value)
 
 onMounted(async () => {
+  registerWorkspaceShortcuts()
+
   try {
     const authState = await window.ohMyGithub?.auth?.get?.()
     viewer.value = authState?.auth?.viewer ?? null
@@ -76,6 +89,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   stopFullscreenListener?.()
   stopSidebarResize()
+  shortcutUnregisters.splice(0).forEach((unregister) => unregister())
 })
 
 function readStoredSidebarWidth(): number {
@@ -138,6 +152,77 @@ function addTabBookmark(input: {
 
 function openSearchDialog(): void {
   isSearchDialogOpen.value = true
+}
+
+function registerWorkspaceShortcuts(): void {
+  if (shortcutUnregisters.length > 0) return
+
+  shortcutUnregisters.push(
+    registerKeyboardShortcutHandler('workspace.search', () => {
+      openSearchDialog()
+      return true
+    }, { enabled: () => canUseWorkspaceShortcuts.value }),
+    registerKeyboardShortcutHandler('workspace.newTab', () => {
+      void createTab()
+      return true
+    }, { enabled: () => canUseWorkspaceShortcuts.value }),
+    registerKeyboardShortcutHandler('workspace.closeTab', () => {
+      if (tabs.value.length <= 1) return false
+
+      void closeTab(activeUrl.value)
+      return true
+    }, { enabled: () => canUseWorkspaceShortcuts.value }),
+    registerKeyboardShortcutHandler('workspace.goBack', () => {
+      if (!canGoBack.value) return false
+
+      void goBack()
+      return true
+    }, { enabled: () => canUseWorkspaceShortcuts.value }),
+    registerKeyboardShortcutHandler('workspace.goForward', () => {
+      if (!canGoForward.value) return false
+
+      void goForward()
+      return true
+    }, { enabled: () => canUseWorkspaceShortcuts.value }),
+    registerKeyboardShortcutHandler('workspace.toggleSidebar', () => {
+      isSidebarOpen.value = !isSidebarOpen.value
+      return true
+    }, { enabled: () => canUseWorkspaceShortcuts.value }),
+    registerKeyboardShortcutHandler('workspace.toggleRightPanel', () => {
+      toggleRightPanel()
+      return true
+    }, { enabled: () => canUseWorkspaceShortcuts.value }),
+    registerKeyboardShortcutHandler('workspace.toggleBookmark', () => toggleActiveBookmark(), {
+      enabled: () => canUseWorkspaceShortcuts.value,
+    }),
+  )
+}
+
+function toggleActiveBookmark(): boolean {
+  const tab = activeTab.value
+  if (!tab) return false
+
+  if (bookmarkedUrls.value.has(tab.url)) {
+    removeBookmark(tab.url)
+    return true
+  }
+
+  addTabBookmark({
+    folderId: null,
+    tab,
+    title: tabTitle(tab),
+  })
+
+  return true
+}
+
+function tabTitle(tab: WorkspaceTab): string {
+  const view = getWorkspaceTabView(tab)
+  if (view.titleKey) {
+    return t(view.titleKey, view.titleParams ?? {})
+  }
+
+  return view.title
 }
 </script>
 

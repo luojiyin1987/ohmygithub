@@ -8,6 +8,10 @@ body,
   height: 100%;
 }
 
+html {
+  font-size: var(--memoh-ui-font-size, 100%);
+}
+
 * {
   scrollbar-width: none;
 }
@@ -18,23 +22,83 @@ body,
   height: 0;
 }
 
+.workspace-right-panel-scrollbar,
+.workspace-right-panel-scrollbar * {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+.workspace-right-panel-scrollbar::-webkit-scrollbar,
+.workspace-right-panel-scrollbar *::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+  height: 8px;
+}
+
+.workspace-right-panel-scrollbar::-webkit-scrollbar-track,
+.workspace-right-panel-scrollbar::-webkit-scrollbar-corner,
+.workspace-right-panel-scrollbar *::-webkit-scrollbar-track,
+.workspace-right-panel-scrollbar *::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.workspace-right-panel-scrollbar::-webkit-scrollbar-thumb,
+.workspace-right-panel-scrollbar *::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  background-clip: padding-box;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+}
+
+.workspace-right-panel-scrollbar::-webkit-scrollbar-thumb:hover,
+.workspace-right-panel-scrollbar *::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
 }
 
-.rich-content-code .shiki,
-.rich-content-code .shiki code {
+.rich-content-code:not([data-themed-background="true"]) .shiki,
+.rich-content-code:not([data-themed-background="true"]) .shiki code {
   background: transparent !important;
 }
 
+.dark .rich-content-code[data-themed-background="true"] .shiki {
+  background-color: var(--shiki-dark-bg) !important;
+}
+
 .rich-content-code .shiki {
+  font-family: var(--memoh-code-font-family, var(--font-mono));
+  font-size: var(--memoh-code-font-size, var(--text-body));
+  line-height: 1.5;
   margin: 0;
+}
+
+.rich-content-code[data-line-numbers="true"] {
+  counter-reset: rich-content-code-line;
 }
 
 .rich-content-code .shiki code {
   display: block;
   min-width: max-content;
+}
+
+.rich-content-code[data-line-numbers="true"] .line {
+  counter-increment: rich-content-code-line;
+  display: inline-block;
+  min-width: 100%;
+}
+
+.rich-content-code[data-line-numbers="true"] .line::before {
+  color: var(--muted-foreground);
+  content: counter(rich-content-code-line);
+  display: inline-block;
+  margin-right: 1.25ch;
+  min-width: 2ch;
+  text-align: right;
+  user-select: none;
 }
 
 .rich-content-markdown {

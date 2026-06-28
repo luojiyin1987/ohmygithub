@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Palette } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { Keyboard, Palette } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import {
   Dialog,
@@ -7,10 +8,11 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@oh-my-github/ui'
+import type { SettingsTabId } from '../settings-tabs'
+import AppearanceSettings from './appearance-settings/index.vue'
+import KeyboardSettingsPage from './keyboard/keyboard-settings-page.vue'
 
-type SettingsTabId = 'appearance'
-
-defineProps<{
+const props = defineProps<{
   activeTab: SettingsTabId
 }>()
 
@@ -20,6 +22,23 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const tabs = [
+  {
+    id: 'appearance',
+    icon: Palette,
+    labelKey: 'settings.tabs.appearance',
+  },
+  {
+    id: 'keyboard',
+    icon: Keyboard,
+    labelKey: 'settings.tabs.keyboard',
+  },
+] satisfies Array<{
+  id: SettingsTabId
+  icon: typeof Palette
+  labelKey: string
+}>
+const activeTabTitle = computed(() => t(`settings.tabs.${props.activeTab}`))
 
 function handleOpenChange(isOpen: boolean): void {
   if (!isOpen) {
@@ -53,14 +72,19 @@ function handleOpenChange(isOpen: boolean): void {
               {{ t('settings.sections.interface') }}
             </p>
             <button
+              v-for="tab in tabs"
+              :key="tab.id"
               class="flex h-9 w-full items-center gap-2 rounded-md px-2 text-left text-control outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
-              :class="activeTab === 'appearance' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'"
+              :class="activeTab === tab.id ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'"
               type="button"
-              @click="emit('selectTab', 'appearance')"
+              @click="emit('selectTab', tab.id)"
             >
-              <Palette class="size-4 shrink-0" />
+              <component
+                :is="tab.icon"
+                class="size-4 shrink-0"
+              />
               <span class="truncate">
-                {{ t('settings.tabs.appearance') }}
+                {{ t(tab.labelKey) }}
               </span>
             </button>
           </div>
@@ -70,11 +94,12 @@ function handleOpenChange(isOpen: boolean): void {
       <section class="min-h-0 overflow-auto p-6 pr-12">
         <header class="mb-6">
           <h2 class="truncate text-heading font-semibold text-foreground">
-            {{ t('settings.tabs.appearance') }}
+            {{ activeTabTitle }}
           </h2>
         </header>
 
-        <div class="min-h-0" />
+        <AppearanceSettings v-if="activeTab === 'appearance'" />
+        <KeyboardSettingsPage v-else-if="activeTab === 'keyboard'" />
       </section>
     </DialogContent>
   </Dialog>
