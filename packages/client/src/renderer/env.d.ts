@@ -53,11 +53,109 @@ type GitHubAccountProfile = {
   company: string | null
   location: string | null
   blog: string | null
+  email: string | null
+  twitterUsername: string | null
   url: string
   followers: number
   following: number
   publicRepos: number
+  publicGists: number
+  createdAt: string | null
+  updatedAt: string | null
+  hireable: boolean | null
   type: GitHubAccountProfileType
+}
+
+type GitHubAccountSocialAccount = {
+  provider: string
+  displayName: string
+  url: string
+}
+
+type GitHubAccountRepository = {
+  id: number
+  name: string
+  nameWithOwner: string
+  owner: string
+  ownerAvatarUrl: string | null
+  description: string | null
+  isPrivate: boolean
+  visibility: GitHubRepositoryVisibility
+  isFork: boolean
+  isArchived: boolean
+  isTemplate: boolean
+  primaryLanguage: string | null
+  primaryLanguageColor: string | null
+  stars: number
+  forks: number
+  topics: string[]
+  homepageUrl: string | null
+  pushedAt: string | null
+  updatedAt: string | null
+  url: string
+}
+
+type GitHubAccountRepositoryPage = {
+  items: GitHubAccountRepository[]
+  totalCount: number
+  page: number
+  perPage: number
+  hasNextPage: boolean
+  incompleteResults: boolean
+}
+
+type GitHubAccountContributionDay = {
+  date: string
+  contributionCount: number
+  color: string
+  weekday: number
+}
+
+type GitHubAccountContributionWeek = {
+  firstDay: string
+  days: GitHubAccountContributionDay[]
+}
+
+type GitHubAccountContributionYear = {
+  year: number
+  totalContributions: number
+  restrictedContributionsCount: number
+  commitContributions: number
+  issueContributions: number
+  pullRequestContributions: number
+  pullRequestReviewContributions: number
+  weeks: GitHubAccountContributionWeek[]
+}
+
+type GitHubAccountOverview = {
+  profile: GitHubAccountProfile
+  organizations: GitHubOrganization[]
+  socialAccounts: GitHubAccountSocialAccount[]
+  pinnedRepositories: GitHubAccountRepository[]
+  readme: GitHubRepositoryDocument | null
+  contributionYears: number[]
+}
+
+type GitHubAccountViewerState = {
+  isFollowing: boolean
+  missingScopes: string[]
+}
+
+type ListAccountRepositoriesOptions = {
+  login: string
+  page?: number
+  perPage?: number
+  search?: string
+}
+
+type AccountContributionsOptions = {
+  login: string
+  year?: number
+}
+
+type SetAccountFollowedOptions = {
+  login: string
+  followed: boolean
 }
 
 type GitHubRepository = {
@@ -276,6 +374,24 @@ type GitHubPullRequestState = 'draft' | 'merged' | 'open' | 'closed'
 
 type GitHubPullRequestSearchState = 'open' | 'closed' | 'all'
 
+type GitHubPullRequestReviewDecision =
+  | 'approved'
+  | 'changes_requested'
+  | 'review_required'
+
+type GitHubPullRequestReviewState =
+  | 'approved'
+  | 'changes_requested'
+  | 'commented'
+  | 'dismissed'
+  | 'pending'
+
+type GitHubPullRequestReviewerType =
+  | 'user'
+  | 'team'
+  | 'mannequin'
+  | 'unknown'
+
 type GitHubIssueState = 'open' | 'completed' | 'not_planned'
 
 type GitHubIssueSearchState = 'open' | 'closed' | 'all'
@@ -360,6 +476,54 @@ type GitHubPullRequestSearchResult = {
   perPage: number
   hasNextPage: boolean
   incompleteResults: boolean
+}
+
+type GitHubPullRequestBranch = {
+  name: string
+  repository: string | null
+  url: string | null
+}
+
+type GitHubPullRequestDiffStats = {
+  additions: number
+  deletions: number
+  changedFiles: number
+}
+
+type GitHubPullRequestStatusSummary = {
+  ciState: GitHubCiState | null
+  checksUrl: string | null
+  mergeStateStatus: string | null
+}
+
+type GitHubPullRequestReviewRequest = {
+  id: string
+  reviewer: GitHubActor
+  reviewerType: GitHubPullRequestReviewerType
+  asCodeOwner: boolean
+}
+
+type GitHubPullRequestReviewSummary = {
+  id: string
+  author: GitHubActor
+  state: GitHubPullRequestReviewState
+  body: string
+  createdAt: string
+  updatedAt: string
+  submittedAt: string | null
+  authorAssociation: string
+  url: string
+}
+
+type GitHubPullRequestLinkedIssue = {
+  id: string
+  owner: string
+  repo: string
+  repository: string
+  number: number
+  title: string
+  state: GitHubIssueState
+  url: string
 }
 
 type GitHubIssue = {
@@ -481,6 +645,130 @@ type GitHubIssueDetail = {
   hasUpdates: boolean
 }
 
+type GitHubPullRequestTimelineEventType =
+  | 'assigned'
+  | 'unassigned'
+  | 'labeled'
+  | 'unlabeled'
+  | 'closed'
+  | 'reopened'
+  | 'renamed'
+  | 'cross-referenced'
+  | 'mentioned'
+  | 'reviewed'
+  | 'review-requested'
+  | 'review-request-removed'
+  | 'review-dismissed'
+  | 'ready-for-review'
+  | 'convert-to-draft'
+  | 'committed'
+  | 'merged'
+  | 'base-ref-changed'
+  | 'base-ref-deleted'
+  | 'base-ref-force-pushed'
+  | 'head-ref-deleted'
+  | 'head-ref-force-pushed'
+  | 'head-ref-restored'
+  | 'automatic-base-change-failed'
+  | 'automatic-base-change-succeeded'
+  | 'auto-merge-enabled'
+  | 'auto-merge-disabled'
+  | 'auto-rebase-enabled'
+  | 'auto-squash-enabled'
+  | 'added-to-merge-queue'
+  | 'removed-from-merge-queue'
+  | 'milestoned'
+  | 'demilestoned'
+  | 'connected'
+  | 'disconnected'
+  | 'comment-deleted'
+  | 'referenced'
+  | 'generic'
+
+type GitHubPullRequestTimelineReference = {
+  type: string
+  repository?: string
+  number?: number
+  title?: string
+  url?: string | null
+}
+
+type GitHubPullRequestCommitSummary = {
+  id: string
+  oid: string
+  abbreviatedOid: string
+  messageHeadline: string
+  authoredDate: string
+  committedDate: string
+  author: GitHubActor
+  authorIsGitHubUser: boolean
+  ciState: GitHubCiState | null
+  url: string
+}
+
+type GitHubPullRequestTimelineEvent = {
+  id: string
+  type: GitHubPullRequestTimelineEventType
+  actor: GitHubActor
+  createdAt: string
+  body?: string | null
+  text?: string | null
+  label?: string | null
+  milestone?: string | null
+  from?: string | null
+  to?: string | null
+  ref?: string | null
+  beforeCommit?: string | null
+  afterCommit?: string | null
+  reason?: string | null
+  url?: string | null
+  commit?: GitHubPullRequestCommitSummary | null
+  assignee?: GitHubActor
+  reviewer?: GitHubActor
+  reviewerType?: GitHubPullRequestReviewerType
+  reviewState?: GitHubPullRequestReviewState
+  source?: GitHubPullRequestTimelineReference
+}
+
+type GitHubPullRequestComment = GitHubIssueComment
+
+type GitHubPullRequestDetail = {
+  id: string
+  owner: string
+  repo: string
+  repository: string
+  number: number
+  title: string
+  state: GitHubPullRequestState
+  ciState: GitHubCiState | null
+  author: GitHubActor
+  createdAt: string
+  updatedAt: string
+  closedAt: string | null
+  mergedAt: string | null
+  mergedBy: GitHubActor | null
+  body: string
+  labels: string[]
+  assignees: GitHubActor[]
+  milestone: GitHubIssueMilestone | null
+  participants: GitHubActor[]
+  reviewRequests: GitHubPullRequestReviewRequest[]
+  latestReviews: GitHubPullRequestReviewSummary[]
+  reviewDecision: GitHubPullRequestReviewDecision | null
+  baseBranch: GitHubPullRequestBranch
+  headBranch: GitHubPullRequestBranch
+  isCrossRepository: boolean
+  maintainerCanModify: boolean
+  diffStats: GitHubPullRequestDiffStats
+  status: GitHubPullRequestStatusSummary
+  linkedIssues: GitHubPullRequestLinkedIssue[]
+  comments: GitHubPullRequestComment[]
+  timelineEvents: GitHubPullRequestTimelineEvent[]
+  reactions: GitHubIssueReaction[]
+  url: string
+  hasUpdates: boolean
+}
+
 type AuthState = {
   isAuthenticated: boolean
   path: string
@@ -500,6 +788,46 @@ type WindowControlsState = {
   isFullScreen: boolean
 }
 
+type StoredWorkspaceBookmarkFolder = {
+  id: string
+  title: string
+  createdAt: string
+  updatedAt: string
+}
+
+type StoredWorkspaceBookmark = {
+  id: string
+  url: string
+  type: string
+  title: string
+  folderId: string | null
+  owner?: string
+  repo?: string
+  draftId?: string
+  number?: number
+  accountSection?: string
+  repositorySection?: string
+  pullRequestCategory?: string
+  issueCategory?: string
+  searchMode?: string
+  searchQuery?: string
+  notFoundInput?: string
+  avatarUrl?: string
+  avatarFallback?: string
+}
+
+type StoredWorkspaceBookmarks = {
+  version: 1
+  folders: StoredWorkspaceBookmarkFolder[]
+  bookmarks: StoredWorkspaceBookmark[]
+}
+
+type StoredWorkspaceBookmarksInfo = {
+  path: string
+  hasContent: boolean
+  bookmarks: StoredWorkspaceBookmarks
+}
+
 interface Window {
   ohMyGithub: {
     app: {
@@ -508,6 +836,12 @@ interface Window {
     }
     accounts: {
       getProfile: (login: string) => Promise<GitHubAccountProfile>
+      getOverview: (login: string) => Promise<GitHubAccountOverview>
+      getContributions: (options: AccountContributionsOptions) => Promise<GitHubAccountContributionYear>
+      listRepositories: (options: ListAccountRepositoriesOptions) => Promise<GitHubAccountRepositoryPage>
+      listStarredRepositories: (options: ListAccountRepositoriesOptions) => Promise<GitHubAccountRepositoryPage>
+      getViewerState: (login: string) => Promise<GitHubAccountViewerState>
+      setFollowed: (options: SetAccountFollowedOptions) => Promise<void>
       listOrganizations: () => Promise<GitHubOrganization[]>
       listOrganizationRepositories: (owner: string) => Promise<GitHubRepository[]>
     }
@@ -531,6 +865,13 @@ interface Window {
       searchRepositoryPullRequests: (
         options: SearchRepositoryPullRequestsOptions
       ) => Promise<GitHubPullRequestSearchResult>
+      getPullRequestDetail: (owner: string, repo: string, number: number) => Promise<GitHubPullRequestDetail>
+      createPullRequestComment: (
+        owner: string,
+        repo: string,
+        number: number,
+        body: string
+      ) => Promise<GitHubPullRequestComment>
     }
     repositories: {
       getViewerState: (owner: string, repo: string) => Promise<GitHubRepositoryViewerState>
@@ -584,6 +925,13 @@ interface Window {
         path: string
         config: LocalConfig
       }>
+    }
+    bookmarks: {
+      get: () => Promise<StoredWorkspaceBookmarksInfo>
+      update: (payload: StoredWorkspaceBookmarks) => Promise<StoredWorkspaceBookmarksInfo>
+    }
+    links: {
+      openGitHubUrl: (url: string) => Promise<void>
     }
     windowControls: {
       getState: () => Promise<WindowControlsState>

@@ -32,11 +32,92 @@ export interface GitHubAccountProfile {
   company: string | null
   location: string | null
   blog: string | null
+  email: string | null
+  twitterUsername: string | null
   url: string
   followers: number
   following: number
   publicRepos: number
+  publicGists: number
+  createdAt: string | null
+  updatedAt: string | null
+  hireable: boolean | null
   type: GitHubAccountProfileType
+}
+
+export interface GitHubAccountSocialAccount {
+  provider: string
+  displayName: string
+  url: string
+}
+
+export interface GitHubAccountRepository {
+  id: number
+  name: string
+  nameWithOwner: string
+  owner: string
+  ownerAvatarUrl: string | null
+  description: string | null
+  isPrivate: boolean
+  visibility: GitHubRepositoryVisibility
+  isFork: boolean
+  isArchived: boolean
+  isTemplate: boolean
+  primaryLanguage: string | null
+  primaryLanguageColor: string | null
+  stars: number
+  forks: number
+  topics: string[]
+  homepageUrl: string | null
+  pushedAt: string | null
+  updatedAt: string | null
+  url: string
+}
+
+export interface GitHubAccountRepositoryPage {
+  items: GitHubAccountRepository[]
+  totalCount: number
+  page: number
+  perPage: number
+  hasNextPage: boolean
+  incompleteResults: boolean
+}
+
+export interface GitHubAccountContributionDay {
+  date: string
+  contributionCount: number
+  color: string
+  weekday: number
+}
+
+export interface GitHubAccountContributionWeek {
+  firstDay: string
+  days: GitHubAccountContributionDay[]
+}
+
+export interface GitHubAccountContributionYear {
+  year: number
+  totalContributions: number
+  restrictedContributionsCount: number
+  commitContributions: number
+  issueContributions: number
+  pullRequestContributions: number
+  pullRequestReviewContributions: number
+  weeks: GitHubAccountContributionWeek[]
+}
+
+export interface GitHubAccountOverview {
+  profile: GitHubAccountProfile
+  organizations: GitHubOrganization[]
+  socialAccounts: GitHubAccountSocialAccount[]
+  pinnedRepositories: GitHubAccountRepository[]
+  readme: GitHubRepositoryDocument | null
+  contributionYears: number[]
+}
+
+export interface GitHubAccountViewerState {
+  isFollowing: boolean
+  missingScopes: string[]
 }
 
 export interface GitHubRepository {
@@ -259,6 +340,24 @@ export type GitHubPullRequestState =
 
 export type GitHubPullRequestSearchState = 'open' | 'closed' | 'all'
 
+export type GitHubPullRequestReviewDecision =
+  | 'approved'
+  | 'changes_requested'
+  | 'review_required'
+
+export type GitHubPullRequestReviewState =
+  | 'approved'
+  | 'changes_requested'
+  | 'commented'
+  | 'dismissed'
+  | 'pending'
+
+export type GitHubPullRequestReviewerType =
+  | 'user'
+  | 'team'
+  | 'mannequin'
+  | 'unknown'
+
 export type GitHubIssueState =
   | 'open'
   | 'completed'
@@ -325,6 +424,67 @@ export interface GitHubPullRequestSearchResult {
   perPage: number
   hasNextPage: boolean
   incompleteResults: boolean
+}
+
+export interface GitHubPullRequestBranch {
+  name: string
+  repository: string | null
+  url: string | null
+}
+
+export interface GitHubPullRequestDiffStats {
+  additions: number
+  deletions: number
+  changedFiles: number
+}
+
+export interface GitHubPullRequestStatusSummary {
+  ciState: GitHubCiState | null
+  checksUrl: string | null
+  mergeStateStatus: string | null
+}
+
+export interface GitHubPullRequestReviewRequest {
+  id: string
+  reviewer: GitHubActor
+  reviewerType: GitHubPullRequestReviewerType
+  asCodeOwner: boolean
+}
+
+export interface GitHubPullRequestReviewSummary {
+  id: string
+  author: GitHubActor
+  state: GitHubPullRequestReviewState
+  body: string
+  createdAt: string
+  updatedAt: string
+  submittedAt: string | null
+  authorAssociation: string
+  url: string
+}
+
+export interface GitHubPullRequestLinkedIssue {
+  id: string
+  owner: string
+  repo: string
+  repository: string
+  number: number
+  title: string
+  state: GitHubIssueState
+  url: string
+}
+
+export interface GitHubPullRequestCommitSummary {
+  id: string
+  oid: string
+  abbreviatedOid: string
+  messageHeadline: string
+  authoredDate: string
+  committedDate: string
+  author: GitHubActor
+  authorIsGitHubUser: boolean
+  ciState: GitHubCiState | null
+  url: string
 }
 
 export interface GitHubIssue {
@@ -437,6 +597,117 @@ export interface GitHubIssueDetail {
   hasUpdates: boolean
 }
 
+export type GitHubPullRequestTimelineEventType =
+  | 'assigned'
+  | 'unassigned'
+  | 'labeled'
+  | 'unlabeled'
+  | 'closed'
+  | 'reopened'
+  | 'renamed'
+  | 'cross-referenced'
+  | 'mentioned'
+  | 'reviewed'
+  | 'review-requested'
+  | 'review-request-removed'
+  | 'review-dismissed'
+  | 'ready-for-review'
+  | 'convert-to-draft'
+  | 'committed'
+  | 'merged'
+  | 'base-ref-changed'
+  | 'base-ref-deleted'
+  | 'base-ref-force-pushed'
+  | 'head-ref-deleted'
+  | 'head-ref-force-pushed'
+  | 'head-ref-restored'
+  | 'automatic-base-change-failed'
+  | 'automatic-base-change-succeeded'
+  | 'auto-merge-enabled'
+  | 'auto-merge-disabled'
+  | 'auto-rebase-enabled'
+  | 'auto-squash-enabled'
+  | 'added-to-merge-queue'
+  | 'removed-from-merge-queue'
+  | 'milestoned'
+  | 'demilestoned'
+  | 'connected'
+  | 'disconnected'
+  | 'comment-deleted'
+  | 'referenced'
+  | 'generic'
+
+export interface GitHubPullRequestTimelineReference {
+  type: string
+  repository?: string
+  number?: number
+  title?: string
+  url?: string | null
+}
+
+export interface GitHubPullRequestTimelineEvent {
+  id: string
+  type: GitHubPullRequestTimelineEventType
+  actor: GitHubActor
+  createdAt: string
+  body?: string | null
+  text?: string | null
+  label?: string | null
+  milestone?: string | null
+  from?: string | null
+  to?: string | null
+  ref?: string | null
+  beforeCommit?: string | null
+  afterCommit?: string | null
+  reason?: string | null
+  url?: string | null
+  commit?: GitHubPullRequestCommitSummary | null
+  assignee?: GitHubActor
+  reviewer?: GitHubActor
+  reviewerType?: GitHubPullRequestReviewerType
+  reviewState?: GitHubPullRequestReviewState
+  source?: GitHubPullRequestTimelineReference
+}
+
+export type GitHubPullRequestComment = GitHubIssueComment
+
+export interface GitHubPullRequestDetail {
+  id: string
+  owner: string
+  repo: string
+  repository: string
+  number: number
+  title: string
+  state: GitHubPullRequestState
+  ciState: GitHubCiState | null
+  author: GitHubActor
+  createdAt: string
+  updatedAt: string
+  closedAt: string | null
+  mergedAt: string | null
+  mergedBy: GitHubActor | null
+  body: string
+  labels: string[]
+  assignees: GitHubActor[]
+  milestone: GitHubIssueMilestone | null
+  participants: GitHubActor[]
+  reviewRequests: GitHubPullRequestReviewRequest[]
+  latestReviews: GitHubPullRequestReviewSummary[]
+  reviewDecision: GitHubPullRequestReviewDecision | null
+  baseBranch: GitHubPullRequestBranch
+  headBranch: GitHubPullRequestBranch
+  isCrossRepository: boolean
+  maintainerCanModify: boolean
+  diffStats: GitHubPullRequestDiffStats
+  status: GitHubPullRequestStatusSummary
+  linkedIssues: GitHubPullRequestLinkedIssue[]
+  comments: GitHubPullRequestComment[]
+  timelineEvents: GitHubPullRequestTimelineEvent[]
+  reactions: GitHubIssueReaction[]
+  url: string
+  hasUpdates: boolean
+}
+
 export interface GitHubDeviceAuthorization {
   deviceCode: string
   userCode: string
@@ -497,6 +768,8 @@ export interface GitHubClient {
   listViewerPullRequests(options?: ListWorkspaceItemsOptions): Promise<GitHubPullRequest[]>
   listRepositoryPullRequests(options: ListRepositoryWorkspaceItemsOptions): Promise<GitHubPullRequest[]>
   searchRepositoryPullRequests(options: SearchRepositoryPullRequestsOptions): Promise<GitHubPullRequestSearchResult>
+  getPullRequestDetail(options: GetPullRequestDetailOptions): Promise<GitHubPullRequestDetail>
+  createPullRequestComment(options: CreatePullRequestCommentOptions): Promise<GitHubPullRequestComment>
   listIssueCategory(options: ListIssueCategoryOptions): Promise<GitHubIssue[]>
   listViewerIssues(options?: ListWorkspaceItemsOptions): Promise<GitHubIssue[]>
   listRepositoryIssues(options: ListRepositoryWorkspaceItemsOptions): Promise<GitHubIssue[]>
@@ -504,6 +777,12 @@ export interface GitHubClient {
   getIssueDetail(options: GetIssueDetailOptions): Promise<GitHubIssueDetail>
   createIssueComment(options: CreateIssueCommentOptions): Promise<GitHubIssueComment>
   getAccountProfile(login: string): Promise<GitHubAccountProfile>
+  getAccountOverview(login: string): Promise<GitHubAccountOverview>
+  getAccountContributions(options: AccountContributionsOptions): Promise<GitHubAccountContributionYear>
+  listAccountRepositories(options: ListAccountRepositoriesOptions): Promise<GitHubAccountRepositoryPage>
+  listAccountStarredRepositories(options: ListAccountRepositoriesOptions): Promise<GitHubAccountRepositoryPage>
+  getAccountViewerState(login: string): Promise<GitHubAccountViewerState>
+  setAccountFollowed(options: SetAccountFollowedOptions): Promise<void>
   listViewerOrganizations(): Promise<GitHubOrganization[]>
   listOrganizationRepositories(owner: string): Promise<GitHubRepository[]>
   resolveWorkspaceGoto(input: string): Promise<GitHubWorkspaceGotoResult>
@@ -559,6 +838,14 @@ export interface CreateIssueCommentOptions extends GetIssueDetailOptions {
   body: string
 }
 
+export interface GetPullRequestDetailOptions extends RepositoryOptions {
+  number: number
+}
+
+export interface CreatePullRequestCommentOptions extends GetPullRequestDetailOptions {
+  body: string
+}
+
 export interface SearchRepositoryPullRequestsOptions extends RepositoryOptions {
   page?: number
   perPage?: number
@@ -578,6 +865,23 @@ export interface SearchWorkspaceOptions {
   query: string
   page?: number
   perPage?: number
+}
+
+export interface ListAccountRepositoriesOptions {
+  login: string
+  page?: number
+  perPage?: number
+  search?: string
+}
+
+export interface AccountContributionsOptions {
+  login: string
+  year?: number
+}
+
+export interface SetAccountFollowedOptions {
+  login: string
+  followed: boolean
 }
 
 export interface RepositoryOptions {

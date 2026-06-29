@@ -3,9 +3,11 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { is } from '@electron-toolkit/utils'
 import { registerAccountsIpc } from './accounts'
 import { initializeAuth, registerAuthIpc } from './auth'
+import { registerBookmarksIpc } from './bookmarks'
 import { initializeConfig, registerConfigIpc } from './config'
 import { configureDevRemoteDebugging } from './debug'
 import { registerIssuesIpc } from './issues'
+import { registerLinksIpc } from './links'
 import { registerPullsIpc } from './pulls'
 import { registerRepositoriesIpc } from './repositories'
 import { registerSearchIpc } from './search'
@@ -69,8 +71,10 @@ void app.whenReady().then(() => {
   app.setAppUserModelId('dev.oh-my-github.client')
   registerAccountsIpc()
   registerAuthIpc()
+  registerBookmarksIpc()
   registerConfigIpc()
   registerIssuesIpc()
+  registerLinksIpc()
   registerPullsIpc()
   registerRepositoriesIpc()
   registerSearchIpc()

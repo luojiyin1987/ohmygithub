@@ -1,7 +1,15 @@
 import type {
   CreateIssueCommentOptions,
+  CreatePullRequestCommentOptions,
+  AccountContributionsOptions,
   GetIssueDetailOptions,
+  GetPullRequestDetailOptions,
+  GitHubAccountContributionYear,
+  GitHubAccountOverview,
   GitHubAccountProfile,
+  GitHubAccountRepository,
+  GitHubAccountRepositoryPage,
+  GitHubAccountViewerState,
   GitHubClient,
   GitHubIssue,
   GitHubIssueSearchResult,
@@ -9,6 +17,8 @@ import type {
   GitHubIssueDetail,
   GitHubOrganization,
   GitHubPullRequest,
+  GitHubPullRequestComment,
+  GitHubPullRequestDetail,
   GitHubPullRequestSearchResult,
   GitHubRepository,
   GitHubRepositoryFileNode,
@@ -21,6 +31,7 @@ import type {
   GitHubWorkspaceSearchItem,
   GitHubWorkspaceSearchResult,
   GitHubWorkspaceItem,
+  ListAccountRepositoriesOptions,
   ListIssueCategoryOptions,
   ListPullRequestCategoryOptions,
   ListRepositoryWorkspaceItemsOptions,
@@ -31,6 +42,7 @@ import type {
   SearchRepositoryIssuesOptions,
   SearchRepositoryPullRequestsOptions,
   SearchWorkspaceOptions,
+  SetAccountFollowedOptions,
   SetRepositoryStarredOptions,
   SetRepositoryWatchingOptions
 } from './types'
@@ -139,6 +151,34 @@ const users = [
   },
 ]
 
+const accountOrganizations: Record<string, GitHubOrganization[]> = {
+  acbox: organizations.slice(0, 3),
+  octocat: organizations.slice(2, 5),
+  maya: organizations.slice(0, 1),
+}
+
+const accountSocialAccounts: Record<string, GitHubAccountOverview['socialAccounts']> = {
+  acbox: [
+    {
+      provider: 'x',
+      displayName: '@AcboxLiu',
+      url: 'https://x.com/AcboxLiu',
+    },
+    {
+      provider: 'generic',
+      displayName: 'Telegram',
+      url: 'https://t.me/acboxawa',
+    },
+  ],
+  octocat: [
+    {
+      provider: 'mastodon',
+      displayName: '@octocat@github.social',
+      url: 'https://github.social/@octocat',
+    },
+  ],
+}
+
 const repositoriesByOrganization: Record<string, GitHubRepository[]> = {
   'oh-my-github': createMockRepositories('oh-my-github', [
     'client',
@@ -160,6 +200,53 @@ const repositoriesByOrganization: Record<string, GitHubRepository[]> = {
   octokit: createMockRepositories('octokit', ['octokit.js', 'rest.js', 'graphql.js']),
 }
 
+const repositoriesByAccount: Record<string, GitHubAccountRepository[]> = {
+  acbox: createMockAccountRepositories('acbox', [
+    'profile',
+    'oh-my-github-labs',
+    'desktop-workbench',
+    'api-playground',
+    'vue-rendering-notes',
+    'electron-auth-device-flow',
+    'github-activity-sandbox',
+    'private-notes',
+    'markdown-rich-content',
+    'workflow-snapshots',
+    'repository-cards',
+    'contribution-visualizer',
+    'oauth-scope-lab',
+    'tiny-utilities',
+  ]),
+  octocat: createMockAccountRepositories('octocat', [
+    'Hello-World',
+    'Spoon-Knife',
+    'linguist',
+    'hubot',
+    'training-kit',
+  ]),
+  maya: createMockAccountRepositories('maya', [
+    'review-notes',
+    'desktop-triage',
+    'mock-api-fixtures',
+  ]),
+}
+
+const starredRepositoriesByAccount: Record<string, GitHubAccountRepository[]> = {
+  acbox: [
+    ...createMockAccountRepositories('vuejs', ['core', 'router', 'pinia']),
+    ...createMockAccountRepositories('electron', ['electron', 'fiddle']),
+    ...createMockAccountRepositories('octokit', ['octokit.js', 'graphql.js', 'rest.js']),
+    ...createMockAccountRepositories('github', ['docs', 'hub']),
+  ],
+  octocat: [
+    ...createMockAccountRepositories('github', ['docs', 'training-kit']),
+    ...createMockAccountRepositories('octokit', ['octokit.js']),
+  ],
+  maya: [
+    ...createMockAccountRepositories('oh-my-github', ['client', 'api', 'ui']),
+  ],
+}
+
 const pullRequestsByRepository: Record<string, GitHubPullRequest[]> = {
   'oh-my-github/client': createMockPullRequests('oh-my-github', 'client', ['Wire workspace sidebar states', 'Polish Electron titlebar', 'Draft issue detail routes']),
   'oh-my-github/api': createMockPullRequests('oh-my-github', 'api', ['Add typed GitHub modules', 'Normalize notification updates']),
@@ -173,7 +260,9 @@ const issuesByRepository: Record<string, GitHubIssue[]> = {
 }
 
 const viewerStateByRepository = new Map<string, GitHubRepositoryViewerState>()
+const followedAccounts = new Set(['octocat'])
 const mockIssueCommentsByIssue = new Map<string, GitHubIssueComment[]>()
+const mockPullRequestCommentsByPullRequest = new Map<string, GitHubPullRequestComment[]>()
 
 export class MockGitHubClient implements GitHubClient {
   async getAccountProfile(login: string): Promise<GitHubAccountProfile> {
@@ -195,12 +284,72 @@ export class MockGitHubClient implements GitHubClient {
       company: organization ? 'GitHub' : null,
       location: 'Local workspace',
       blog: `https://github.com/${account.login}`,
+      email: user ? `${account.login}@example.dev` : null,
+      twitterUsername: user ? `${account.login}_dev` : null,
       url: `https://github.com/${account.login}`,
       followers: account.id * 2,
       following: account.id,
       publicRepos: repositoriesByOrganization[account.login]?.length ?? 12,
+      publicGists: user ? 8 : 0,
+      createdAt: new Date(Date.UTC(2020, 0, 10 + account.id % 20)).toISOString(),
+      updatedAt: new Date(Date.UTC(2026, 5, 27)).toISOString(),
+      hireable: user ? account.login === 'maya' : null,
       type: organization ? 'Organization' : 'User',
     }
+  }
+
+  async getAccountOverview(login: string): Promise<GitHubAccountOverview> {
+    const profile = await this.getAccountProfile(login)
+    const isOrganization = profile.type === 'Organization'
+
+    return {
+      profile,
+      organizations: isOrganization ? [] : accountOrganizations[profile.login] ?? [],
+      socialAccounts: isOrganization ? [] : accountSocialAccounts[profile.login] ?? [],
+      pinnedRepositories: getMockAccountRepositories(profile.login).slice(0, profile.login === 'maya' ? 0 : 6),
+      readme: profile.login === 'maya'
+        ? null
+        : isOrganization
+          ? createMockOrganizationReadme(profile.login)
+          : createMockAccountReadme(profile.login),
+      contributionYears: isOrganization ? [] : [2026, 2025, 2024, 2023, 2022],
+    }
+  }
+
+  async getAccountContributions(options: AccountContributionsOptions): Promise<GitHubAccountContributionYear> {
+    return createMockContributionYear(options.year ?? 2026, options.login)
+  }
+
+  async listAccountRepositories(options: ListAccountRepositoriesOptions): Promise<GitHubAccountRepositoryPage> {
+    return createMockAccountRepositoryPage(
+      filterAccountRepositories(getMockAccountRepositories(options.login), options.search),
+      options.page ?? 1,
+      options.perPage ?? 12,
+    )
+  }
+
+  async listAccountStarredRepositories(options: ListAccountRepositoriesOptions): Promise<GitHubAccountRepositoryPage> {
+    return createMockAccountRepositoryPage(
+      filterAccountRepositories(starredRepositoriesByAccount[options.login] ?? [], options.search),
+      options.page ?? 1,
+      options.perPage ?? 12,
+    )
+  }
+
+  async getAccountViewerState(login: string): Promise<GitHubAccountViewerState> {
+    return {
+      isFollowing: followedAccounts.has(login),
+      missingScopes: [],
+    }
+  }
+
+  async setAccountFollowed(options: SetAccountFollowedOptions): Promise<void> {
+    if (options.followed) {
+      followedAccounts.add(options.login)
+      return
+    }
+
+    followedAccounts.delete(options.login)
   }
 
   async listViewerOrganizations(): Promise<GitHubOrganization[]> {
@@ -430,6 +579,44 @@ export class MockGitHubClient implements GitHubClient {
     }
   }
 
+  async getPullRequestDetail(options: GetPullRequestDetailOptions): Promise<GitHubPullRequestDetail> {
+    const pullRequest = pullRequestsByRepository[repositoryKey(options)]
+      ?.find((item) => item.number === options.number)
+
+    return createMockPullRequestDetail(options, pullRequest)
+  }
+
+  async createPullRequestComment(options: CreatePullRequestCommentOptions): Promise<GitHubPullRequestComment> {
+    const body = options.body.trim()
+
+    if (!body) {
+      throw new Error('Comment body is required')
+    }
+
+    const key = pullRequestThreadKey(options)
+    const createdAt = new Date().toISOString()
+    const comment: GitHubPullRequestComment = {
+      id: `mock-pr-comment:${repositoryKey(options)}:${options.number}:created:${Date.now()}`,
+      author: {
+        login: 'acbox',
+        avatarUrl: 'https://avatars.githubusercontent.com/u/9919?s=80&v=4',
+      },
+      body,
+      createdAt,
+      updatedAt: createdAt,
+      authorAssociation: 'OWNER',
+      reactions: [],
+      url: `https://github.com/${repositoryKey(options)}/pull/${options.number}#issuecomment-mock`,
+    }
+
+    mockPullRequestCommentsByPullRequest.set(key, [
+      ...(mockPullRequestCommentsByPullRequest.get(key) ?? []),
+      comment,
+    ])
+
+    return comment
+  }
+
   async listViewerIssues(): Promise<GitHubIssue[]> {
     return Object.values(issuesByRepository).flat().slice(0, 8)
   }
@@ -651,8 +838,212 @@ function issueThreadKey(options: GetIssueDetailOptions): string {
   return `${repositoryKey(options)}#${options.number}`
 }
 
+function pullRequestThreadKey(options: GetPullRequestDetailOptions): string {
+  return `${repositoryKey(options)}#${options.number}`
+}
+
 function mockRepositoryStarCount(options: RepositoryOptions): number {
   return Array.from(repositoryKey(options)).reduce((count, character) => count + character.charCodeAt(0), 0)
+}
+
+function createMockAccountRepositories(owner: string, names: string[]): GitHubAccountRepository[] {
+  const languages = ['TypeScript', 'Vue', 'Go', 'Rust', 'Markdown']
+
+  return names.map((name, index) => {
+    const key = `${owner}/${name}`
+    const isPrivate = name.includes('private') || index % 9 === 0
+
+    return {
+      id: Array.from(key).reduce((sum, character) => sum + character.charCodeAt(0), 0),
+      name,
+      nameWithOwner: key,
+      owner,
+      ownerAvatarUrl: `https://github.com/${encodeURIComponent(owner)}.png?size=64`,
+      description: `${name} workspace notes, GitHub API fixtures, and desktop client experiments.`,
+      isPrivate,
+      visibility: isPrivate ? 'private' : 'public',
+      isFork: name.includes('fork') || index % 7 === 0,
+      isArchived: index % 11 === 0,
+      isTemplate: name.includes('template'),
+      primaryLanguage: languages[index % languages.length],
+      primaryLanguageColor: ['#3178c6', '#41b883', '#00add8', '#dea584', '#083fa1'][index % 5],
+      stars: 32 + (index + 1) * 17,
+      forks: 4 + index * 3,
+      topics: ['desktop', 'github', 'workflow'].slice(0, 1 + (index % 3)),
+      homepageUrl: index % 3 === 0 ? `https://${name}.example.dev` : null,
+      pushedAt: new Date(Date.UTC(2026, 5, 27 - index, 8)).toISOString(),
+      updatedAt: new Date(Date.UTC(2026, 5, 27 - index, 10)).toISOString(),
+      url: `https://github.com/${key}`,
+    }
+  })
+}
+
+function getMockAccountRepositories(login: string): GitHubAccountRepository[] {
+  return repositoriesByAccount[login]
+    ?? (repositoriesByOrganization[login] ?? []).map(mapMockOrganizationRepository)
+}
+
+function mapMockOrganizationRepository(repository: GitHubRepository): GitHubAccountRepository {
+  return {
+    id: repository.id,
+    name: repository.name,
+    nameWithOwner: repository.nameWithOwner,
+    owner: repository.owner,
+    ownerAvatarUrl: `https://github.com/${encodeURIComponent(repository.owner)}.png?size=64`,
+    description: repository.description,
+    isPrivate: repository.isPrivate,
+    visibility: repository.isPrivate ? 'private' : 'public',
+    isFork: false,
+    isArchived: false,
+    isTemplate: false,
+    primaryLanguage: null,
+    primaryLanguageColor: null,
+    stars: 0,
+    forks: 0,
+    topics: [],
+    homepageUrl: null,
+    pushedAt: repository.updatedAt,
+    updatedAt: repository.updatedAt,
+    url: repository.url,
+  }
+}
+
+function createMockAccountRepositoryPage(
+  repositories: GitHubAccountRepository[],
+  rawPage: number,
+  rawPerPage: number,
+): GitHubAccountRepositoryPage {
+  const page = Math.max(1, Math.floor(rawPage))
+  const perPage = Math.max(1, Math.min(100, Math.floor(rawPerPage)))
+  const offset = (page - 1) * perPage
+
+  return {
+    items: repositories.slice(offset, offset + perPage),
+    totalCount: repositories.length,
+    page,
+    perPage,
+    hasNextPage: offset + perPage < repositories.length,
+    incompleteResults: false,
+  }
+}
+
+function filterAccountRepositories(
+  repositories: GitHubAccountRepository[],
+  search: string | undefined,
+): GitHubAccountRepository[] {
+  const terms = String(search ?? '').trim().toLowerCase().split(/\s+/).filter(Boolean)
+  if (terms.length === 0) return repositories
+
+  return repositories.filter((repository) => {
+    const haystack = [
+      repository.name,
+      repository.nameWithOwner,
+      repository.owner,
+      repository.description ?? '',
+      repository.primaryLanguage ?? '',
+      ...repository.topics,
+    ].join(' ').toLowerCase()
+
+    return terms.every((term) => haystack.includes(term))
+  })
+}
+
+function createMockAccountReadme(login: string): GitHubAccountOverview['readme'] {
+  return {
+    kind: 'readme',
+    title: 'README',
+    path: 'README.md',
+    url: `https://github.com/${login}/${login}/blob/main/README.md`,
+    format: 'markdown',
+    content: [
+      `# ${login}`,
+      '',
+      'Building a focused desktop GitHub workspace.',
+      '',
+      '- Reads repository and account data through the main-process bridge.',
+      '- Keeps renderer state typed and cacheable.',
+      '- Uses shared cards, navigation, and Markdown rendering.',
+    ].join('\n'),
+  }
+}
+
+function createMockOrganizationReadme(login: string): GitHubAccountOverview['readme'] {
+  return {
+    kind: 'readme',
+    title: 'README',
+    path: 'profile/README.md',
+    url: `https://github.com/${login}/.github/blob/main/profile/README.md`,
+    format: 'markdown',
+    content: [
+      `# ${login}`,
+      '',
+      'Organization profile README rendered from `.github/profile/README.md`.',
+      '',
+      '- Organization accounts keep repository browsing and follow actions.',
+      '- Stars and contribution heatmaps are intentionally hidden for organizations.',
+    ].join('\n'),
+  }
+}
+
+function createMockContributionYear(year: number, login: string): GitHubAccountContributionYear {
+  const weeks: GitHubAccountContributionYear['weeks'] = []
+  const start = new Date(Date.UTC(year, 0, 1))
+  start.setUTCDate(start.getUTCDate() - start.getUTCDay())
+  const end = new Date(Date.UTC(year, 11, 31))
+  end.setUTCDate(end.getUTCDate() + (6 - end.getUTCDay()))
+  const current = new Date(start)
+  let totalContributions = 0
+
+  while (current <= end) {
+    const firstDay = current.toISOString().slice(0, 10)
+    const days: GitHubAccountContributionYear['weeks'][number]['days'] = []
+
+    for (let index = 0; index < 7; index += 1) {
+      const date = current.toISOString().slice(0, 10)
+      const count = current.getUTCFullYear() === year
+        ? mockContributionCount(login, current)
+        : 0
+
+      totalContributions += count
+      days.push({
+        date,
+        contributionCount: count,
+        color: mockContributionColor(count),
+        weekday: current.getUTCDay(),
+      })
+      current.setUTCDate(current.getUTCDate() + 1)
+    }
+
+    weeks.push({ firstDay, days })
+  }
+
+  return {
+    year,
+    totalContributions,
+    restrictedContributionsCount: year === 2026 ? 42 : 0,
+    commitContributions: Math.round(totalContributions * 0.74),
+    issueContributions: Math.round(totalContributions * 0.04),
+    pullRequestContributions: Math.round(totalContributions * 0.13),
+    pullRequestReviewContributions: Math.round(totalContributions * 0.09),
+    weeks,
+  }
+}
+
+function mockContributionCount(login: string, date: Date): number {
+  const seed = login.length + date.getUTCDate() + (date.getUTCMonth() + 1) * 3
+  if (date.getUTCDay() === 0 || seed % 11 === 0) return 0
+  if (seed % 7 === 0) return 9
+  if (seed % 5 === 0) return 5
+  if (seed % 3 === 0) return 2
+  return 1
+}
+
+function mockContributionColor(count: number): string {
+  if (count <= 0) return '#161b22'
+  if (count <= 2) return '#0e4429'
+  if (count <= 4) return '#006d32'
+  if (count <= 8) return '#26a641'
+  return '#39d353'
 }
 
 function createMockRepositoryOverview(options: RepositoryOptions): GitHubRepositoryOverview {
@@ -954,6 +1345,264 @@ function createMockIssues(owner: string, repo: string, titles: string[]): GitHub
     url: `https://github.com/${owner}/${repo}/issues/${index + 31}`,
     hasUpdates: index === 1,
   }))
+}
+
+function createMockPullRequestDetail(
+  options: GetPullRequestDetailOptions,
+  pullRequest?: GitHubPullRequest
+): GitHubPullRequestDetail {
+  const key = repositoryKey(options)
+  const title = pullRequest?.title ?? `Implement pull request conversations for ${options.repo}`
+  const author = pullRequest?.author ?? { login: 'acbox', avatarUrl: 'https://avatars.githubusercontent.com/u/9919?s=80&v=4' }
+  const updatedAt = pullRequest?.updatedAt ?? new Date(Date.UTC(2026, 5, 27, 8)).toISOString()
+  const createdAt = new Date(Date.UTC(2026, 5, 24, 9, 30)).toISOString()
+  const firstCommentAt = new Date(Date.UTC(2026, 5, 25, 13, 15)).toISOString()
+  const reviewAt = new Date(Date.UTC(2026, 5, 26, 8, 45)).toISOString()
+  const commitAuthor = author
+
+  return {
+    id: pullRequest?.id ?? `mock-pr:${key}:${options.number}`,
+    owner: options.owner,
+    repo: options.repo,
+    repository: key,
+    number: options.number,
+    title,
+    state: pullRequest?.state ?? 'open',
+    ciState: pullRequest?.ciState ?? 'success',
+    author,
+    createdAt,
+    updatedAt,
+    closedAt: pullRequest?.state === 'closed' || pullRequest?.state === 'merged' ? updatedAt : null,
+    mergedAt: pullRequest?.state === 'merged' ? updatedAt : null,
+    mergedBy: pullRequest?.state === 'merged'
+      ? { login: 'maya', avatarUrl: 'https://avatars.githubusercontent.com/u/69631?s=80&v=4' }
+      : null,
+    body: [
+      `This pull request wires the first conversation-focused detail surface for ${key}.`,
+      '',
+      'Included in the first slice:',
+      '',
+      '- PR body and comments',
+      '- review/request timeline rows',
+      '- branch and diff summary metadata',
+      '- linked issues in the sidebar',
+    ].join('\n'),
+    labels: pullRequest?.labels ?? ['workspace', 'review'],
+    assignees: [
+      { login: 'octo-lina', avatarUrl: 'https://avatars.githubusercontent.com/u/583231?s=80&v=4' },
+    ],
+    milestone: {
+      id: `mock-milestone:${key}:2`,
+      number: 2,
+      title: 'Pull request detail beta',
+      description: 'Conversation-first pull request detail data for the desktop workspace.',
+      dueOn: '2026-07-17T00:00:00.000Z',
+      state: 'open',
+      url: `https://github.com/${key}/milestone/2`,
+    },
+    participants: [
+      author,
+      { login: 'octo-lina', avatarUrl: 'https://avatars.githubusercontent.com/u/583231?s=80&v=4' },
+      { login: 'maya', avatarUrl: 'https://avatars.githubusercontent.com/u/69631?s=80&v=4' },
+    ],
+    reviewRequests: [
+      {
+        id: `mock-review-request:${key}:${options.number}:1`,
+        reviewer: { login: 'maya', avatarUrl: 'https://avatars.githubusercontent.com/u/69631?s=80&v=4' },
+        reviewerType: 'user',
+        asCodeOwner: false,
+      },
+    ],
+    latestReviews: [
+      {
+        id: `mock-review:${key}:${options.number}:1`,
+        author: { login: 'octo-lina', avatarUrl: 'https://avatars.githubusercontent.com/u/583231?s=80&v=4' },
+        state: 'commented',
+        body: 'The conversation layout matches the issue surface. Leaving one timeline note so the first version has realistic review data.',
+        createdAt: reviewAt,
+        updatedAt: reviewAt,
+        submittedAt: reviewAt,
+        authorAssociation: 'MEMBER',
+        url: `https://github.com/${key}/pull/${options.number}#pullrequestreview-1`,
+      },
+    ],
+    reviewDecision: 'review_required',
+    baseBranch: {
+      name: 'main',
+      repository: key,
+      url: `https://github.com/${key}`,
+    },
+    headBranch: {
+      name: 'codex/pr-conversations',
+      repository: key,
+      url: `https://github.com/${key}/tree/codex/pr-conversations`,
+    },
+    isCrossRepository: false,
+    maintainerCanModify: true,
+    diffStats: {
+      additions: 428,
+      deletions: 36,
+      changedFiles: 11,
+    },
+    status: {
+      ciState: pullRequest?.ciState ?? 'success',
+      checksUrl: `https://github.com/${key}/pull/${options.number}/checks`,
+      mergeStateStatus: 'CLEAN',
+    },
+    linkedIssues: [
+      {
+        id: `mock-linked-issue:${key}:31`,
+        owner: options.owner,
+        repo: options.repo,
+        repository: key,
+        number: 31,
+        title: 'Sidebar active item is too tall',
+        state: 'open',
+        url: `https://github.com/${key}/issues/31`,
+      },
+    ],
+    comments: [
+      {
+        id: `mock-pr-comment:${key}:${options.number}:1`,
+        author: { login: 'octo-lina', avatarUrl: 'https://avatars.githubusercontent.com/u/583231?s=80&v=4' },
+        body: 'The first conversation slice should reuse the issue timeline and keep commits/checks/review as explicit future entry points.',
+        createdAt: firstCommentAt,
+        updatedAt: firstCommentAt,
+        authorAssociation: 'MEMBER',
+        reactions: [
+          { content: 'thumbs-up', count: 4, viewerHasReacted: true },
+          { content: 'eyes', count: 1 },
+        ],
+        url: `https://github.com/${key}/pull/${options.number}#issuecomment-1`,
+      },
+      ...(mockPullRequestCommentsByPullRequest.get(pullRequestThreadKey(options)) ?? []),
+    ],
+    timelineEvents: [
+      {
+        id: `mock-pr-event:${key}:${options.number}:requested`,
+        type: 'review-requested',
+        actor: { login: 'acbox', avatarUrl: 'https://avatars.githubusercontent.com/u/9919?s=80&v=4' },
+        createdAt: new Date(Date.UTC(2026, 5, 24, 9, 45)).toISOString(),
+        reviewer: { login: 'maya', avatarUrl: 'https://avatars.githubusercontent.com/u/69631?s=80&v=4' },
+        reviewerType: 'user',
+      },
+      {
+        id: `mock-pr-event:${key}:${options.number}:branch`,
+        type: 'base-ref-changed',
+        actor: { login: 'acbox', avatarUrl: 'https://avatars.githubusercontent.com/u/9919?s=80&v=4' },
+        createdAt: new Date(Date.UTC(2026, 5, 24, 10, 15)).toISOString(),
+        from: 'develop',
+        to: 'main',
+      },
+      {
+        id: `mock-pr-event:${key}:${options.number}:commit-1`,
+        type: 'committed',
+        actor: commitAuthor,
+        createdAt: new Date(Date.UTC(2026, 5, 24, 10, 30)).toISOString(),
+        afterCommit: '11a72ba',
+        url: `https://github.com/${key}/commit/11a72ba`,
+        commit: {
+          id: `mock-pr-commit:${key}:${options.number}:1`,
+          oid: '11a72ba9a7b1e724e7f72693e3f2c9fa12e54321',
+          abbreviatedOid: '11a72ba',
+          messageHeadline: 'feat: add context frag phase one',
+          authoredDate: new Date(Date.UTC(2026, 5, 24, 10, 30)).toISOString(),
+          committedDate: new Date(Date.UTC(2026, 5, 24, 10, 30)).toISOString(),
+          author: commitAuthor,
+          authorIsGitHubUser: true,
+          ciState: null,
+          url: `https://github.com/${key}/commit/11a72ba`,
+        },
+      },
+      {
+        id: `mock-pr-event:${key}:${options.number}:commit-2`,
+        type: 'committed',
+        actor: commitAuthor,
+        createdAt: new Date(Date.UTC(2026, 5, 24, 10, 32)).toISOString(),
+        afterCommit: 'fe427d5',
+        url: `https://github.com/${key}/commit/fe427d5`,
+        commit: {
+          id: `mock-pr-commit:${key}:${options.number}:2`,
+          oid: 'fe427d5a7b1e724e7f72693e3f2c9fa12e54322',
+          abbreviatedOid: 'fe427d5',
+          messageHeadline: 'feat: harden context frag contracts',
+          authoredDate: new Date(Date.UTC(2026, 5, 24, 10, 32)).toISOString(),
+          committedDate: new Date(Date.UTC(2026, 5, 24, 10, 32)).toISOString(),
+          author: commitAuthor,
+          authorIsGitHubUser: true,
+          ciState: 'pending',
+          url: `https://github.com/${key}/commit/fe427d5`,
+        },
+      },
+      {
+        id: `mock-pr-event:${key}:${options.number}:commit-3`,
+        type: 'committed',
+        actor: commitAuthor,
+        createdAt: new Date(Date.UTC(2026, 5, 24, 10, 34)).toISOString(),
+        afterCommit: 'f5f1b3b',
+        url: `https://github.com/${key}/commit/f5f1b3b`,
+        commit: {
+          id: `mock-pr-commit:${key}:${options.number}:3`,
+          oid: 'f5f1b3ba7b1e724e7f72693e3f2c9fa12e54323',
+          abbreviatedOid: 'f5f1b3b',
+          messageHeadline: 'fix: clarify context frag ref durability with a deliberately long headline',
+          authoredDate: new Date(Date.UTC(2026, 5, 24, 10, 34)).toISOString(),
+          committedDate: new Date(Date.UTC(2026, 5, 24, 10, 34)).toISOString(),
+          author: commitAuthor,
+          authorIsGitHubUser: true,
+          ciState: 'success',
+          url: `https://github.com/${key}/commit/f5f1b3b`,
+        },
+      },
+      {
+        id: `mock-pr-event:${key}:${options.number}:force-push`,
+        type: 'head-ref-force-pushed',
+        actor: commitAuthor,
+        createdAt: new Date(Date.UTC(2026, 5, 24, 10, 45)).toISOString(),
+        ref: 'codex/pr-conversations',
+        beforeCommit: 'fe427d5',
+        afterCommit: 'f5f1b3b',
+        url: `https://github.com/${key}/commit/f5f1b3b`,
+      },
+      {
+        id: `mock-pr-event:${key}:${options.number}:review`,
+        type: 'reviewed',
+        actor: { login: 'octo-lina', avatarUrl: 'https://avatars.githubusercontent.com/u/583231?s=80&v=4' },
+        createdAt: reviewAt,
+        body: 'The API shape looks good for a read-only v1.',
+        reviewState: 'commented',
+        url: `https://github.com/${key}/pull/${options.number}#pullrequestreview-1`,
+      },
+      {
+        id: `mock-pr-event:${key}:${options.number}:linked`,
+        type: 'connected',
+        actor: { login: 'maya', avatarUrl: 'https://avatars.githubusercontent.com/u/69631?s=80&v=4' },
+        createdAt: new Date(Date.UTC(2026, 5, 26, 9)).toISOString(),
+        source: {
+          type: 'issue',
+          repository: key,
+          number: 31,
+          title: 'Sidebar active item is too tall',
+          url: `https://github.com/${key}/issues/31`,
+        },
+      },
+      {
+        id: `mock-pr-event:${key}:${options.number}:merged`,
+        type: 'merged',
+        actor: { login: 'maya', avatarUrl: 'https://avatars.githubusercontent.com/u/69631?s=80&v=4' },
+        createdAt: new Date(Date.UTC(2026, 5, 26, 10)).toISOString(),
+        ref: 'main',
+        afterCommit: '71c683f',
+        url: `https://github.com/${key}/commit/71c683f`,
+      },
+    ],
+    reactions: [
+      { content: 'rocket', count: 2 },
+      { content: 'heart', count: 1 },
+    ],
+    url: pullRequest?.url ?? `https://github.com/${key}/pull/${options.number}`,
+    hasUpdates: pullRequest?.hasUpdates ?? false,
+  }
 }
 
 function createMockIssueDetail(options: GetIssueDetailOptions, issue?: GitHubIssue): GitHubIssueDetail {

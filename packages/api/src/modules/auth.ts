@@ -34,6 +34,7 @@ export const defaultGitHubOAuthScopes = [
   'notifications',
   'read:user',
   'user:email',
+  'user:follow',
   'read:org',
   'read:project',
   'read:packages',

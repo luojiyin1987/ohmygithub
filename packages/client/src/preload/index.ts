@@ -8,6 +8,13 @@ const api = {
   },
   accounts: {
     getProfile: (login: string) => ipcRenderer.invoke('accounts:get-profile', login),
+    getOverview: (login: string) => ipcRenderer.invoke('accounts:get-overview', login),
+    getContributions: (options: unknown) => ipcRenderer.invoke('accounts:get-contributions', options),
+    listRepositories: (options: unknown) => ipcRenderer.invoke('accounts:list-repositories', options),
+    listStarredRepositories: (options: unknown) =>
+      ipcRenderer.invoke('accounts:list-starred-repositories', options),
+    getViewerState: (login: string) => ipcRenderer.invoke('accounts:get-viewer-state', login),
+    setFollowed: (options: unknown) => ipcRenderer.invoke('accounts:set-followed', options),
     listOrganizations: () => ipcRenderer.invoke('accounts:list-organizations'),
     listOrganizationRepositories: (owner: string) =>
       ipcRenderer.invoke('accounts:list-organization-repositories', owner)
@@ -30,7 +37,11 @@ const api = {
     listRepositoryPullRequests: (owner: string, repo: string) =>
       ipcRenderer.invoke('pulls:list-repository', owner, repo),
     searchRepositoryPullRequests: (options: unknown) =>
-      ipcRenderer.invoke('pulls:search-repository', options)
+      ipcRenderer.invoke('pulls:search-repository', options),
+    getPullRequestDetail: (owner: string, repo: string, number: number) =>
+      ipcRenderer.invoke('pulls:get-detail', owner, repo, number),
+    createPullRequestComment: (owner: string, repo: string, number: number, body: string) =>
+      ipcRenderer.invoke('pulls:create-comment', owner, repo, number, body)
   },
   repositories: {
     getViewerState: (owner: string, repo: string) =>
@@ -67,6 +78,13 @@ const api = {
   config: {
     get: () => ipcRenderer.invoke('config:get'),
     update: (patch: unknown) => ipcRenderer.invoke('config:update', patch)
+  },
+  bookmarks: {
+    get: () => ipcRenderer.invoke('bookmarks:get'),
+    update: (payload: unknown) => ipcRenderer.invoke('bookmarks:update', payload)
+  },
+  links: {
+    openGitHubUrl: (url: string) => ipcRenderer.invoke('links:open-github-url', url)
   },
   windowControls: {
     getState: () => ipcRenderer.invoke('window:get-state'),

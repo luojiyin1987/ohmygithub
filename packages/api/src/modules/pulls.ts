@@ -1,10 +1,26 @@
 import type { GitHubOctokit } from '../transport'
 import type {
+  CreatePullRequestCommentOptions,
+  GetPullRequestDetailOptions,
+  GitHubActor,
   GitHubCiState,
+  GitHubIssueMilestone,
+  GitHubIssueReaction,
   GitHubPullRequest,
+  GitHubPullRequestComment,
+  GitHubPullRequestCommitSummary,
+  GitHubPullRequestDetail,
+  GitHubPullRequestLinkedIssue,
+  GitHubPullRequestReviewDecision,
+  GitHubPullRequestReviewRequest,
+  GitHubPullRequestReviewState,
+  GitHubPullRequestReviewSummary,
+  GitHubPullRequestReviewerType,
   GitHubPullRequestSearchResult,
   GitHubPullRequestSearchState,
   GitHubPullRequestState,
+  GitHubPullRequestTimelineEvent,
+  GitHubPullRequestTimelineReference,
   ListPullRequestCategoryOptions,
   ListRepositoryWorkspaceItemsOptions,
   ListWorkspaceItemsOptions,
@@ -29,6 +45,218 @@ interface GraphQLPullRequestNode extends GraphQLWorkItemBase {
   } | null
 }
 
+interface GraphQLActorNode {
+  login: string
+  avatarUrl?: string | null
+}
+
+interface GraphQLTeamReviewerNode {
+  __typename?: string
+  slug?: string | null
+  name?: string | null
+  avatarUrl?: string | null
+}
+
+type GraphQLReviewerNode = (GraphQLActorNode & { __typename?: string }) | GraphQLTeamReviewerNode
+
+interface GraphQLReactionGroup {
+  content: string
+  reactors: {
+    totalCount: number
+  }
+  viewerHasReacted?: boolean
+}
+
+interface GraphQLMilestoneNode {
+  id: string
+  number: number
+  title: string
+  description?: string | null
+  dueOn?: string | null
+  state: string
+  url: string
+}
+
+interface GraphQLIssueCommentNode {
+  id: string
+  body: string
+  createdAt: string
+  updatedAt: string
+  authorAssociation: string
+  url: string
+  author: GraphQLActorNode | null
+  reactionGroups?: GraphQLReactionGroup[] | null
+}
+
+interface RestIssueCommentNode {
+  id: number
+  node_id?: string | null
+  body?: string | null
+  created_at?: string | null
+  updated_at?: string | null
+  author_association?: string | null
+  html_url?: string | null
+  user?: {
+    login?: string | null
+    avatar_url?: string | null
+  } | null
+}
+
+interface GraphQLRepositoryNode {
+  nameWithOwner: string
+  url: string
+}
+
+interface GraphQLLinkedIssueNode {
+  id: string
+  title: string
+  number: number
+  state: string
+  stateReason?: string | null
+  url: string
+  repository: {
+    nameWithOwner: string
+  }
+}
+
+interface GraphQLReviewRequestNode {
+  id: string
+  asCodeOwner: boolean
+  requestedReviewer?: GraphQLReviewerNode | null
+}
+
+interface GraphQLPullRequestReviewNode {
+  id: string
+  body: string
+  createdAt: string
+  updatedAt: string
+  submittedAt?: string | null
+  authorAssociation: string
+  url: string
+  state: string
+  author: GraphQLActorNode | null
+}
+
+interface GraphQLTimelineSourceNode {
+  __typename?: string
+  title?: string | null
+  number?: number | null
+  url?: string | null
+  repository?: {
+    nameWithOwner: string
+  } | null
+}
+
+interface GraphQLCommitNode {
+  oid?: string | null
+  abbreviatedOid?: string | null
+  messageHeadline?: string | null
+  authoredDate?: string | null
+  committedDate?: string | null
+  author?: GraphQLGitActorNode | null
+  statusCheckRollup?: {
+    state?: string | null
+  } | null
+  url?: string | null
+}
+
+interface GraphQLGitActorNode {
+  name?: string | null
+  avatarUrl?: string | null
+  user?: GraphQLActorNode | null
+}
+
+interface GraphQLPullRequestTimelineNode {
+  __typename?: string
+  id?: string | null
+  actor?: GraphQLActorNode | null
+  createdAt?: string | null
+  body?: string | null
+  text?: string | null
+  url?: string | null
+  state?: string | null
+  author?: GraphQLActorNode | null
+  authorAssociation?: string | null
+  submittedAt?: string | null
+  assignee?: GraphQLActorNode | null
+  label?: {
+    name?: string | null
+  } | null
+  milestoneTitle?: string | null
+  previousTitle?: string | null
+  currentTitle?: string | null
+  currentRefName?: string | null
+  previousRefName?: string | null
+  refName?: string | null
+  ref?: {
+    name?: string | null
+  } | null
+  baseRefName?: string | null
+  headRefName?: string | null
+  mergeRefName?: string | null
+  oldBase?: string | null
+  newBase?: string | null
+  reason?: string | null
+  beforeCommit?: GraphQLCommitNode | null
+  afterCommit?: GraphQLCommitNode | null
+  mergeRef?: {
+    name?: string | null
+  } | null
+  mergeQueue?: {
+    url?: string | null
+  } | null
+  commit?: GraphQLCommitNode | null
+  requestedReviewer?: GraphQLReviewerNode | null
+  dismissalMessage?: string | null
+  previousReviewState?: string | null
+  review?: GraphQLPullRequestReviewNode | null
+  source?: GraphQLTimelineSourceNode | null
+  subject?: GraphQLTimelineSourceNode | null
+}
+
+interface GraphQLPullRequestDetailNode extends GraphQLPullRequestNode {
+  createdAt: string
+  closedAt?: string | null
+  mergedAt?: string | null
+  mergedBy?: GraphQLActorNode | null
+  body: string
+  additions: number
+  deletions: number
+  changedFiles: number
+  checksUrl?: string | null
+  baseRefName: string
+  headRefName: string
+  baseRepository?: GraphQLRepositoryNode | null
+  headRepository?: GraphQLRepositoryNode | null
+  isCrossRepository: boolean
+  maintainerCanModify: boolean
+  mergeStateStatus?: string | null
+  reviewDecision?: string | null
+  assignees?: {
+    nodes?: Array<GraphQLActorNode | null> | null
+  } | null
+  milestone?: GraphQLMilestoneNode | null
+  participants?: {
+    nodes?: Array<GraphQLActorNode | null> | null
+  } | null
+  reviewRequests?: {
+    nodes?: Array<GraphQLReviewRequestNode | null> | null
+  } | null
+  latestReviews?: {
+    nodes?: Array<GraphQLPullRequestReviewNode | null> | null
+  } | null
+  closingIssuesReferences?: {
+    nodes?: Array<GraphQLLinkedIssueNode | null> | null
+  } | null
+  comments?: {
+    nodes?: Array<GraphQLIssueCommentNode | null> | null
+  } | null
+  timelineItems?: {
+    nodes?: Array<GraphQLPullRequestTimelineNode | null> | null
+  } | null
+  reactionGroups?: GraphQLReactionGroup[] | null
+}
+
 interface ViewerPullRequestsResponse {
   search: {
     nodes?: Array<GraphQLPullRequestNode | null> | null
@@ -51,6 +279,12 @@ interface PullRequestByNumberResponse {
 
 interface PullRequestNodesResponse {
   nodes?: Array<GraphQLPullRequestNode | null> | null
+}
+
+interface PullRequestDetailResponse {
+  repository: {
+    pullRequest: GraphQLPullRequestDetailNode | null
+  } | null
 }
 
 interface SearchPullRequestItem {
@@ -139,6 +373,777 @@ const pullRequestNodesQuery = `
   ${pullRequestFields}
 `
 
+const pullRequestDetailQuery = `
+  query PullRequestDetail($owner: String!, $repo: String!, $number: Int!) {
+    repository(owner: $owner, name: $repo) {
+      pullRequest(number: $number) {
+        ...PullRequestFields
+        createdAt
+        closedAt
+        mergedAt
+        mergedBy {
+          login
+          avatarUrl
+        }
+        body
+        additions
+        deletions
+        changedFiles
+        checksUrl
+        baseRefName
+        headRefName
+        baseRepository {
+          nameWithOwner
+          url
+        }
+        headRepository {
+          nameWithOwner
+          url
+        }
+        isCrossRepository
+        maintainerCanModify
+        mergeStateStatus
+        reviewDecision
+        assignees(first: 10) {
+          nodes {
+            login
+            avatarUrl
+          }
+        }
+        milestone {
+          id
+          number
+          title
+          description
+          dueOn
+          state
+          url
+        }
+        participants(first: 10) {
+          nodes {
+            login
+            avatarUrl
+          }
+        }
+        reviewRequests(first: 10) {
+          nodes {
+            id
+            asCodeOwner
+            requestedReviewer {
+              __typename
+              ... on User {
+                login
+                avatarUrl
+              }
+              ... on Mannequin {
+                login
+                avatarUrl
+              }
+              ... on Team {
+                slug
+                name
+                avatarUrl
+              }
+            }
+          }
+        }
+        latestReviews(first: 10) {
+          nodes {
+            id
+            body
+            createdAt
+            updatedAt
+            submittedAt
+            authorAssociation
+            url
+            state
+            author {
+              login
+              avatarUrl
+            }
+          }
+        }
+        closingIssuesReferences(first: 10) {
+          nodes {
+            id
+            title
+            number
+            state
+            stateReason
+            url
+            repository {
+              nameWithOwner
+            }
+          }
+        }
+        comments(last: 100) {
+          nodes {
+            id
+            body
+            createdAt
+            updatedAt
+            authorAssociation
+            url
+            author {
+              login
+              avatarUrl
+            }
+            reactionGroups {
+              content
+              reactors {
+                totalCount
+              }
+              viewerHasReacted
+            }
+          }
+        }
+        timelineItems(
+          first: 80
+          itemTypes: [
+            ASSIGNED_EVENT
+            UNASSIGNED_EVENT
+            LABELED_EVENT
+            UNLABELED_EVENT
+            CLOSED_EVENT
+            REOPENED_EVENT
+            RENAMED_TITLE_EVENT
+            CROSS_REFERENCED_EVENT
+            MENTIONED_EVENT
+            REVIEW_REQUESTED_EVENT
+            REVIEW_REQUEST_REMOVED_EVENT
+            REVIEW_DISMISSED_EVENT
+            READY_FOR_REVIEW_EVENT
+            CONVERT_TO_DRAFT_EVENT
+            PULL_REQUEST_COMMIT
+            MERGED_EVENT
+            BASE_REF_CHANGED_EVENT
+            BASE_REF_DELETED_EVENT
+            BASE_REF_FORCE_PUSHED_EVENT
+            HEAD_REF_DELETED_EVENT
+            HEAD_REF_FORCE_PUSHED_EVENT
+            HEAD_REF_RESTORED_EVENT
+            AUTOMATIC_BASE_CHANGE_FAILED_EVENT
+            AUTOMATIC_BASE_CHANGE_SUCCEEDED_EVENT
+            AUTO_MERGE_ENABLED_EVENT
+            AUTO_MERGE_DISABLED_EVENT
+            AUTO_REBASE_ENABLED_EVENT
+            AUTO_SQUASH_ENABLED_EVENT
+            ADDED_TO_MERGE_QUEUE_EVENT
+            REMOVED_FROM_MERGE_QUEUE_EVENT
+            MILESTONED_EVENT
+            DEMILESTONED_EVENT
+            CONNECTED_EVENT
+            DISCONNECTED_EVENT
+            COMMENT_DELETED_EVENT
+            REFERENCED_EVENT
+            PULL_REQUEST_REVIEW
+          ]
+        ) {
+          nodes {
+            __typename
+            ... on AssignedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              assignee {
+                ... on Bot {
+                  login
+                  avatarUrl
+                }
+                ... on Mannequin {
+                  login
+                  avatarUrl
+                }
+                ... on Organization {
+                  login
+                  avatarUrl
+                }
+                ... on User {
+                  login
+                  avatarUrl
+                }
+              }
+            }
+            ... on UnassignedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              assignee {
+                ... on Bot {
+                  login
+                  avatarUrl
+                }
+                ... on Mannequin {
+                  login
+                  avatarUrl
+                }
+                ... on Organization {
+                  login
+                  avatarUrl
+                }
+                ... on User {
+                  login
+                  avatarUrl
+                }
+              }
+            }
+            ... on LabeledEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              label {
+                name
+              }
+            }
+            ... on UnlabeledEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              label {
+                name
+              }
+            }
+            ... on ClosedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+            }
+            ... on ReopenedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+            }
+            ... on RenamedTitleEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              previousTitle
+              currentTitle
+            }
+            ... on CrossReferencedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              source {
+                __typename
+                ... on Issue {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+                ... on PullRequest {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+              }
+            }
+            ... on MentionedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+            }
+            ... on PullRequestReview {
+              id
+              body
+              createdAt
+              updatedAt
+              submittedAt
+              authorAssociation
+              url
+              state
+              author {
+                login
+                avatarUrl
+              }
+            }
+            ... on ReviewRequestedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              requestedReviewer {
+                __typename
+                ... on User {
+                  login
+                  avatarUrl
+                }
+                ... on Mannequin {
+                  login
+                  avatarUrl
+                }
+                ... on Team {
+                  slug
+                  name
+                  avatarUrl
+                }
+              }
+            }
+            ... on ReviewRequestRemovedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              requestedReviewer {
+                __typename
+                ... on User {
+                  login
+                  avatarUrl
+                }
+                ... on Mannequin {
+                  login
+                  avatarUrl
+                }
+                ... on Team {
+                  slug
+                  name
+                  avatarUrl
+                }
+              }
+            }
+            ... on ReviewDismissedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              dismissalMessage
+              previousReviewState
+              url
+              review {
+                id
+                body
+                createdAt
+                updatedAt
+                submittedAt
+                authorAssociation
+                url
+                state
+                author {
+                  login
+                  avatarUrl
+                }
+              }
+            }
+            ... on ReadyForReviewEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              url
+            }
+            ... on ConvertToDraftEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              url
+            }
+            ... on PullRequestCommit {
+              id
+              url
+              commit {
+                oid
+                abbreviatedOid
+                messageHeadline
+                authoredDate
+                committedDate
+                url
+                statusCheckRollup {
+                  state
+                }
+                author {
+                  name
+                  avatarUrl
+                  user {
+                    login
+                    avatarUrl
+                  }
+                }
+              }
+            }
+            ... on MergedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              mergeRefName
+              url
+              commit {
+                oid
+                abbreviatedOid
+                url
+              }
+            }
+            ... on BaseRefChangedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              previousRefName
+              currentRefName
+            }
+            ... on BaseRefDeletedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              baseRefName
+            }
+            ... on BaseRefForcePushedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              ref {
+                name
+              }
+              beforeCommit {
+                oid
+                abbreviatedOid
+                url
+              }
+              afterCommit {
+                oid
+                abbreviatedOid
+                url
+              }
+            }
+            ... on HeadRefDeletedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              headRefName
+            }
+            ... on HeadRefForcePushedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              ref {
+                name
+              }
+              beforeCommit {
+                oid
+                abbreviatedOid
+                url
+              }
+              afterCommit {
+                oid
+                abbreviatedOid
+                url
+              }
+            }
+            ... on HeadRefRestoredEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+            }
+            ... on AutomaticBaseChangeFailedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              oldBase
+              newBase
+            }
+            ... on AutomaticBaseChangeSucceededEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              oldBase
+              newBase
+            }
+            ... on AutoMergeEnabledEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+            }
+            ... on AutoMergeDisabledEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              reason
+            }
+            ... on AutoRebaseEnabledEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+            }
+            ... on AutoSquashEnabledEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+            }
+            ... on AddedToMergeQueueEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              mergeQueue {
+                url
+              }
+            }
+            ... on RemovedFromMergeQueueEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              reason
+              beforeCommit {
+                oid
+                abbreviatedOid
+                url
+              }
+              mergeQueue {
+                url
+              }
+            }
+            ... on MilestonedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              milestoneTitle
+            }
+            ... on DemilestonedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              milestoneTitle
+            }
+            ... on ConnectedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              source {
+                __typename
+                ... on Issue {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+                ... on PullRequest {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+              }
+              subject {
+                __typename
+                ... on Issue {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+                ... on PullRequest {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+              }
+            }
+            ... on DisconnectedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              source {
+                __typename
+                ... on Issue {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+                ... on PullRequest {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+              }
+              subject {
+                __typename
+                ... on Issue {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+                ... on PullRequest {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+              }
+            }
+            ... on CommentDeletedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+            }
+            ... on ReferencedEvent {
+              id
+              actor {
+                login
+                avatarUrl
+              }
+              createdAt
+              commit {
+                oid
+                abbreviatedOid
+                url
+              }
+              subject {
+                __typename
+                ... on Issue {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+                ... on PullRequest {
+                  title
+                  number
+                  url
+                  repository {
+                    nameWithOwner
+                  }
+                }
+              }
+            }
+          }
+        }
+        reactionGroups {
+          content
+          reactors {
+            totalCount
+          }
+          viewerHasReacted
+        }
+      }
+    }
+  }
+
+  ${pullRequestFields}
+`
+
 const MAX_SEARCH_RESULTS = 1000
 
 export class PullsApi {
@@ -220,6 +1225,37 @@ export class PullsApi {
       hasNextPage: page * perPage < Math.min(totalCount, MAX_SEARCH_RESULTS),
       incompleteResults: Boolean(payload.incomplete_results),
     }
+  }
+
+  async getPullRequestDetail(options: GetPullRequestDetailOptions): Promise<GitHubPullRequestDetail> {
+    const response = await this.octokit.graphql<PullRequestDetailResponse>(
+      pullRequestDetailQuery,
+      {
+        owner: options.owner,
+        repo: options.repo,
+        number: options.number
+      }
+    )
+    const pullRequest = response.repository?.pullRequest
+
+    if (!pullRequest) {
+      throw new Error('Pull request not found')
+    }
+
+    const unreadKeys = await listUnreadWorkItemKeys(this.octokit)
+
+    return mapPullRequestDetailNode(pullRequest, unreadKeys)
+  }
+
+  async createPullRequestComment(options: CreatePullRequestCommentOptions): Promise<GitHubPullRequestComment> {
+    const response = await this.octokit.rest.issues.createComment({
+      owner: options.owner,
+      repo: options.repo,
+      issue_number: options.number,
+      body: options.body
+    })
+
+    return mapRestIssueComment(response.data)
   }
 
   private async searchPullRequests(searchQuery: string, limit: number): Promise<GitHubPullRequest[]> {
@@ -353,6 +1389,541 @@ function mapPullRequestNodes(
   })
 }
 
+function mapPullRequestDetailNode(
+  node: GraphQLPullRequestDetailNode,
+  unreadKeys: Set<string>
+): GitHubPullRequestDetail {
+  const repository = splitRepositoryName(node.repository.nameWithOwner)
+  const ciState = normalizeCiState(node.statusCheckRollup?.state)
+
+  return {
+    id: `pull-request:${node.id}`,
+    owner: repository.owner,
+    repo: repository.repo,
+    repository: repository.repository,
+    number: node.number,
+    title: node.title,
+    state: normalizePullRequestState(node),
+    ciState,
+    author: normalizeActor(node.author),
+    createdAt: node.createdAt,
+    updatedAt: node.updatedAt,
+    closedAt: node.closedAt ?? null,
+    mergedAt: node.mergedAt ?? null,
+    mergedBy: mapOptionalActor(node.mergedBy) ?? null,
+    body: node.body,
+    labels: mapLabels(node.labels),
+    assignees: mapActorNodes(node.assignees?.nodes),
+    milestone: mapMilestone(node.milestone),
+    participants: mapActorNodes(node.participants?.nodes),
+    reviewRequests: mapReviewRequests(node.reviewRequests?.nodes),
+    latestReviews: mapReviews(node.latestReviews?.nodes),
+    reviewDecision: normalizeReviewDecision(node.reviewDecision),
+    baseBranch: {
+      name: node.baseRefName,
+      repository: node.baseRepository?.nameWithOwner ?? null,
+      url: node.baseRepository?.url ?? null
+    },
+    headBranch: {
+      name: node.headRefName,
+      repository: node.headRepository?.nameWithOwner ?? null,
+      url: node.headRepository?.url ?? null
+    },
+    isCrossRepository: node.isCrossRepository,
+    maintainerCanModify: node.maintainerCanModify,
+    diffStats: {
+      additions: node.additions,
+      deletions: node.deletions,
+      changedFiles: node.changedFiles
+    },
+    status: {
+      ciState,
+      checksUrl: node.checksUrl ?? null,
+      mergeStateStatus: node.mergeStateStatus ?? null
+    },
+    linkedIssues: mapLinkedIssues(node.closingIssuesReferences?.nodes),
+    comments: mapComments(node.comments?.nodes),
+    timelineEvents: mapTimelineEvents(node.timelineItems?.nodes),
+    reactions: mapReactions(node.reactionGroups),
+    url: node.url,
+    hasUpdates: unreadKeys.has(createWorkItemKey('pull-request', repository.repository, node.number))
+  }
+}
+
+function mapActorNodes(
+  nodes: Array<GraphQLActorNode | null> | null | undefined
+): GitHubActor[] {
+  return (nodes ?? []).flatMap((actor) => {
+    if (!actor?.login) return []
+
+    return [normalizeActor(actor)]
+  })
+}
+
+function mapOptionalActor(actor: GraphQLActorNode | null | undefined): GitHubActor | undefined {
+  if (!actor?.login) return undefined
+
+  return normalizeActor(actor)
+}
+
+function mapMilestone(
+  milestone: GraphQLMilestoneNode | null | undefined
+): GitHubIssueMilestone | null {
+  if (!milestone) return null
+
+  return {
+    id: milestone.id,
+    number: milestone.number,
+    title: milestone.title,
+    description: milestone.description ?? null,
+    dueOn: milestone.dueOn ?? null,
+    state: milestone.state === 'CLOSED' ? 'closed' : 'open',
+    url: milestone.url
+  }
+}
+
+function mapComments(
+  nodes: Array<GraphQLIssueCommentNode | null> | null | undefined
+): GitHubPullRequestComment[] {
+  return (nodes ?? []).flatMap((comment) => {
+    if (!comment) return []
+
+    return [
+      {
+        id: `pull-request-comment:${comment.id}`,
+        author: normalizeActor(comment.author),
+        body: comment.body,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        authorAssociation: comment.authorAssociation,
+        reactions: mapReactions(comment.reactionGroups),
+        url: comment.url
+      }
+    ]
+  })
+}
+
+function mapRestIssueComment(comment: RestIssueCommentNode): GitHubPullRequestComment {
+  return {
+    id: `pull-request-comment:${comment.node_id ?? comment.id}`,
+    author: {
+      login: comment.user?.login ?? 'unknown',
+      avatarUrl: comment.user?.avatar_url ?? undefined
+    },
+    body: comment.body ?? '',
+    createdAt: comment.created_at ?? '',
+    updatedAt: comment.updated_at ?? comment.created_at ?? '',
+    authorAssociation: comment.author_association ?? 'NONE',
+    reactions: [],
+    url: comment.html_url ?? ''
+  }
+}
+
+function mapReactions(
+  groups: GraphQLReactionGroup[] | null | undefined
+): GitHubIssueReaction[] {
+  return (groups ?? []).flatMap((group) => {
+    const count = group.reactors.totalCount
+
+    if (count <= 0 && !group.viewerHasReacted) return []
+
+    return [
+      {
+        content: normalizeReactionContent(group.content),
+        count,
+        viewerHasReacted: group.viewerHasReacted || undefined
+      }
+    ]
+  })
+}
+
+function mapReviewRequests(
+  nodes: Array<GraphQLReviewRequestNode | null> | null | undefined
+): GitHubPullRequestReviewRequest[] {
+  return (nodes ?? []).flatMap((request) => {
+    const reviewer = mapReviewer(request?.requestedReviewer)
+    if (!request || !reviewer) return []
+
+    return [
+      {
+        id: `pull-request-review-request:${request.id}`,
+        reviewer: reviewer.actor,
+        reviewerType: reviewer.type,
+        asCodeOwner: request.asCodeOwner
+      }
+    ]
+  })
+}
+
+function mapReviews(
+  nodes: Array<GraphQLPullRequestReviewNode | null> | null | undefined
+): GitHubPullRequestReviewSummary[] {
+  return (nodes ?? []).flatMap((review) => {
+    if (!review) return []
+
+    return [
+      {
+        id: `pull-request-review:${review.id}`,
+        author: normalizeActor(review.author),
+        state: normalizeReviewState(review.state),
+        body: review.body,
+        createdAt: review.createdAt,
+        updatedAt: review.updatedAt,
+        submittedAt: review.submittedAt ?? null,
+        authorAssociation: review.authorAssociation,
+        url: review.url
+      }
+    ]
+  })
+}
+
+function mapLinkedIssues(
+  nodes: Array<GraphQLLinkedIssueNode | null> | null | undefined
+): GitHubPullRequestLinkedIssue[] {
+  return (nodes ?? []).flatMap((issue) => {
+    if (!issue) return []
+
+    const repository = splitRepositoryName(issue.repository.nameWithOwner)
+
+    return [
+      {
+        id: `issue:${issue.id}`,
+        owner: repository.owner,
+        repo: repository.repo,
+        repository: repository.repository,
+        number: issue.number,
+        title: issue.title,
+        state: normalizeIssueState(issue),
+        url: issue.url
+      }
+    ]
+  })
+}
+
+function mapTimelineEvents(
+  nodes: Array<GraphQLPullRequestTimelineNode | null> | null | undefined
+): GitHubPullRequestTimelineEvent[] {
+  return (nodes ?? []).flatMap((node, index): GitHubPullRequestTimelineEvent[] => {
+    if (!node) return []
+
+    const base = {
+      id: node.id ? `pull-request-event:${node.id}` : `pull-request-event:${node.__typename ?? 'generic'}:${index}`,
+      actor: normalizeActor(node.actor ?? node.author ?? null),
+      createdAt: node.submittedAt ?? node.createdAt ?? ''
+    }
+
+    if (node.__typename === 'PullRequestCommit') {
+      const commit = mapPullRequestCommit(node)
+      if (!commit) return []
+
+      return [
+        {
+          ...base,
+          type: 'committed' as const,
+          actor: commit.author,
+          createdAt: commit.committedDate,
+          afterCommit: commit.abbreviatedOid,
+          url: commit.url,
+          commit
+        }
+      ]
+    }
+
+    if (node.__typename === 'AssignedEvent') {
+      return [{ ...base, type: 'assigned' as const, assignee: mapOptionalActor(node.assignee) }]
+    }
+
+    if (node.__typename === 'UnassignedEvent') {
+      return [{ ...base, type: 'unassigned' as const, assignee: mapOptionalActor(node.assignee) }]
+    }
+
+    if (node.__typename === 'LabeledEvent') {
+      return [{ ...base, type: 'labeled' as const, label: node.label?.name ?? null }]
+    }
+
+    if (node.__typename === 'UnlabeledEvent') {
+      return [{ ...base, type: 'unlabeled' as const, label: node.label?.name ?? null }]
+    }
+
+    if (node.__typename === 'ClosedEvent') {
+      return [{ ...base, type: 'closed' as const }]
+    }
+
+    if (node.__typename === 'ReopenedEvent') {
+      return [{ ...base, type: 'reopened' as const }]
+    }
+
+    if (node.__typename === 'RenamedTitleEvent') {
+      return [{ ...base, type: 'renamed' as const, from: node.previousTitle ?? null, to: node.currentTitle ?? null }]
+    }
+
+    if (node.__typename === 'CrossReferencedEvent') {
+      return [{ ...base, type: 'cross-referenced' as const, source: mapTimelineSource(node.source), url: node.source?.url ?? null }]
+    }
+
+    if (node.__typename === 'MentionedEvent') {
+      return [{ ...base, type: 'mentioned' as const }]
+    }
+
+    if (node.__typename === 'PullRequestReview') {
+      return [
+        {
+          ...base,
+          type: 'reviewed' as const,
+          body: node.body ?? null,
+          reviewState: normalizeReviewState(node.state),
+          url: node.url ?? null
+        }
+      ]
+    }
+
+    if (node.__typename === 'ReviewRequestedEvent') {
+      const reviewer = mapReviewer(node.requestedReviewer)
+      return [
+        {
+          ...base,
+          type: 'review-requested' as const,
+          reviewer: reviewer?.actor,
+          reviewerType: reviewer?.type
+        }
+      ]
+    }
+
+    if (node.__typename === 'ReviewRequestRemovedEvent') {
+      const reviewer = mapReviewer(node.requestedReviewer)
+      return [
+        {
+          ...base,
+          type: 'review-request-removed' as const,
+          reviewer: reviewer?.actor,
+          reviewerType: reviewer?.type
+        }
+      ]
+    }
+
+    if (node.__typename === 'ReviewDismissedEvent') {
+      return [
+        {
+          ...base,
+          type: 'review-dismissed' as const,
+          body: node.dismissalMessage ?? null,
+          reviewState: normalizeReviewState(node.previousReviewState ?? node.review?.state),
+          reviewer: mapOptionalActor(node.review?.author),
+          url: node.url ?? node.review?.url ?? null
+        }
+      ]
+    }
+
+    if (node.__typename === 'ReadyForReviewEvent') {
+      return [{ ...base, type: 'ready-for-review' as const, url: node.url ?? null }]
+    }
+
+    if (node.__typename === 'ConvertToDraftEvent') {
+      return [{ ...base, type: 'convert-to-draft' as const, url: node.url ?? null }]
+    }
+
+    if (node.__typename === 'MergedEvent') {
+      return [
+        {
+          ...base,
+          type: 'merged' as const,
+          ref: node.mergeRefName ?? null,
+          afterCommit: commitLabel(node.commit),
+          url: node.url ?? node.commit?.url ?? null
+        }
+      ]
+    }
+
+    if (node.__typename === 'BaseRefChangedEvent') {
+      return [{ ...base, type: 'base-ref-changed' as const, from: node.previousRefName ?? null, to: node.currentRefName ?? null }]
+    }
+
+    if (node.__typename === 'BaseRefDeletedEvent') {
+      return [{ ...base, type: 'base-ref-deleted' as const, ref: node.baseRefName ?? null }]
+    }
+
+    if (node.__typename === 'BaseRefForcePushedEvent') {
+      return [
+        {
+          ...base,
+          type: 'base-ref-force-pushed' as const,
+          ref: node.ref?.name ?? null,
+          beforeCommit: commitLabel(node.beforeCommit),
+          afterCommit: commitLabel(node.afterCommit),
+          url: node.afterCommit?.url ?? node.beforeCommit?.url ?? null
+        }
+      ]
+    }
+
+    if (node.__typename === 'HeadRefDeletedEvent') {
+      return [{ ...base, type: 'head-ref-deleted' as const, ref: node.headRefName ?? null }]
+    }
+
+    if (node.__typename === 'HeadRefForcePushedEvent') {
+      return [
+        {
+          ...base,
+          type: 'head-ref-force-pushed' as const,
+          ref: node.ref?.name ?? null,
+          beforeCommit: commitLabel(node.beforeCommit),
+          afterCommit: commitLabel(node.afterCommit),
+          url: node.afterCommit?.url ?? node.beforeCommit?.url ?? null
+        }
+      ]
+    }
+
+    if (node.__typename === 'HeadRefRestoredEvent') {
+      return [{ ...base, type: 'head-ref-restored' as const }]
+    }
+
+    if (node.__typename === 'AutomaticBaseChangeFailedEvent') {
+      return [
+        {
+          ...base,
+          type: 'automatic-base-change-failed' as const,
+          from: node.oldBase ?? null,
+          to: node.newBase ?? null
+        }
+      ]
+    }
+
+    if (node.__typename === 'AutomaticBaseChangeSucceededEvent') {
+      return [
+        {
+          ...base,
+          type: 'automatic-base-change-succeeded' as const,
+          from: node.oldBase ?? null,
+          to: node.newBase ?? null
+        }
+      ]
+    }
+
+    if (node.__typename === 'AutoMergeEnabledEvent') {
+      return [{ ...base, type: 'auto-merge-enabled' as const }]
+    }
+
+    if (node.__typename === 'AutoMergeDisabledEvent') {
+      return [{ ...base, type: 'auto-merge-disabled' as const, reason: node.reason ?? null }]
+    }
+
+    if (node.__typename === 'AutoRebaseEnabledEvent') {
+      return [{ ...base, type: 'auto-rebase-enabled' as const }]
+    }
+
+    if (node.__typename === 'AutoSquashEnabledEvent') {
+      return [{ ...base, type: 'auto-squash-enabled' as const }]
+    }
+
+    if (node.__typename === 'AddedToMergeQueueEvent') {
+      return [{ ...base, type: 'added-to-merge-queue' as const, url: node.mergeQueue?.url ?? null }]
+    }
+
+    if (node.__typename === 'RemovedFromMergeQueueEvent') {
+      return [
+        {
+          ...base,
+          type: 'removed-from-merge-queue' as const,
+          beforeCommit: commitLabel(node.beforeCommit),
+          reason: node.reason ?? null,
+          url: node.mergeQueue?.url ?? null
+        }
+      ]
+    }
+
+    if (node.__typename === 'MilestonedEvent') {
+      return [{ ...base, type: 'milestoned' as const, milestone: node.milestoneTitle ?? null }]
+    }
+
+    if (node.__typename === 'DemilestonedEvent') {
+      return [{ ...base, type: 'demilestoned' as const, milestone: node.milestoneTitle ?? null }]
+    }
+
+    if (node.__typename === 'ConnectedEvent') {
+      return [{ ...base, type: 'connected' as const, source: mapTimelineSource(node.source ?? node.subject) }]
+    }
+
+    if (node.__typename === 'DisconnectedEvent') {
+      return [{ ...base, type: 'disconnected' as const, source: mapTimelineSource(node.source ?? node.subject) }]
+    }
+
+    if (node.__typename === 'CommentDeletedEvent') {
+      return [{ ...base, type: 'comment-deleted' as const }]
+    }
+
+    if (node.__typename === 'ReferencedEvent') {
+      return [
+        {
+          ...base,
+          type: 'referenced' as const,
+          afterCommit: commitLabel(node.commit),
+          url: node.commit?.url ?? null,
+          source: mapTimelineSource(node.subject)
+        }
+      ]
+    }
+
+    return [
+      {
+        ...base,
+        type: 'generic' as const,
+        text: node.__typename ?? 'TimelineEvent',
+        url: node.url ?? null
+      }
+    ]
+  })
+}
+
+function mapTimelineSource(
+  source: GraphQLTimelineSourceNode | null | undefined
+): GitHubPullRequestTimelineReference | undefined {
+  if (!source) return undefined
+
+  return {
+    type: normalizeTimelineSourceType(source.__typename),
+    repository: source.repository?.nameWithOwner,
+    number: source.number ?? undefined,
+    title: source.title ?? undefined,
+    url: source.url ?? null
+  }
+}
+
+function mapReviewer(
+  reviewer: GraphQLReviewerNode | null | undefined
+): { actor: GitHubActor, type: GitHubPullRequestReviewerType } | null {
+  if (!reviewer) return null
+
+  if ('login' in reviewer && reviewer.login) {
+    return {
+      actor: {
+        login: reviewer.login,
+        avatarUrl: reviewer.avatarUrl ?? undefined
+      },
+      type: normalizeReviewerType(reviewer.__typename)
+    }
+  }
+
+  const slug = 'slug' in reviewer ? reviewer.slug : null
+  const name = 'name' in reviewer ? reviewer.name : null
+  const login = slug || name
+  if (!login) return null
+
+  return {
+    actor: {
+      login,
+      avatarUrl: reviewer.avatarUrl ?? undefined
+    },
+    type: normalizeReviewerType(reviewer.__typename)
+  }
+}
+
+function normalizeReviewerType(value: string | null | undefined): GitHubPullRequestReviewerType {
+  if (value === 'User') return 'user'
+  if (value === 'Team') return 'team'
+  if (value === 'Mannequin') return 'mannequin'
+
+  return 'unknown'
+}
+
 function dedupePullRequests(pullRequests: GitHubPullRequest[]): GitHubPullRequest[] {
   const seen = new Set<string>()
   const result: GitHubPullRequest[] = []
@@ -381,4 +1952,98 @@ function normalizeCiState(value: string | null | undefined): GitHubCiState | nul
   if (value === 'PENDING' || value === 'EXPECTED') return 'pending'
 
   return null
+}
+
+function normalizeIssueState(node: GraphQLLinkedIssueNode): 'open' | 'completed' | 'not_planned' {
+  if (node.state !== 'CLOSED') return 'open'
+  if (node.stateReason === 'COMPLETED') return 'completed'
+
+  return 'not_planned'
+}
+
+function normalizeReviewDecision(value: string | null | undefined): GitHubPullRequestReviewDecision | null {
+  if (value === 'APPROVED') return 'approved'
+  if (value === 'CHANGES_REQUESTED') return 'changes_requested'
+  if (value === 'REVIEW_REQUIRED') return 'review_required'
+
+  return null
+}
+
+function normalizeReviewState(value: string | null | undefined): GitHubPullRequestReviewState {
+  if (value === 'APPROVED') return 'approved'
+  if (value === 'CHANGES_REQUESTED') return 'changes_requested'
+  if (value === 'DISMISSED') return 'dismissed'
+  if (value === 'PENDING') return 'pending'
+
+  return 'commented'
+}
+
+function normalizeReactionContent(content: string): string {
+  const reactionContent: Record<string, string> = {
+    THUMBS_UP: 'thumbs-up',
+    THUMBS_DOWN: 'thumbs-down',
+    LAUGH: 'laugh',
+    HOORAY: 'hooray',
+    CONFUSED: 'confused',
+    HEART: 'heart',
+    ROCKET: 'rocket',
+    EYES: 'eyes'
+  }
+
+  return reactionContent[content] ?? content.toLowerCase()
+}
+
+function normalizeTimelineSourceType(type: string | undefined): string {
+  if (type === 'PullRequest') return 'pull-request'
+  if (type === 'Issue') return 'issue'
+
+  return type ?? 'unknown'
+}
+
+function mapPullRequestCommit(
+  node: GraphQLPullRequestTimelineNode
+): GitHubPullRequestCommitSummary | null {
+  const commit = node.commit
+  const abbreviatedOid = commitLabel(commit)
+  const oid = commit?.oid ?? abbreviatedOid
+  if (!oid || !abbreviatedOid) return null
+
+  const author = mapCommitAuthor(commit?.author)
+  const committedDate = commit?.committedDate ?? commit?.authoredDate ?? node.createdAt ?? ''
+
+  return {
+    id: node.id ?? `pull-request-commit:${oid}`,
+    oid,
+    abbreviatedOid,
+    messageHeadline: commit?.messageHeadline?.trim() || abbreviatedOid,
+    authoredDate: commit?.authoredDate ?? committedDate,
+    committedDate,
+    author: author.actor,
+    authorIsGitHubUser: author.isGitHubUser,
+    ciState: normalizeCiState(commit?.statusCheckRollup?.state),
+    url: commit?.url ?? node.url ?? ''
+  }
+}
+
+function mapCommitAuthor(
+  actor: GraphQLGitActorNode | null | undefined
+): { actor: GitHubActor; isGitHubUser: boolean } {
+  if (actor?.user?.login) {
+    return {
+      actor: normalizeActor(actor.user),
+      isGitHubUser: true
+    }
+  }
+
+  return {
+    actor: {
+      login: actor?.name?.trim() || 'unknown',
+      avatarUrl: actor?.avatarUrl ?? undefined
+    },
+    isGitHubUser: false
+  }
+}
+
+function commitLabel(commit: GraphQLCommitNode | null | undefined): string | null {
+  return commit?.abbreviatedOid ?? commit?.oid?.slice(0, 7) ?? null
 }
