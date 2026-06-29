@@ -93,3 +93,47 @@ export function useRepositoryPullRequestSearchQuery(
     },
   })
 }
+
+export function usePullRequestDetailQuery(
+  owner: MaybeRefOrGetter<string>,
+  repo: MaybeRefOrGetter<string>,
+  pullRequestNumber: MaybeRefOrGetter<number>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubPullRequestDetail>({
+    key: () => ['github', 'pull-request-detail', toValue(owner), toValue(repo), toValue(pullRequestNumber)],
+    enabled: () => {
+      const number = toValue(pullRequestNumber)
+
+      return Boolean(toValue(owner))
+        && Boolean(toValue(repo))
+        && Number.isInteger(number)
+        && number > 0
+        && toValue(enabled)
+    },
+    query: async () => {
+      if (!window.ohMyGithub?.pulls) {
+        throw new Error('GitHub pulls bridge is unavailable')
+      }
+
+      return window.ohMyGithub.pulls.getPullRequestDetail(
+        toValue(owner),
+        toValue(repo),
+        toValue(pullRequestNumber),
+      )
+    },
+  })
+}
+
+export async function createPullRequestComment(
+  owner: string,
+  repo: string,
+  pullRequestNumber: number,
+  body: string,
+): Promise<GitHubPullRequestComment> {
+  if (!window.ohMyGithub?.pulls) {
+    throw new Error('GitHub pulls bridge is unavailable')
+  }
+
+  return window.ohMyGithub.pulls.createPullRequestComment(owner, repo, pullRequestNumber, body)
+}
