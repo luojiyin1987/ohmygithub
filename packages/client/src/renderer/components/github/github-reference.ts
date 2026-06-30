@@ -85,6 +85,9 @@ export function parseGitHubWorkspaceUrl(value: string): string | null {
     const reference = parseRepositoryReference(owner, repo, type, rawNumber)
     if (reference) return reference
 
+    const actionRun = parseActionRunWorkspaceUrl(owner, repo, segments[2], segments[3], segments[4])
+    if (actionRun) return actionRun
+
     const repositorySection = repositorySectionForPath(type)
     if (repositorySection) {
       return createRepositoryWorkspaceUrl(owner, repo, repositorySection)
@@ -147,6 +150,21 @@ export function createReferenceWorkspaceUrl(
   return `/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${itemPath}/${encodeURIComponent(String(number))}`
 }
 
+export function createActionRunWorkspaceUrl(
+  owner: string,
+  repo: string,
+  runId: number,
+  jobId?: number | null,
+): string {
+  const path = `/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/actions/runs/${encodeURIComponent(String(runId))}`
+
+  if (!Number.isInteger(jobId) || Number(jobId) <= 0) return path
+
+  const params = new URLSearchParams()
+  params.set('job', String(jobId))
+  return `${path}?${params.toString()}`
+}
+
 function parseRepositoryReference(
   owner: string,
   repo: string,
@@ -159,6 +177,19 @@ function parseRepositoryReference(
   if (!kindHint || !Number.isInteger(number) || number <= 0) return null
 
   return createReferenceWorkspaceUrl(owner, repo, kindHint, number)
+}
+
+function parseActionRunWorkspaceUrl(
+  owner: string,
+  repo: string,
+  type: string | undefined,
+  runPath: string | undefined,
+  rawRunId: string | undefined,
+): string | null {
+  const runId = Number(rawRunId)
+  if (type !== 'actions' || runPath !== 'runs' || !Number.isInteger(runId) || runId <= 0) return null
+
+  return createActionRunWorkspaceUrl(owner, repo, runId)
 }
 
 function repositorySectionForPath(type: string): GitHubRepositorySection | null {

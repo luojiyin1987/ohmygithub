@@ -42,6 +42,107 @@
     "pageInput": "Go to page",
     "previous": "Previous page"
   },
+  "actions": {
+    "statuses": {
+      "completed": "Completed",
+      "in_progress": "In progress",
+      "pending": "Pending",
+      "queued": "Queued",
+      "requested": "Requested",
+      "unknown": "Unknown",
+      "waiting": "Waiting"
+    },
+    "conclusions": {
+      "action_required": "Action required",
+      "cancelled": "Cancelled",
+      "failure": "Failed",
+      "neutral": "Neutral",
+      "skipped": "Skipped",
+      "stale": "Stale",
+      "success": "Passed",
+      "timed_out": "Timed out"
+    },
+    "commitChecks": {
+      "attempt": "Attempt {attempt}",
+      "description": "{ref}",
+      "emptyDescription": "This commit has not triggered any workflow runs.",
+      "emptyTitle": "No actions for this commit",
+      "errorDescription": "GitHub Actions could not be loaded for this commit.",
+      "errorTitle": "Could not load actions",
+      "jobFallbackMeta": "Job details",
+      "jobsErrorDescription": "Jobs could not be loaded for this workflow run.",
+      "noJobs": "No jobs returned for this workflow run.",
+      "retry": "Retry",
+      "runNumber": "Run #{run}",
+      "started": "Started {date}",
+      "title": "Commit actions"
+    },
+    "values": {
+      "durationMinutes": "{minutes}m {seconds}s",
+      "durationSeconds": "{count}s",
+      "unknown": "Unknown",
+      "unknownBranch": "Unknown branch",
+      "unknownDuration": "Unknown duration",
+      "unknownWorkflow": "Unknown workflow"
+    },
+    "detail": {
+      "emptyIdentityDescription": "Open a workflow run tab with an owner, repository, and run id to load the run.",
+      "emptyIdentityTitle": "Action run is not available",
+      "eyebrow": "GitHub Actions",
+      "retry": "Retry",
+      "subtitle": "{repository} · Run {runId}",
+      "titleFallback": "Workflow run {runId}",
+      "rerun": {
+        "allJobs": "Re-run jobs",
+        "allSuccess": "Requested a re-run for all jobs.",
+        "errorDescription": "GitHub did not accept the re-run request.",
+        "errorTitle": "Could not re-run",
+        "failedJobs": "Re-run failed jobs",
+        "failedSuccess": "Requested a re-run for failed jobs.",
+        "jobSuccess": "Requested a re-run for {job}.",
+        "singleJobLabel": "Re-run {job}"
+      },
+      "jobs": {
+        "emptyDescription": "GitHub did not return jobs for this workflow run.",
+        "emptyTitle": "No jobs",
+        "errorDescription": "GitHub jobs could not be loaded. Check the connection and try again.",
+        "errorTitle": "Could not load jobs",
+        "stepsSummary": "{completed}/{total} steps",
+        "title": "Jobs"
+      },
+      "log": {
+        "emptyDescription": "No log content is available for the selected job yet.",
+        "emptyTitle": "No log output",
+        "errorDescription": "GitHub job logs could not be loaded. They may still be generating or may require more permissions.",
+        "errorTitle": "Could not load log",
+        "fetchedAt": "Fetched {time}",
+        "lines": "{count} lines",
+        "pendingDescription": "GitHub accepted this job, but the log file is not available yet. This page will keep refreshing.",
+        "pendingTitle": "Log is still generating",
+        "streaming": "Live",
+        "title": "Log"
+      },
+      "steps": {
+        "duration": "Duration {duration}",
+        "emptyDescription": "Select a job to inspect its steps.",
+        "emptyTitle": "No job selected",
+        "started": "Started {time}",
+        "stepNumber": "Step {number}"
+      },
+      "summary": {
+        "actor": "Actor",
+        "attempt": "Attempt",
+        "branch": "Branch",
+        "commit": "Commit",
+        "event": "Event",
+        "runNumber": "Run #{runNumber}",
+        "started": "Started",
+        "title": "Summary",
+        "updated": "Updated",
+        "workflow": "Workflow"
+      }
+    }
+  },
   "auth": {
     "browserOpened": "Copy this code, then open GitHub to authorize the app.",
     "copyCodeAndOpenGitHub": "Copy code and open GitHub",
@@ -182,6 +283,10 @@
           "label": "Repository files",
           "description": "Switch the active repository tab to Files."
         },
+        "repositorySectionCommits": {
+          "label": "Repository commits",
+          "description": "Switch the active repository tab to Commits."
+        },
         "repositorySectionPullRequests": {
           "label": "Repository pull requests",
           "description": "Switch the active repository tab to Pull Requests."
@@ -312,6 +417,32 @@
     "openOnGitHub": "Open {name} on GitHub",
     "unknownDate": "Unknown"
   },
+  "commit": {
+    "checks": {
+      "failure": "Checks failed",
+      "pending": "Checks pending",
+      "success": "Checks passed"
+    },
+    "commitSha": "Commit",
+    "committed": "committed {date}",
+    "copySha": "Copy commit SHA",
+    "error": {
+      "description": "Could not load this commit from GitHub. Check your connection and try again.",
+      "retry": "Retry",
+      "title": "Could not load commit"
+    },
+    "files": {
+      "noDiff": "This file has no textual diff (binary or too large)."
+    },
+    "filesTitle": "Files",
+    "missing": {
+      "description": "Open a commit tab with an owner, repository, and commit sha to load the commit."
+    },
+    "openOnGitHub": "Open on GitHub",
+    "parents": "Parents",
+    "statsSummary": "{files} files changed · +{additions} −{deletions}",
+    "verified": "Verified"
+  },
   "repository": {
     "description": "{repository} is ready for repository navigation. Real repository data will be connected here later.",
     "eyebrow": "Repository",
@@ -321,15 +452,50 @@
       "subtitle": "Repository"
     },
     "actions": {
+      "description": "Review workflow runs across all repository workflows or a selected workflow.",
       "fork": "Fork",
       "star": "Star",
       "starred": "Starred",
+      "title": "Actions",
       "watch": "Watch",
-      "watching": "Watching"
+      "watching": "Watching",
+      "workflows": {
+        "all": "All workflows",
+        "allDescription": "Show every workflow run in this repository.",
+        "ariaLabel": "Select workflow",
+        "empty": "No workflows found.",
+        "placeholder": "Select workflow",
+        "searchPlaceholder": "Search workflows..."
+      },
+      "runs": {
+        "attempt": "Attempt {attempt}",
+        "empty": {
+          "allDescription": "This repository does not have workflow runs yet.",
+          "missingRepositoryDescription": "Open a repository with an owner and name to load workflow runs.",
+          "missingRepositoryTitle": "No repository selected",
+          "title": "No workflow runs",
+          "workflowDescription": "{workflow} does not have workflow runs yet."
+        },
+        "error": {
+          "description": "GitHub workflow runs could not be loaded. Check the connection and try again.",
+          "retry": "Retry",
+          "title": "Could not load workflow runs"
+        },
+        "meta": {
+          "started": "Started {date}",
+          "updated": "Updated {date}"
+        },
+        "pagination": {
+          "summary": "Page {page} of {pageCount} · {totalCount} runs"
+        }
+      }
     },
     "sections": {
       "actions": {
         "title": "Actions"
+      },
+      "commits": {
+        "title": "Commits"
       },
       "files": {
         "title": "Files"
@@ -346,6 +512,38 @@
       },
       "settings": {
         "title": "Settings"
+      }
+    },
+    "commits": {
+      "branch": {
+        "empty": "No branches found.",
+        "loading": "Loading branches...",
+        "placeholder": "Select a branch",
+        "searchPlaceholder": "Search branches",
+        "selectLabel": "Select branch"
+      },
+      "checks": {
+        "failure": "Checks failed",
+        "pending": "Checks pending",
+        "success": "Checks passed"
+      },
+      "copySha": "Copy commit SHA",
+      "empty": {
+        "description": "This branch does not have any commits yet.",
+        "missingRepositoryDescription": "Open a repository tab with an owner and repository name to browse commits.",
+        "missingRepositoryTitle": "Repository is not available",
+        "title": "No commits"
+      },
+      "error": {
+        "description": "Could not load commits from GitHub. Check your connection and try again.",
+        "retry": "Retry",
+        "title": "Could not load commits"
+      },
+      "meta": {
+        "committed": "committed {date}"
+      },
+      "pagination": {
+        "summary": "Page {page}"
       }
     },
     "overview": {
@@ -1078,7 +1276,8 @@
       "descriptions": {
         "account": "{owner} is open as an account tab. This version only keeps URL, type, and placeholder state.",
         "activity": "Track workflows, repository movement, and project state worth revisiting. This version only renders the shell.",
-        "draft": "New tabs open as local placeholder pages until real workspace data is connected.",
+        "actionRun": "Inspect a GitHub Actions workflow run, its jobs, steps, and log output.",
+        "commit": "View a commit's metadata and changed files.",
         "inbox": "Collect notifications, mentions, and review requests into a clean workspace entry point.",
         "pullRequest": "Pull request data for {owner}/{repo} #{number} will be connected here.",
         "pullRequestList": "Pull requests in this category are listed from the sidebar tree. A full list view can be connected here later.",
@@ -1092,7 +1291,8 @@
       "eyebrows": {
         "account": "Account",
         "activity": "Activity",
-        "draft": "Draft",
+        "actionRun": "Action Run",
+        "commit": "Commit",
         "issue": "Issue",
         "issueList": "Issue List",
         "notFound": "Not Found",
@@ -1106,7 +1306,8 @@
       "headings": {
         "account": "{owner}",
         "activity": "Activity",
-        "draft": "New workspace page",
+        "actionRun": "{owner}/{repo} run {run}",
+        "commit": "{owner}/{repo}",
         "inbox": "Inbox",
         "issue": "{owner}/{repo} #{number}",
         "issueList": "{title}",
@@ -1122,6 +1323,7 @@
         "alerts": "Alerts",
         "assigned": "Assigned",
         "category": "Category",
+        "commit": "Commit",
         "drafts": "Drafts",
         "mentions": "Mentions",
         "number": "Number",
@@ -1131,8 +1333,8 @@
         "repos": "Repositories",
         "repository": "Repository",
         "reviews": "Reviews",
+        "run": "Run",
         "runs": "Runs",
-        "scope": "Scope",
         "source": "Source",
         "status": "Status",
         "type": "Type",

@@ -309,6 +309,8 @@ type GitHubRepositoryFileNode = {
   size: number | null
   downloadUrl: string | null
   htmlUrl: string | null
+  additions?: number
+  deletions?: number
   children: GitHubRepositoryFileNode[]
 }
 
@@ -316,6 +318,83 @@ type GitHubRepositoryFileTree = {
   ref: string
   truncated: boolean
   items: GitHubRepositoryFileNode[]
+}
+
+type GitHubRepositoryCommitAuthor = {
+  login: string | null
+  name: string | null
+  avatarUrl: string | null
+}
+
+type GitHubRepositoryCommit = {
+  sha: string
+  shortSha: string
+  message: string
+  headline: string
+  author: GitHubRepositoryCommitAuthor
+  committedDate: string
+  htmlUrl: string
+  ciState: GitHubCiState | null
+}
+
+type GitHubRepositoryCommitPage = {
+  items: GitHubRepositoryCommit[]
+  page: number
+  perPage: number
+  hasPreviousPage: boolean
+  hasNextPage: boolean
+}
+
+type GitHubRepositoryBranch = {
+  name: string
+  commitSha: string
+}
+
+type GitHubCommitActor = {
+  login: string | null
+  name: string | null
+  avatarUrl: string | null
+  date: string | null
+}
+
+type GitHubCommitFile = {
+  filename: string
+  previousFilename?: string
+  status: 'added' | 'modified' | 'removed' | 'renamed' | 'changed'
+  additions: number
+  deletions: number
+  patch?: string
+}
+
+type GitHubCommitParent = {
+  sha: string
+  shortSha: string
+}
+
+type GitHubCommitVerification = {
+  verified: boolean
+  reason: string | null
+}
+
+type GitHubCommitStats = {
+  additions: number
+  deletions: number
+  total: number
+}
+
+type GitHubCommitDetail = {
+  sha: string
+  shortSha: string
+  headline: string
+  message: string
+  htmlUrl: string
+  author: GitHubCommitActor
+  committer: GitHubCommitActor
+  parents: GitHubCommitParent[]
+  verification: GitHubCommitVerification | null
+  stats: GitHubCommitStats
+  files: GitHubCommitFile[]
+  ciState: GitHubCiState | null
 }
 
 type GitHubRepositoryFilePreview =
@@ -369,6 +448,128 @@ type GitHubRepositoryFilePreview =
     }
 
 type GitHubCiState = 'pending' | 'success' | 'failure'
+
+type GitHubActionWorkflowState =
+  | 'active'
+  | 'deleted'
+  | 'disabled_fork'
+  | 'disabled_inactivity'
+  | 'disabled_manually'
+  | (string & {})
+
+type GitHubActionRunStatus =
+  | 'queued'
+  | 'in_progress'
+  | 'completed'
+  | 'waiting'
+  | 'requested'
+  | 'pending'
+  | (string & {})
+
+type GitHubActionConclusion =
+  | 'success'
+  | 'failure'
+  | 'neutral'
+  | 'cancelled'
+  | 'skipped'
+  | 'timed_out'
+  | 'action_required'
+  | 'stale'
+  | (string & {})
+
+type GitHubActionWorkflow = {
+  id: number
+  nodeId: string | null
+  name: string
+  path: string
+  state: GitHubActionWorkflowState
+  createdAt: string | null
+  updatedAt: string | null
+  url: string
+  htmlUrl: string
+  badgeUrl: string | null
+}
+
+type GitHubActionRun = {
+  id: number
+  runNumber: number
+  runAttempt: number
+  name: string | null
+  displayTitle: string
+  workflowId: number
+  workflowName: string | null
+  event: string
+  status: GitHubActionRunStatus | null
+  conclusion: GitHubActionConclusion | null
+  headBranch: string | null
+  headSha: string
+  actor: GitHubActor
+  triggeringActor: GitHubActor | null
+  checkSuiteId: number | null
+  createdAt: string | null
+  updatedAt: string | null
+  runStartedAt: string | null
+  completedAt: string | null
+  url: string
+  htmlUrl: string
+  jobsUrl: string | null
+  logsUrl: string | null
+}
+
+type GitHubActionRunPage = {
+  items: GitHubActionRun[]
+  totalCount: number
+  page: number
+  perPage: number
+  hasNextPage: boolean
+}
+
+type GitHubActionStep = {
+  number: number
+  name: string
+  status: GitHubActionRunStatus | null
+  conclusion: GitHubActionConclusion | null
+  startedAt: string | null
+  completedAt: string | null
+}
+
+type GitHubActionJob = {
+  id: number
+  runId: number
+  runAttempt: number
+  name: string
+  status: GitHubActionRunStatus | null
+  conclusion: GitHubActionConclusion | null
+  startedAt: string | null
+  completedAt: string | null
+  htmlUrl: string | null
+  runnerName: string | null
+  labels: string[]
+  steps: GitHubActionStep[]
+}
+
+type GitHubActionJobLog = {
+  jobId: number
+  content: string
+  fetchedAt: string
+  isAvailable: boolean
+}
+
+type ListRepositoryWorkflowRunsOptions = {
+  owner: string
+  repo: string
+  headSha?: string | null
+  workflowId?: number | 'all' | null
+  page?: number
+  perPage?: number
+}
+
+type ListWorkflowRunJobsOptions = {
+  owner: string
+  repo: string
+  runId: number
+  filter?: 'latest' | 'all'
+}
 
 type GitHubPullRequestState = 'draft' | 'merged' | 'open' | 'closed'
 
@@ -844,6 +1045,16 @@ interface Window {
       setFollowed: (options: SetAccountFollowedOptions) => Promise<void>
       listOrganizations: () => Promise<GitHubOrganization[]>
       listOrganizationRepositories: (owner: string) => Promise<GitHubRepository[]>
+    }
+    actions: {
+      listRepositoryWorkflows: (owner: string, repo: string) => Promise<GitHubActionWorkflow[]>
+      listRepositoryWorkflowRuns: (options: ListRepositoryWorkflowRunsOptions) => Promise<GitHubActionRunPage>
+      getWorkflowRun: (owner: string, repo: string, runId: number) => Promise<GitHubActionRun>
+      listWorkflowRunJobs: (options: ListWorkflowRunJobsOptions) => Promise<GitHubActionJob[]>
+      getWorkflowJobLog: (owner: string, repo: string, jobId: number) => Promise<GitHubActionJobLog>
+      rerunWorkflowRun: (owner: string, repo: string, runId: number) => Promise<void>
+      rerunFailedWorkflowRunJobs: (owner: string, repo: string, runId: number) => Promise<void>
+      rerunWorkflowJob: (owner: string, repo: string, jobId: number) => Promise<void>
     }
     issues: {
       listIssueCategory: (category: GitHubIssueCategory) => Promise<GitHubIssue[]>

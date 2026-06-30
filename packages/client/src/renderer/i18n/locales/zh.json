@@ -42,6 +42,107 @@
     "pageInput": "跳转到页码",
     "previous": "上一页"
   },
+  "actions": {
+    "statuses": {
+      "completed": "已完成",
+      "in_progress": "运行中",
+      "pending": "等待中",
+      "queued": "排队中",
+      "requested": "已请求",
+      "unknown": "未知",
+      "waiting": "等待中"
+    },
+    "conclusions": {
+      "action_required": "需要操作",
+      "cancelled": "已取消",
+      "failure": "失败",
+      "neutral": "中性",
+      "skipped": "已跳过",
+      "stale": "已过期",
+      "success": "通过",
+      "timed_out": "超时"
+    },
+    "commitChecks": {
+      "attempt": "尝试次数 {attempt}",
+      "description": "{ref}",
+      "emptyDescription": "这个 commit 没有触发任何 workflow run。",
+      "emptyTitle": "这个 commit 没有 actions",
+      "errorDescription": "无法加载这个 commit 的 GitHub Actions。",
+      "errorTitle": "无法加载 actions",
+      "jobFallbackMeta": "Job 详情",
+      "jobsErrorDescription": "无法加载这个 workflow run 的 jobs。",
+      "noJobs": "这个 workflow run 没有返回 jobs。",
+      "retry": "重试",
+      "runNumber": "Run #{run}",
+      "started": "开始于 {date}",
+      "title": "Commit actions"
+    },
+    "values": {
+      "durationMinutes": "{minutes} 分 {seconds} 秒",
+      "durationSeconds": "{count} 秒",
+      "unknown": "未知",
+      "unknownBranch": "未知分支",
+      "unknownDuration": "未知耗时",
+      "unknownWorkflow": "未知 workflow"
+    },
+    "detail": {
+      "emptyIdentityDescription": "打开包含 owner、仓库名和 run id 的 workflow run tab 后，才会加载运行详情。",
+      "emptyIdentityTitle": "Action run 不可用",
+      "eyebrow": "GitHub Actions",
+      "retry": "重试",
+      "subtitle": "{repository} · Run {runId}",
+      "titleFallback": "Workflow run {runId}",
+      "rerun": {
+        "allJobs": "重新运行 jobs",
+        "allSuccess": "已请求重新运行所有 jobs。",
+        "errorDescription": "GitHub 没有接受重新运行请求。",
+        "errorTitle": "重新运行失败",
+        "failedJobs": "重新运行失败 jobs",
+        "failedSuccess": "已请求重新运行失败 jobs。",
+        "jobSuccess": "已请求重新运行 {job}。",
+        "singleJobLabel": "重新运行 {job}"
+      },
+      "jobs": {
+        "emptyDescription": "GitHub 没有返回这个 workflow run 的 jobs。",
+        "emptyTitle": "没有 jobs",
+        "errorDescription": "无法从 GitHub 加载 jobs。请检查连接后重试。",
+        "errorTitle": "无法加载 jobs",
+        "stepsSummary": "{completed}/{total} 步",
+        "title": "Jobs"
+      },
+      "log": {
+        "emptyDescription": "当前选中的 job 暂时没有日志内容。",
+        "emptyTitle": "没有日志输出",
+        "errorDescription": "无法从 GitHub 加载 job 日志。日志可能还在生成，或需要更多权限。",
+        "errorTitle": "无法加载日志",
+        "fetchedAt": "获取于 {time}",
+        "lines": "{count} 行",
+        "pendingDescription": "GitHub 已接受该 job，但日志文件暂时还没有生成完成。页面会继续刷新。",
+        "pendingTitle": "日志正在生成",
+        "streaming": "实时",
+        "title": "日志"
+      },
+      "steps": {
+        "duration": "耗时 {duration}",
+        "emptyDescription": "选择一个 job 后查看每一步运行情况。",
+        "emptyTitle": "未选择 job",
+        "started": "开始于 {time}",
+        "stepNumber": "第 {number} 步"
+      },
+      "summary": {
+        "actor": "触发者",
+        "attempt": "尝试次数",
+        "branch": "分支",
+        "commit": "提交",
+        "event": "事件",
+        "runNumber": "Run #{runNumber}",
+        "started": "开始时间",
+        "title": "摘要",
+        "updated": "更新时间",
+        "workflow": "Workflow"
+      }
+    }
+  },
   "auth": {
     "browserOpened": "复制这个代码，然后打开 GitHub 授权应用。",
     "copyCodeAndOpenGitHub": "复制代码并打开 GitHub",
@@ -182,6 +283,10 @@
           "label": "仓库文件",
           "description": "将当前仓库标签页切换到文件。"
         },
+        "repositorySectionCommits": {
+          "label": "仓库提交",
+          "description": "将当前仓库标签页切换到提交。"
+        },
         "repositorySectionPullRequests": {
           "label": "仓库 Pull Requests",
           "description": "将当前仓库标签页切换到 Pull Requests。"
@@ -312,6 +417,32 @@
     "openOnGitHub": "在 GitHub 打开 {name}",
     "unknownDate": "未知"
   },
+  "commit": {
+    "checks": {
+      "failure": "检查失败",
+      "pending": "检查中",
+      "success": "检查通过"
+    },
+    "commitSha": "提交",
+    "committed": "提交于 {date}",
+    "copySha": "复制提交 SHA",
+    "error": {
+      "description": "无法从 GitHub 加载该提交。请检查连接后重试。",
+      "retry": "重试",
+      "title": "无法加载提交"
+    },
+    "files": {
+      "noDiff": "该文件没有可显示的文本 diff（二进制或过大）。"
+    },
+    "filesTitle": "文件",
+    "missing": {
+      "description": "打开带有 owner、仓库名和 commit sha 的提交标签页后，才会加载提交。"
+    },
+    "openOnGitHub": "在 GitHub 上查看",
+    "parents": "父提交",
+    "statsSummary": "{files} 个文件变更 · +{additions} −{deletions}",
+    "verified": "已验证"
+  },
   "repository": {
     "description": "{repository} 的仓库导航已经准备好。真实仓库数据会在这里继续接入。",
     "eyebrow": "仓库",
@@ -321,15 +452,50 @@
       "subtitle": "仓库"
     },
     "actions": {
+      "description": "查看当前仓库所有 workflow 或指定 workflow 的运行记录。",
       "fork": "Fork",
       "star": "Star",
       "starred": "Starred",
+      "title": "Actions",
       "watch": "Watch",
-      "watching": "Watching"
+      "watching": "Watching",
+      "workflows": {
+        "all": "所有 workflows",
+        "allDescription": "显示这个仓库的全部 workflow runs。",
+        "ariaLabel": "选择 workflow",
+        "empty": "没有找到 workflow。",
+        "placeholder": "选择 workflow",
+        "searchPlaceholder": "搜索 workflows..."
+      },
+      "runs": {
+        "attempt": "第 {attempt} 次尝试",
+        "empty": {
+          "allDescription": "这个仓库还没有 workflow run。",
+          "missingRepositoryDescription": "打开带有 owner 和仓库名的仓库后，才会加载 workflow runs。",
+          "missingRepositoryTitle": "没有选中仓库",
+          "title": "没有 workflow runs",
+          "workflowDescription": "{workflow} 还没有 workflow run。"
+        },
+        "error": {
+          "description": "无法从 GitHub 加载 workflow runs。请检查连接后重试。",
+          "retry": "重试",
+          "title": "无法加载 workflow runs"
+        },
+        "meta": {
+          "started": "开始于 {date}",
+          "updated": "更新于 {date}"
+        },
+        "pagination": {
+          "summary": "第 {page} / {pageCount} 页 · 共 {totalCount} 次运行"
+        }
+      }
     },
     "sections": {
       "actions": {
         "title": "Actions"
+      },
+      "commits": {
+        "title": "Commits"
       },
       "files": {
         "title": "Files"
@@ -346,6 +512,38 @@
       },
       "settings": {
         "title": "Settings"
+      }
+    },
+    "commits": {
+      "branch": {
+        "empty": "没有找到分支。",
+        "loading": "正在加载分支...",
+        "placeholder": "选择分支",
+        "searchPlaceholder": "搜索分支",
+        "selectLabel": "选择分支"
+      },
+      "checks": {
+        "failure": "检查失败",
+        "pending": "检查中",
+        "success": "检查通过"
+      },
+      "copySha": "复制提交 SHA",
+      "empty": {
+        "description": "该分支还没有任何提交。",
+        "missingRepositoryDescription": "打开带有 owner 和仓库名的仓库后，才会加载提交。",
+        "missingRepositoryTitle": "没有选中仓库",
+        "title": "没有提交"
+      },
+      "error": {
+        "description": "无法从 GitHub 加载提交。请检查连接后重试。",
+        "retry": "重试",
+        "title": "无法加载提交"
+      },
+      "meta": {
+        "committed": "提交于 {date}"
+      },
+      "pagination": {
+        "summary": "第 {page} 页"
       }
     },
     "overview": {
@@ -1078,7 +1276,8 @@
       "descriptions": {
         "account": "{owner} 已作为账号 tab 打开。本次只保留 URL、类型和占位面板。",
         "activity": "跟踪工作流、仓库动态和需要回看的项目状态。这里暂时只展示布局骨架。",
-        "draft": "新的 tab 会先作为本地占位页打开，后续可以接入真实 workspace 数据。",
+        "actionRun": "查看 GitHub Actions workflow run、jobs、steps 和日志输出。",
+        "commit": "查看一次提交的元信息和更改的文件。",
         "inbox": "把通知、mention 和 review 请求收束到一个干净的工作区入口。",
         "pullRequest": "{owner}/{repo} #{number} 的 Pull Request 数据会在这里继续接入。",
         "pullRequestList": "这个分类下的 Pull Request 会从左侧树里展开，完整列表视图后续再接入。",
@@ -1092,7 +1291,8 @@
       "eyebrows": {
         "account": "Account",
         "activity": "Activity",
-        "draft": "Draft",
+        "actionRun": "Action Run",
+        "commit": "Commit",
         "issue": "Issue",
         "issueList": "Issue 列表",
         "notFound": "未找到",
@@ -1106,7 +1306,8 @@
       "headings": {
         "account": "{owner}",
         "activity": "活动",
-        "draft": "新工作页",
+        "actionRun": "{owner}/{repo} run {run}",
+        "commit": "{owner}/{repo}",
         "inbox": "收件箱",
         "issue": "{owner}/{repo} #{number}",
         "issueList": "{title}",
@@ -1122,6 +1323,7 @@
         "alerts": "告警",
         "assigned": "指派",
         "category": "分类",
+        "commit": "提交",
         "drafts": "草稿",
         "mentions": "Mentions",
         "number": "编号",
@@ -1131,8 +1333,8 @@
         "repos": "仓库",
         "repository": "仓库",
         "reviews": "Review",
+        "run": "Run",
         "runs": "运行",
-        "scope": "范围",
         "source": "来源",
         "status": "状态",
         "type": "类型",

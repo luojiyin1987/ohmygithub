@@ -13,6 +13,15 @@ export function registerRepositoriesIpc(): void {
   ipcMain.handle('repositories:list-files', (_event, owner: string, repo: string, ref?: string | null) =>
     listRepositoryFiles(owner, repo, ref)
   )
+  ipcMain.handle('repositories:list-commits', (_event, owner: string, repo: string, ref?: string | null, page?: number, perPage?: number) =>
+    listRepositoryCommits(owner, repo, ref, page, perPage)
+  )
+  ipcMain.handle('repositories:list-branches', (_event, owner: string, repo: string) =>
+    listRepositoryBranches(owner, repo)
+  )
+  ipcMain.handle('repositories:get-commit', (_event, owner: string, repo: string, sha: string) =>
+    getRepositoryCommit(owner, repo, sha)
+  )
   ipcMain.handle('repositories:get-file-preview', (_event, owner: string, repo: string, path: string, ref?: string | null) =>
     getRepositoryFilePreview(owner, repo, path, ref)
   )
@@ -49,6 +58,41 @@ async function listRepositoryFiles(owner: string, repo: string, ref?: string | n
   return api.repositories.listFiles({
     ...repository,
     ref: normalizeRepositoryRef(ref),
+  })
+}
+
+async function listRepositoryCommits(owner: string, repo: string, ref?: string | null, page?: number, perPage?: number) {
+  const repository = normalizeRepository(owner, repo)
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.repositories.listCommits({
+    ...repository,
+    ref: normalizeRepositoryRef(ref),
+    page,
+    perPage,
+  })
+}
+
+async function listRepositoryBranches(owner: string, repo: string) {
+  const repository = normalizeRepository(owner, repo)
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.repositories.listBranches(repository)
+}
+
+async function getRepositoryCommit(owner: string, repo: string, sha: string) {
+  const repository = normalizeRepository(owner, repo)
+  const normalizedSha = sha.trim()
+
+  if (!normalizedSha) {
+    throw new Error('Commit sha is required')
+  }
+
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.repositories.getCommit({
+    ...repository,
+    sha: normalizedSha,
   })
 }
 

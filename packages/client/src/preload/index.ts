@@ -19,6 +19,24 @@ const api = {
     listOrganizationRepositories: (owner: string) =>
       ipcRenderer.invoke('accounts:list-organization-repositories', owner)
   },
+  actions: {
+    listRepositoryWorkflows: (owner: string, repo: string) =>
+      ipcRenderer.invoke('actions:list-workflows', owner, repo),
+    listRepositoryWorkflowRuns: (options: unknown) =>
+      ipcRenderer.invoke('actions:list-runs', options),
+    getWorkflowRun: (owner: string, repo: string, runId: number) =>
+      ipcRenderer.invoke('actions:get-run', owner, repo, runId),
+    listWorkflowRunJobs: (options: unknown) =>
+      ipcRenderer.invoke('actions:list-run-jobs', options),
+    getWorkflowJobLog: (owner: string, repo: string, jobId: number) =>
+      ipcRenderer.invoke('actions:get-job-log', owner, repo, jobId),
+    rerunWorkflowRun: (owner: string, repo: string, runId: number) =>
+      ipcRenderer.invoke('actions:rerun-run', owner, repo, runId),
+    rerunFailedWorkflowRunJobs: (owner: string, repo: string, runId: number) =>
+      ipcRenderer.invoke('actions:rerun-failed-run-jobs', owner, repo, runId),
+    rerunWorkflowJob: (owner: string, repo: string, jobId: number) =>
+      ipcRenderer.invoke('actions:rerun-job', owner, repo, jobId)
+  },
   issues: {
     listIssueCategory: (category: string) => ipcRenderer.invoke('issues:list-category', category),
     listViewerIssues: () => ipcRenderer.invoke('issues:list-viewer'),
@@ -50,6 +68,12 @@ const api = {
       ipcRenderer.invoke('repositories:get-overview', owner, repo),
     listFiles: (owner: string, repo: string, ref?: string | null) =>
       ipcRenderer.invoke('repositories:list-files', owner, repo, ref),
+    listCommits: (owner: string, repo: string, ref?: string | null, page?: number, perPage?: number) =>
+      ipcRenderer.invoke('repositories:list-commits', owner, repo, ref, page, perPage),
+    listBranches: (owner: string, repo: string) =>
+      ipcRenderer.invoke('repositories:list-branches', owner, repo),
+    getCommit: (owner: string, repo: string, sha: string) =>
+      ipcRenderer.invoke('repositories:get-commit', owner, repo, sha),
     getFilePreview: (owner: string, repo: string, path: string, ref?: string | null) =>
       ipcRenderer.invoke('repositories:get-file-preview', owner, repo, path, ref),
     setStarred: (owner: string, repo: string, starred: boolean) =>

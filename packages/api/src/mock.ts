@@ -4,12 +4,20 @@ import type {
   AccountContributionsOptions,
   GetIssueDetailOptions,
   GetPullRequestDetailOptions,
+  GetWorkflowJobLogOptions,
+  GetWorkflowRunOptions,
   GitHubAccountContributionYear,
   GitHubAccountOverview,
   GitHubAccountProfile,
   GitHubAccountRepository,
   GitHubAccountRepositoryPage,
   GitHubAccountViewerState,
+  GitHubActionJob,
+  GitHubActionJobLog,
+  GitHubActionRun,
+  GitHubActionRunPage,
+  GitHubActionStep,
+  GitHubActionWorkflow,
   GitHubClient,
   GitHubIssue,
   GitHubIssueSearchResult,
@@ -20,7 +28,11 @@ import type {
   GitHubPullRequestComment,
   GitHubPullRequestDetail,
   GitHubPullRequestSearchResult,
+  GitHubCommitDetail,
   GitHubRepository,
+  GitHubRepositoryBranch,
+  GitHubRepositoryCommit,
+  GitHubRepositoryCommitPage,
   GitHubRepositoryFileNode,
   GitHubRepositoryFilePreview,
   GitHubRepositoryFileTree,
@@ -35,17 +47,50 @@ import type {
   ListIssueCategoryOptions,
   ListPullRequestCategoryOptions,
   ListRepositoryWorkspaceItemsOptions,
+  ListRepositoryWorkflowRunsOptions,
+  ListWorkflowRunJobsOptions,
+  RepositoryBranchesOptions,
+  RepositoryCommitOptions,
+  RepositoryCommitsOptions,
   RepositoryFilePreviewOptions,
   RepositoryFilesOptions,
   RepositoryOptions,
   ResolveRepositoryReferenceOptions,
+  RerunWorkflowJobOptions,
+  RerunWorkflowRunOptions,
   SearchRepositoryIssuesOptions,
   SearchRepositoryPullRequestsOptions,
   SearchWorkspaceOptions,
   SetAccountFollowedOptions,
   SetRepositoryStarredOptions,
-  SetRepositoryWatchingOptions
+  SetRepositoryWatchingOptions,
+  GitHubActor,
+  GitHubIssueMilestone,
+  GitHubLabel
 } from './types'
+
+const MOCK_LABEL_COLORS: Record<string, string> = {
+  review: '0e8a16',
+  desktop: '5319e7',
+  api: '1d76db',
+  inbox: 'fbca04',
+  design: 'd93f0b',
+  'good first issue': '7057ff',
+  ci: '0052cc',
+  renderer: 'c2e0c6',
+  workspace: 'bfdadc',
+  bug: 'd73a4a',
+  triage: 'fbca04',
+  detail: 'c5def5'
+}
+
+function mockLabels(...names: string[]): GitHubLabel[] {
+  return names.map((name) => ({
+    name,
+    color: MOCK_LABEL_COLORS[name] ?? '8b949e',
+    description: null
+  }))
+}
 
 const items: GitHubWorkspaceItem[] = [
   {
@@ -57,7 +102,7 @@ const items: GitHubWorkspaceItem[] = [
     state: 'unread',
     author: { login: 'octo-lina' },
     updatedAt: '2026-06-27T08:42:00.000Z',
-    labels: ['review', 'desktop'],
+    labels: mockLabels('review', 'desktop'),
     summary: 'A reviewer asked for tighter keyboard behavior in the workspace sidebar.'
   },
   {
@@ -69,7 +114,7 @@ const items: GitHubWorkspaceItem[] = [
     state: 'open',
     author: { login: 'maya' },
     updatedAt: '2026-06-27T07:10:00.000Z',
-    labels: ['api', 'inbox'],
+    labels: mockLabels('api', 'inbox'),
     summary: 'Introduces an inbox-oriented shape for notifications, issues, and pull requests.'
   },
   {
@@ -81,7 +126,7 @@ const items: GitHubWorkspaceItem[] = [
     state: 'open',
     author: { login: 'arden' },
     updatedAt: '2026-06-26T22:18:00.000Z',
-    labels: ['design', 'good first issue'],
+    labels: mockLabels('design', 'good first issue'),
     summary: 'The first-run screen needs a concise state before GitHub OAuth is wired in.'
   },
   {
@@ -92,7 +137,7 @@ const items: GitHubWorkspaceItem[] = [
     state: 'failed',
     author: { login: 'github-actions' },
     updatedAt: '2026-06-26T18:03:00.000Z',
-    labels: ['ci', 'renderer'],
+    labels: mockLabels('ci', 'renderer'),
     summary: 'The app shell build failed during renderer type checking.'
   }
 ]
@@ -257,6 +302,34 @@ const issuesByRepository: Record<string, GitHubIssue[]> = {
   'oh-my-github/client': createMockIssues('oh-my-github', 'client', ['Sidebar active item is too tall', 'Bookmark menu needs keyboard polish']),
   'oh-my-github/ui': createMockIssues('oh-my-github', 'ui', ['Document compact menu sizing']),
   'vuejs/core': createMockIssues('vuejs', 'core', ['Regression in suspense hydration']),
+}
+
+const workflowsByRepository: Record<string, GitHubActionWorkflow[]> = {
+  'oh-my-github/client': createMockActionWorkflows('oh-my-github', 'client'),
+  'oh-my-github/api': createMockActionWorkflows('oh-my-github', 'api'),
+  'oh-my-github/ui': createMockActionWorkflows('oh-my-github', 'ui'),
+  'vuejs/core': createMockActionWorkflows('vuejs', 'core'),
+}
+
+const runsByRepository: Record<string, GitHubActionRun[]> = Object.fromEntries(
+  Object.entries(workflowsByRepository).map(([repository, workflows]) => {
+    const [owner, repo] = repository.split('/')
+    return [repository, createMockActionRuns(owner, repo, workflows)]
+  })
+)
+
+const jobsByRun = new Map<number, GitHubActionJob[]>()
+const logsByJob = new Map<number, string>()
+
+for (const runs of Object.values(runsByRepository)) {
+  for (const run of runs) {
+    const jobs = createMockActionJobs(run)
+    jobsByRun.set(run.id, jobs)
+
+    for (const job of jobs) {
+      logsByJob.set(job.id, createMockActionLog(run, job))
+    }
+  }
 }
 
 const viewerStateByRepository = new Map<string, GitHubRepositoryViewerState>()
@@ -545,7 +618,7 @@ export class MockGitHubClient implements GitHubClient {
       return pullRequests.filter((pullRequest) => pullRequest.hasUpdates)
     }
 
-    return pullRequests.filter((pullRequest) => pullRequest.labels.includes('review'))
+    return pullRequests.filter((pullRequest) => pullRequest.labels.some((label) => label.name === 'review'))
   }
 
   async listRepositoryPullRequests(options: ListRepositoryWorkspaceItemsOptions): Promise<GitHubPullRequest[]> {
@@ -607,6 +680,7 @@ export class MockGitHubClient implements GitHubClient {
       authorAssociation: 'OWNER',
       reactions: [],
       url: `https://github.com/${repositoryKey(options)}/pull/${options.number}#issuecomment-mock`,
+      viewerCanUpdate: true,
     }
 
     mockPullRequestCommentsByPullRequest.set(key, [
@@ -615,6 +689,30 @@ export class MockGitHubClient implements GitHubClient {
     ])
 
     return comment
+  }
+
+  async updatePullRequest(): Promise<void> {
+    return
+  }
+
+  async closePullRequest(): Promise<void> {
+    return
+  }
+
+  async requestPullRequestReviewers(): Promise<void> {
+    return
+  }
+
+  async markPullRequestReadyForReview(): Promise<void> {
+    return
+  }
+
+  async mergePullRequest(): Promise<void> {
+    return
+  }
+
+  async updatePullRequestComment(): Promise<void> {
+    return
   }
 
   async listViewerIssues(): Promise<GitHubIssue[]> {
@@ -632,7 +730,7 @@ export class MockGitHubClient implements GitHubClient {
       return issues.filter((issue) => issue.hasUpdates)
     }
 
-    return issues.filter((issue) => issue.labels.includes('triage'))
+    return issues.filter((issue) => issue.labels.some((label) => label.name === 'triage'))
   }
 
   async listRepositoryIssues(options: ListRepositoryWorkspaceItemsOptions): Promise<GitHubIssue[]> {
@@ -694,6 +792,7 @@ export class MockGitHubClient implements GitHubClient {
       authorAssociation: 'OWNER',
       reactions: [],
       url: `https://github.com/${repositoryKey(options)}/issues/${options.number}#issuecomment-mock`,
+      viewerCanUpdate: true,
     }
 
     mockIssueCommentsByIssue.set(key, [
@@ -702,6 +801,55 @@ export class MockGitHubClient implements GitHubClient {
     ])
 
     return comment
+  }
+
+  async listRepositoryLabels(): Promise<GitHubLabel[]> {
+    return mockLabels('bug', 'enhancement', 'good first issue', 'triage')
+  }
+
+  async listRepositoryMilestones(): Promise<GitHubIssueMilestone[]> {
+    return [
+      {
+        id: 'mock-milestone:1',
+        number: 1,
+        title: 'v1.0',
+        description: null,
+        dueOn: null,
+        state: 'open',
+        url: 'https://github.com/oh-my-github/client/milestone/1'
+      }
+    ]
+  }
+
+  async listAssignableUsers(): Promise<GitHubActor[]> {
+    return [
+      { login: 'octo-lina', avatarUrl: undefined },
+      { login: 'maya', avatarUrl: undefined }
+    ]
+  }
+
+  async updateIssue(): Promise<void> {
+    return
+  }
+
+  async updateIssueComment(): Promise<void> {
+    return
+  }
+
+  async setIssueSubscription(): Promise<void> {
+    return
+  }
+
+  async setIssueLock(): Promise<void> {
+    return
+  }
+
+  async setIssuePinned(): Promise<void> {
+    return
+  }
+
+  async deleteIssue(): Promise<void> {
+    return
   }
 
   async getRepositoryViewerState(options: RepositoryOptions): Promise<GitHubRepositoryViewerState> {
@@ -714,6 +862,59 @@ export class MockGitHubClient implements GitHubClient {
 
   async listRepositoryFiles(options: RepositoryFilesOptions): Promise<GitHubRepositoryFileTree> {
     return createMockRepositoryFileTree(options)
+  }
+
+  async listRepositoryCommits(options: RepositoryCommitsOptions): Promise<GitHubRepositoryCommitPage> {
+    const page = Math.max(1, Math.floor(options.page ?? 1))
+    const perPage = Math.max(1, Math.min(100, Math.floor(options.perPage ?? 30)))
+    const items: GitHubRepositoryCommit[] = page > 1
+      ? []
+      : [
+          {
+            sha: 'aaaaaaa000000000000000000000000000000000',
+            shortSha: 'aaaaaaa',
+            message: 'Initial commit',
+            headline: 'Initial commit',
+            author: { login: 'octocat', name: 'The Octocat', avatarUrl: null },
+            committedDate: '2026-01-01T00:00:00Z',
+            htmlUrl: `https://github.com/${options.owner}/${options.repo}/commit/aaaaaaa`,
+            ciState: 'success',
+          },
+        ]
+
+    return { items, page, perPage, hasPreviousPage: page > 1, hasNextPage: false }
+  }
+
+  async listRepositoryBranches(options: RepositoryBranchesOptions): Promise<GitHubRepositoryBranch[]> {
+    return [
+      { name: 'main', commitSha: `${options.repo}-main` },
+      { name: 'develop', commitSha: `${options.repo}-develop` },
+    ]
+  }
+
+  async getRepositoryCommit(options: RepositoryCommitOptions): Promise<GitHubCommitDetail> {
+    return {
+      sha: options.sha,
+      shortSha: options.sha.slice(0, 7),
+      headline: 'Initial commit',
+      message: 'Initial commit',
+      htmlUrl: `https://github.com/${options.owner}/${options.repo}/commit/${options.sha}`,
+      author: { login: 'octocat', name: 'The Octocat', avatarUrl: null, date: '2026-01-01T00:00:00Z' },
+      committer: { login: 'octocat', name: 'The Octocat', avatarUrl: null, date: '2026-01-01T00:00:00Z' },
+      parents: [],
+      verification: { verified: false, reason: 'unsigned' },
+      stats: { additions: 2, deletions: 1, total: 3 },
+      files: [
+        {
+          filename: 'README.md',
+          status: 'modified',
+          additions: 2,
+          deletions: 1,
+          patch: '@@ -1,2 +1,3 @@\n title\n-old line\n+new line\n+added line',
+        },
+      ],
+      ciState: 'success',
+    }
   }
 
   async getRepositoryFilePreview(options: RepositoryFilePreviewOptions): Promise<GitHubRepositoryFilePreview> {
@@ -738,6 +939,80 @@ export class MockGitHubClient implements GitHubClient {
     })
   }
 
+  async listRepositoryWorkflows(options: RepositoryOptions): Promise<GitHubActionWorkflow[]> {
+    return workflowsByRepository[repositoryKey(options)] ?? []
+  }
+
+  async listRepositoryWorkflowRuns(options: ListRepositoryWorkflowRunsOptions): Promise<GitHubActionRunPage> {
+    const page = Math.max(1, Math.floor(options.page ?? 1))
+    const perPage = Math.max(1, Math.min(100, Math.floor(options.perPage ?? 20)))
+    const workflowId = options.workflowId && options.workflowId !== 'all' ? options.workflowId : null
+    const headSha = options.headSha?.trim().toLowerCase() || null
+    const runs = (runsByRepository[repositoryKey(options)] ?? [])
+      .filter((run) => workflowId === null || run.workflowId === workflowId)
+      .filter((run) => headSha === null || run.headSha.toLowerCase() === headSha)
+    const offset = (page - 1) * perPage
+
+    return {
+      items: runs.slice(offset, offset + perPage),
+      totalCount: runs.length,
+      page,
+      perPage,
+      hasNextPage: offset + perPage < runs.length,
+    }
+  }
+
+  async getWorkflowRun(options: GetWorkflowRunOptions): Promise<GitHubActionRun> {
+    const run = (runsByRepository[repositoryKey(options)] ?? [])
+      .find((item) => item.id === options.runId)
+
+    if (!run) {
+      throw new Error('Workflow run not found')
+    }
+
+    return run
+  }
+
+  async listWorkflowRunJobs(options: ListWorkflowRunJobsOptions): Promise<GitHubActionJob[]> {
+    return jobsByRun.get(options.runId) ?? []
+  }
+
+  async getWorkflowJobLog(options: GetWorkflowJobLogOptions): Promise<GitHubActionJobLog> {
+    return {
+      jobId: options.jobId,
+      content: logsByJob.get(options.jobId) ?? '',
+      fetchedAt: new Date().toISOString(),
+      isAvailable: true,
+    }
+  }
+
+  async rerunWorkflowRun(options: RerunWorkflowRunOptions): Promise<void> {
+    const run = findMockWorkflowRun(options)
+    markRunRerunning(run)
+
+    for (const job of jobsByRun.get(run.id) ?? []) {
+      markJobRerunning(run, job)
+    }
+  }
+
+  async rerunFailedWorkflowRunJobs(options: RerunWorkflowRunOptions): Promise<void> {
+    const run = findMockWorkflowRun(options)
+    markRunRerunning(run)
+
+    for (const job of jobsByRun.get(run.id) ?? []) {
+      if (job.conclusion !== 'success') {
+        markJobRerunning(run, job)
+      }
+    }
+  }
+
+  async rerunWorkflowJob(options: RerunWorkflowJobOptions): Promise<void> {
+    const { run, job } = findMockWorkflowJob(options)
+
+    markRunRerunning(run)
+    markJobRerunning(run, job)
+  }
+
   async listNotifications(): Promise<GitHubWorkspaceItem[]> {
     return items
   }
@@ -749,6 +1024,54 @@ export class MockGitHubClient implements GitHubClient {
   async listIssues(): Promise<GitHubWorkspaceItem[]> {
     return items.filter((item) => item.kind === 'issue')
   }
+}
+
+function findMockWorkflowRun(options: GetWorkflowRunOptions): GitHubActionRun {
+  const run = (runsByRepository[repositoryKey(options)] ?? [])
+    .find((item) => item.id === options.runId)
+
+  if (!run) {
+    throw new Error('Workflow run not found')
+  }
+
+  return run
+}
+
+function findMockWorkflowJob(options: RerunWorkflowJobOptions): { run: GitHubActionRun, job: GitHubActionJob } {
+  for (const run of runsByRepository[repositoryKey(options)] ?? []) {
+    const job = (jobsByRun.get(run.id) ?? []).find((item) => item.id === options.jobId)
+
+    if (job) {
+      return { run, job }
+    }
+  }
+
+  throw new Error('Workflow job not found')
+}
+
+function markRunRerunning(run: GitHubActionRun): void {
+  run.status = 'queued'
+  run.conclusion = null
+  run.runAttempt += 1
+  run.runStartedAt = null
+  run.completedAt = null
+  run.updatedAt = new Date().toISOString()
+}
+
+function markJobRerunning(run: GitHubActionRun, job: GitHubActionJob): void {
+  job.status = 'queued'
+  job.conclusion = null
+  job.runAttempt = run.runAttempt
+  job.startedAt = null
+  job.completedAt = null
+  job.steps = job.steps.map((step) => ({
+    ...step,
+    status: 'queued',
+    conclusion: null,
+    startedAt: null,
+    completedAt: null,
+  }))
+  logsByJob.set(job.id, '')
 }
 
 function readRepositoryViewerState(options: RepositoryOptions): GitHubRepositoryViewerState {
@@ -1299,6 +1622,186 @@ function encodeMockPath(path: string): string {
   return path.split('/').map(encodeURIComponent).join('/')
 }
 
+function createMockActionWorkflows(owner: string, repo: string): GitHubActionWorkflow[] {
+  const key = `${owner}/${repo}`
+  const base = Math.abs(Array.from(key).reduce((sum, character) => sum + character.charCodeAt(0), 0))
+
+  return [
+    {
+      id: base + 101,
+      nodeId: `W_${base}_ci`,
+      name: 'CI',
+      path: '.github/workflows/ci.yml',
+      state: 'active',
+      createdAt: new Date(Date.UTC(2026, 4, 20, 8)).toISOString(),
+      updatedAt: new Date(Date.UTC(2026, 5, 27, 8)).toISOString(),
+      url: `https://api.github.com/repos/${key}/actions/workflows/${base + 101}`,
+      htmlUrl: `https://github.com/${key}/actions/workflows/ci.yml`,
+      badgeUrl: `https://github.com/${key}/actions/workflows/ci.yml/badge.svg`,
+    },
+    {
+      id: base + 102,
+      nodeId: `W_${base}_release`,
+      name: 'Release',
+      path: '.github/workflows/release.yml',
+      state: 'active',
+      createdAt: new Date(Date.UTC(2026, 4, 21, 8)).toISOString(),
+      updatedAt: new Date(Date.UTC(2026, 5, 25, 8)).toISOString(),
+      url: `https://api.github.com/repos/${key}/actions/workflows/${base + 102}`,
+      htmlUrl: `https://github.com/${key}/actions/workflows/release.yml`,
+      badgeUrl: `https://github.com/${key}/actions/workflows/release.yml/badge.svg`,
+    },
+    {
+      id: base + 103,
+      nodeId: `W_${base}_nightly`,
+      name: 'Nightly',
+      path: '.github/workflows/nightly.yml',
+      state: 'disabled_manually',
+      createdAt: new Date(Date.UTC(2026, 4, 22, 8)).toISOString(),
+      updatedAt: new Date(Date.UTC(2026, 5, 18, 8)).toISOString(),
+      url: `https://api.github.com/repos/${key}/actions/workflows/${base + 103}`,
+      htmlUrl: `https://github.com/${key}/actions/workflows/nightly.yml`,
+      badgeUrl: null,
+    },
+  ]
+}
+
+function createMockActionRuns(
+  owner: string,
+  repo: string,
+  workflows: GitHubActionWorkflow[],
+): GitHubActionRun[] {
+  const key = `${owner}/${repo}`
+  const now = Date.UTC(2026, 5, 30, 9)
+  const statuses: Array<Pick<GitHubActionRun, 'status' | 'conclusion' | 'event'> & { offsetHours: number }> = [
+    { status: 'in_progress', conclusion: null, event: 'push', offsetHours: 0 },
+    { status: 'completed', conclusion: 'success', event: 'pull_request', offsetHours: 2 },
+    { status: 'completed', conclusion: 'failure', event: 'push', offsetHours: 8 },
+    { status: 'queued', conclusion: null, event: 'workflow_dispatch', offsetHours: 18 },
+    { status: 'completed', conclusion: 'skipped', event: 'schedule', offsetHours: 28 },
+    { status: 'completed', conclusion: 'cancelled', event: 'push', offsetHours: 42 },
+  ]
+  const commitShas = [
+    'aaaaaaa000000000000000000000000000000000',
+    'fe427d5a7b1e724e7f72693e3f2c9fa12e54322',
+    'f5f1b3ba7b1e724e7f72693e3f2c9fa12e54323',
+  ]
+
+  return statuses.map((state, index) => {
+    const workflow = workflows[index % workflows.length]
+    const id = workflow.id * 100 + index + 1
+    const createdAt = new Date(now - state.offsetHours * 60 * 60 * 1000).toISOString()
+    const runStartedAt = new Date(now - state.offsetHours * 60 * 60 * 1000 + 45 * 1000).toISOString()
+    const updatedAt = state.status === 'completed'
+      ? new Date(now - state.offsetHours * 60 * 60 * 1000 + (index + 2) * 60 * 1000).toISOString()
+      : new Date(now - state.offsetHours * 60 * 60 * 1000 + 4 * 60 * 1000).toISOString()
+
+    return {
+      id,
+      runNumber: 140 - index,
+      runAttempt: index === 2 ? 2 : 1,
+      name: workflow.name,
+      displayTitle: [
+        'Validate repository Actions page',
+        'Update pull request detail fixtures',
+        'Fix workspace navigation state',
+        'Manual desktop smoke test',
+        'Nightly cache warmup',
+        'Cancel stale renderer build',
+      ][index],
+      workflowId: workflow.id,
+      workflowName: workflow.name,
+      event: state.event,
+      status: state.status,
+      conclusion: state.conclusion,
+      headBranch: index % 2 === 0 ? 'main' : `feature/mock-${index}`,
+      headSha: commitShas[index] ?? mockSha(`${key}:run:${id}`).padEnd(40, '0').slice(0, 40),
+      actor: {
+        login: index % 2 === 0 ? 'acbox' : 'maya',
+        avatarUrl: `https://github.com/${index % 2 === 0 ? 'acbox' : 'maya'}.png?size=64`,
+      },
+      triggeringActor: null,
+      checkSuiteId: id + 5000,
+      createdAt,
+      updatedAt,
+      runStartedAt,
+      completedAt: state.status === 'completed' ? updatedAt : null,
+      url: `https://api.github.com/repos/${key}/actions/runs/${id}`,
+      htmlUrl: `https://github.com/${key}/actions/runs/${id}`,
+      jobsUrl: `https://api.github.com/repos/${key}/actions/runs/${id}/jobs`,
+      logsUrl: `https://api.github.com/repos/${key}/actions/runs/${id}/logs`,
+    }
+  })
+}
+
+function createMockActionJobs(run: GitHubActionRun): GitHubActionJob[] {
+  const jobNames = run.workflowName === 'Release'
+    ? ['Package', 'Publish']
+    : ['Lint', 'Typecheck', 'Build']
+
+  return jobNames.map((name, index) => {
+    const id = run.id * 10 + index + 1
+    const isWaiting = run.status !== 'completed' && index > 0
+    const status = isWaiting ? 'queued' : run.status
+    const conclusion = run.status === 'completed'
+      ? index === 0 ? run.conclusion : run.conclusion === 'failure' ? 'skipped' : run.conclusion
+      : null
+
+    return {
+      id,
+      runId: run.id,
+      runAttempt: run.runAttempt,
+      name,
+      status,
+      conclusion,
+      startedAt: isWaiting ? null : run.runStartedAt,
+      completedAt: status === 'completed' ? run.completedAt : null,
+      htmlUrl: `${run.htmlUrl}/job/${id}`,
+      runnerName: isWaiting ? null : 'ubuntu-latest',
+      labels: ['ubuntu-latest'],
+      steps: createMockActionSteps(status, conclusion),
+    }
+  })
+}
+
+function createMockActionSteps(
+  status: GitHubActionJob['status'],
+  conclusion: GitHubActionJob['conclusion'],
+): GitHubActionStep[] {
+  const stepNames = ['Set up job', 'Checkout', 'Install dependencies', 'Run command', 'Post job cleanup']
+
+  return stepNames.map((name, index) => {
+    const stepStatus = status === 'queued'
+      ? 'queued'
+      : status === 'in_progress' && index >= 3
+        ? index === 3 ? 'in_progress' : 'queued'
+        : 'completed'
+    const stepConclusion = stepStatus === 'completed'
+      ? conclusion === 'failure' && index === 3 ? 'failure' : 'success'
+      : null
+
+    return {
+      number: index + 1,
+      name,
+      status: stepStatus,
+      conclusion: stepConclusion,
+      startedAt: stepStatus === 'queued' ? null : new Date(Date.UTC(2026, 5, 30, 9, index * 2)).toISOString(),
+      completedAt: stepStatus === 'completed' ? new Date(Date.UTC(2026, 5, 30, 9, index * 2 + 1)).toISOString() : null,
+    }
+  })
+}
+
+function createMockActionLog(run: GitHubActionRun, job: GitHubActionJob): string {
+  return [
+    `2026-06-30T09:00:00.000Z Starting ${job.name} for ${run.displayTitle}`,
+    '2026-06-30T09:00:03.000Z Checking out repository',
+    '2026-06-30T09:00:12.000Z Installing dependencies',
+    job.status === 'in_progress'
+      ? '2026-06-30T09:01:00.000Z Command still running...'
+      : `2026-06-30T09:02:00.000Z Job finished with ${job.conclusion ?? 'no conclusion'}`,
+  ].join('\n')
+}
+
 function createMockRepositories(owner: string, names: string[]): GitHubRepository[] {
   return names.map((name, index) => ({
     id: Number(`${organizations.find((organization) => organization.login === owner)?.id ?? 9}${index + 1}`),
@@ -1324,7 +1827,7 @@ function createMockPullRequests(owner: string, repo: string, titles: string[]): 
     ciState: index === 0 ? 'success' : index === 1 ? 'failure' : 'pending',
     author: { login: index % 2 === 0 ? 'acbox' : 'octo-lina' },
     updatedAt: new Date(Date.UTC(2026, 5, 27 - index, 8)).toISOString(),
-    labels: index === 0 ? ['workspace'] : ['review'],
+    labels: index === 0 ? mockLabels('workspace') : mockLabels('review'),
     url: `https://github.com/${owner}/${repo}/pull/${index + 11}`,
     hasUpdates: index === 0,
   }))
@@ -1341,7 +1844,7 @@ function createMockIssues(owner: string, repo: string, titles: string[]): GitHub
     state: index === 2 ? 'not_planned' : index === 1 ? 'completed' : 'open',
     author: { login: index % 2 === 0 ? 'acbox' : 'arden' },
     updatedAt: new Date(Date.UTC(2026, 5, 26 - index, 10)).toISOString(),
-    labels: index === 0 ? ['bug'] : ['triage'],
+    labels: index === 0 ? mockLabels('bug') : mockLabels('triage'),
     url: `https://github.com/${owner}/${repo}/issues/${index + 31}`,
     hasUpdates: index === 1,
   }))
@@ -1362,6 +1865,7 @@ function createMockPullRequestDetail(
 
   return {
     id: pullRequest?.id ?? `mock-pr:${key}:${options.number}`,
+    nodeId: pullRequest?.id ?? `mock-pr-node:${key}:${options.number}`,
     owner: options.owner,
     repo: options.repo,
     repository: key,
@@ -1387,7 +1891,7 @@ function createMockPullRequestDetail(
       '- branch and diff summary metadata',
       '- linked issues in the sidebar',
     ].join('\n'),
-    labels: pullRequest?.labels ?? ['workspace', 'review'],
+    labels: pullRequest?.labels ?? mockLabels('workspace', 'review'),
     assignees: [
       { login: 'octo-lina', avatarUrl: 'https://avatars.githubusercontent.com/u/583231?s=80&v=4' },
     ],
@@ -1437,6 +1941,7 @@ function createMockPullRequestDetail(
       repository: key,
       url: `https://github.com/${key}/tree/codex/pr-conversations`,
     },
+    headSha: 'f5f1b3ba7b1e724e7f72693e3f2c9fa12e54323',
     isCrossRepository: false,
     maintainerCanModify: true,
     diffStats: {
@@ -1448,6 +1953,11 @@ function createMockPullRequestDetail(
       ciState: pullRequest?.ciState ?? 'success',
       checksUrl: `https://github.com/${key}/pull/${options.number}/checks`,
       mergeStateStatus: 'CLEAN',
+      mergeable: 'MERGEABLE',
+    },
+    mergePolicy: {
+      methods: ['merge', 'squash', 'rebase'],
+      defaultMethod: 'squash',
     },
     linkedIssues: [
       {
@@ -1474,6 +1984,7 @@ function createMockPullRequestDetail(
           { content: 'eyes', count: 1 },
         ],
         url: `https://github.com/${key}/pull/${options.number}#issuecomment-1`,
+        viewerCanUpdate: true,
       },
       ...(mockPullRequestCommentsByPullRequest.get(pullRequestThreadKey(options)) ?? []),
     ],
@@ -1602,6 +2113,13 @@ function createMockPullRequestDetail(
     ],
     url: pullRequest?.url ?? `https://github.com/${key}/pull/${options.number}`,
     hasUpdates: pullRequest?.hasUpdates ?? false,
+    viewerCanUpdate: true,
+    viewerCanClose: true,
+    viewerCanReopen: pullRequest?.state === 'closed',
+    viewerCanMergeAsAdmin: true,
+    locked: false,
+    viewerSubscription: null,
+    projects: [],
   }
 }
 
@@ -1635,7 +2153,10 @@ function createMockIssueDetail(options: GetIssueDetailOptions, issue?: GitHubIss
       '- comments with reactions',
       '- core timeline events for triage and state changes',
     ].join('\n'),
-    labels: issue?.labels ?? ['triage', 'detail'],
+    labels: issue?.labels ?? mockLabels('triage', 'detail'),
+    issueType: null,
+    relationships: { parent: null, subIssues: [], tracked: [] },
+    projects: [],
     assignees: [
       { login: 'octo-lina', avatarUrl: 'https://avatars.githubusercontent.com/u/583231?s=80&v=4' },
       { login: 'maya', avatarUrl: 'https://avatars.githubusercontent.com/u/69631?s=80&v=4' },
@@ -1667,6 +2188,7 @@ function createMockIssueDetail(options: GetIssueDetailOptions, issue?: GitHubIss
           { content: 'eyes', count: 1 },
         ],
         url: `https://github.com/${key}/issues/${options.number}#issuecomment-1`,
+        viewerCanUpdate: true,
       },
       {
         id: `mock-comment:${key}:${options.number}:2`,
@@ -1679,6 +2201,7 @@ function createMockIssueDetail(options: GetIssueDetailOptions, issue?: GitHubIss
           { content: 'heart', count: 2 },
         ],
         url: `https://github.com/${key}/issues/${options.number}#issuecomment-2`,
+        viewerCanUpdate: false,
       },
       ...(mockIssueCommentsByIssue.get(issueThreadKey(options)) ?? []),
     ],
@@ -1694,7 +2217,7 @@ function createMockIssueDetail(options: GetIssueDetailOptions, issue?: GitHubIss
         type: 'labeled',
         actor: { login: 'acbox', avatarUrl: 'https://avatars.githubusercontent.com/u/9919?s=80&v=4' },
         createdAt: new Date(Date.UTC(2026, 5, 24, 10, 6)).toISOString(),
-        label: issue?.labels[0] ?? 'triage',
+        label: issue?.labels[0]?.name ?? 'triage',
       },
       {
         id: `mock-event:${key}:${options.number}:assigned`,
@@ -1730,7 +2253,15 @@ function createMockIssueDetail(options: GetIssueDetailOptions, issue?: GitHubIss
       { content: 'thumbs-up', count: 5 },
       { content: 'rocket', count: 1 },
     ],
+    development: null,
     url: issue?.url ?? `https://github.com/${key}/issues/${options.number}`,
     hasUpdates: issue?.hasUpdates ?? false,
+    viewerCanUpdate: true,
+    viewerCanClose: issue?.state === 'open' || !issue,
+    viewerCanReopen: Boolean(issue && issue.state !== 'open'),
+    nodeId: `mock-node:${options.number}`,
+    locked: false,
+    isPinned: false,
+    viewerSubscription: null,
   }
 }

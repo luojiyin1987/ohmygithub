@@ -13,6 +13,7 @@ import {
   Clock3,
   Code,
   Folder,
+  GitCommitHorizontal,
   GitFork,
   GitBranch,
   GitPullRequest,
@@ -39,7 +40,9 @@ import RepositoryOverview from './components/overview/repository-overview.vue'
 import PullRequestsSection from './components/pulls/section.vue'
 import IssuesSection from './components/issues/section.vue'
 import FilesPanel from './components/files/files-panel.vue'
+import CommitsSection from './components/commits/section.vue'
 import RepositorySidebar from './components/repository-sidebar.vue'
+import ActionsSection from './components/actions/section.vue'
 
 const props = defineProps<{
   isActive: boolean
@@ -53,6 +56,7 @@ const emit = defineEmits<{
 const repositorySections: readonly RepositorySection[] = [
   { id: 'overview', icon: Book },
   { id: 'files', icon: Folder },
+  { id: 'commits', icon: GitCommitHorizontal },
   { id: 'pullRequests', icon: GitPullRequest },
   { id: 'issues', icon: CircleDot },
   { id: 'actions', icon: Activity },
@@ -74,6 +78,7 @@ const shortcutUnregisters: Array<() => void> = []
 const sectionShortcutIds: Record<RepositorySectionId, KeyboardShortcutCommandId> = {
   overview: 'repository.section.overview',
   files: 'repository.section.files',
+  commits: 'repository.section.commits',
   pullRequests: 'repository.section.pullRequests',
   issues: 'repository.section.issues',
   actions: 'repository.section.actions',
@@ -465,6 +470,13 @@ watch(
           :repo="repository"
         />
 
+        <CommitsSection
+          v-else-if="activeSection === 'commits'"
+          :default-branch="overview?.defaultBranch ?? null"
+          :owner="owner"
+          :repo="repository"
+        />
+
         <PullRequestsSection
           v-else-if="activeSection === 'pullRequests'"
           :owner="owner"
@@ -473,6 +485,13 @@ watch(
 
         <IssuesSection
           v-else-if="activeSection === 'issues'"
+          :owner="owner"
+          :repo="repository"
+        />
+
+        <ActionsSection
+          v-else-if="activeSection === 'actions'"
+          :is-active="isActive"
           :owner="owner"
           :repo="repository"
         />

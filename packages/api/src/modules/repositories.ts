@@ -1,5 +1,11 @@
 import { RequestError, type GitHubOctokit } from '../transport'
 import type {
+  GitHubCiState,
+  GitHubCommitDetail,
+  GitHubCommitFile,
+  GitHubRepositoryBranch,
+  GitHubRepositoryCommit,
+  GitHubRepositoryCommitPage,
   GitHubRepositoryCustomProperty,
   GitHubRepositoryDocument,
   GitHubRepositoryDocumentFormat,
@@ -13,6 +19,9 @@ import type {
   GitHubRepositoryOverviewCounts,
   GitHubRepositoryViewerState,
   GitHubRepositoryVisibility,
+  RepositoryBranchesOptions,
+  RepositoryCommitOptions,
+  RepositoryCommitsOptions,
   RepositoryFilePreviewOptions,
   RepositoryFilesOptions,
   RepositoryOptions,
@@ -73,6 +82,51 @@ interface RepositoryTreeEntry {
   type?: string
   sha?: string
   size?: number
+}
+
+interface CommitListItemResponse {
+  sha?: string
+  html_url?: string | null
+  commit?: {
+    message?: string | null
+    author?: { name?: string | null; date?: string | null } | null
+    committer?: { name?: string | null; date?: string | null } | null
+  } | null
+  author?: { login?: string | null; avatar_url?: string | null } | null
+}
+
+interface BranchListItemResponse {
+  name?: string
+  commit?: { sha?: string } | null
+}
+
+interface CommitFileResponse {
+  filename?: string
+  previous_filename?: string
+  status?: string
+  additions?: number
+  deletions?: number
+  patch?: string
+}
+
+interface CommitDetailResponse {
+  sha?: string
+  html_url?: string | null
+  commit?: {
+    message?: string | null
+    author?: { name?: string | null; date?: string | null } | null
+    committer?: { name?: string | null; date?: string | null } | null
+    verification?: { verified?: boolean; reason?: string | null } | null
+  } | null
+  author?: { login?: string | null; avatar_url?: string | null } | null
+  committer?: { login?: string | null; avatar_url?: string | null } | null
+  parents?: { sha?: string }[]
+  stats?: { additions?: number; deletions?: number; total?: number } | null
+  files?: CommitFileResponse[]
+}
+
+interface CommitCiStatesResponse {
+  repository: Record<string, { statusCheckRollup?: { state?: string | null } | null } | null> | null
 }
 
 interface CommunityFile {
@@ -226,6 +280,152 @@ export class RepositoriesApi {
         ref,
         repo: options.repo,
       }),
+    }
+  }
+
+  async listCommits(options: RepositoryCommitsOptions): Promise<GitHubRepositoryCommitPage> {
+    const ref = await this.resolveRepositoryRef(options)
+    const page = Math.max(1, Math.floor(options.page ?? 1))
+    const perPage = Math.max(1, Math.min(100, Math.floor(options.perPage ?? 30)))
+    const response = await this.octokit.request('GET /repos/{owner}/{repo}/commits', {
+      owner: options.owner,
+      repo: options.repo,
+      sha: ref,
+      page,
+      per_page: perPage,
+    })
+    const baseItems = (response.data as CommitListItemResponse[]).map((item) =>
+      mapRepositoryCommit(options, item)
+    )
+    const ciStates = await this.fetchCommitCiStates(options, baseItems.map((item) => item.sha))
+    const items = baseItems.map((item) => ({
+      ...item,
+      ciState: ciStates.get(item.sha) ?? null,
+    }))
+
+    return {
+      items,
+      page,
+      perPage,
+      hasPreviousPage: page > 1,
+      hasNextPage: items.length === perPage,
+    }
+  }
+
+  private async fetchCommitCiStates(
+    options: RepositoryOptions,
+    shas: string[],
+  ): Promise<Map<string, GitHubCiState | null>> {
+    const result = new Map<string, GitHubCiState | null>()
+    const uniqueShas = [...new Set(shas.filter(Boolean))]
+    if (uniqueShas.length === 0) return result
+
+    const fields = uniqueShas
+      .map((sha, index) => `c${index}: object(oid: "${sha}") { ... on Commit { statusCheckRollup { state } } }`)
+      .join('\n')
+    const query = `query CommitCiStates($owner: String!, $repo: String!) {
+      repository(owner: $owner, name: $repo) {
+        ${fields}
+      }
+    }`
+
+    try {
+      const response = await this.octokit.graphql<CommitCiStatesResponse>(query, {
+        owner: options.owner,
+        repo: options.repo,
+      })
+      const repository = response.repository ?? {}
+
+      uniqueShas.forEach((sha, index) => {
+        result.set(sha, normalizeCiState(repository[`c${index}`]?.statusCheckRollup?.state))
+      })
+    } catch {
+      // CI state is best-effort; leave it unset on failure.
+    }
+
+    return result
+  }
+
+  async listBranches(options: RepositoryBranchesOptions): Promise<GitHubRepositoryBranch[]> {
+    const response = await this.octokit.request('GET /repos/{owner}/{repo}/branches', {
+      owner: options.owner,
+      repo: options.repo,
+      per_page: 100,
+    })
+
+    return (response.data as BranchListItemResponse[]).flatMap((branch) => {
+      if (!branch.name) return []
+
+      return [{ name: branch.name, commitSha: branch.commit?.sha ?? '' }]
+    })
+  }
+
+  async getCommit(options: RepositoryCommitOptions): Promise<GitHubCommitDetail> {
+    const response = await this.octokit.request('GET /repos/{owner}/{repo}/commits/{ref}', {
+      owner: options.owner,
+      repo: options.repo,
+      ref: options.sha,
+    })
+    const data = response.data as CommitDetailResponse
+    const sha = data.sha ?? options.sha
+    const message = data.commit?.message ?? ''
+    const ciStates = await this.fetchCommitCiStates(options, [sha])
+
+    return {
+      sha,
+      shortSha: sha.slice(0, 7),
+      headline: message.split('\n', 1)[0] ?? '',
+      message,
+      htmlUrl: data.html_url ?? `https://github.com/${options.owner}/${options.repo}/commit/${sha}`,
+      author: {
+        login: data.author?.login ?? null,
+        name: data.commit?.author?.name ?? null,
+        avatarUrl: data.author?.avatar_url ?? null,
+        date: data.commit?.author?.date ?? null,
+      },
+      committer: {
+        login: data.committer?.login ?? null,
+        name: data.commit?.committer?.name ?? null,
+        avatarUrl: data.committer?.avatar_url ?? null,
+        date: data.commit?.committer?.date ?? null,
+      },
+      parents: (data.parents ?? []).flatMap((parent) => {
+        if (!parent.sha) return []
+
+        return [{ sha: parent.sha, shortSha: parent.sha.slice(0, 7) }]
+      }),
+      verification: data.commit?.verification
+        ? {
+            verified: Boolean(data.commit.verification.verified),
+            reason: data.commit.verification.reason ?? null,
+          }
+        : null,
+      stats: {
+        additions: data.stats?.additions ?? 0,
+        deletions: data.stats?.deletions ?? 0,
+        total: data.stats?.total ?? 0,
+      },
+      files: (data.files ?? []).flatMap((file): GitHubCommitFile[] => {
+        if (!file.filename) return []
+
+        const status: GitHubCommitFile['status'] =
+          file.status === 'added'
+          || file.status === 'removed'
+          || file.status === 'renamed'
+          || file.status === 'changed'
+            ? file.status
+            : 'modified'
+
+        return [{
+          filename: file.filename,
+          previousFilename: file.previous_filename,
+          status,
+          additions: file.additions ?? 0,
+          deletions: file.deletions ?? 0,
+          patch: file.patch,
+        }]
+      }),
+      ciState: ciStates.get(sha) ?? null,
     }
   }
 
@@ -782,6 +982,39 @@ function mapRepositoryFilePreview(
     language: languageForPath(path),
     downloadUrl,
     htmlUrl,
+  }
+}
+
+function normalizeCiState(value: string | null | undefined): GitHubCiState | null {
+  if (value === 'SUCCESS') return 'success'
+  if (value === 'FAILURE' || value === 'ERROR') return 'failure'
+  if (value === 'PENDING' || value === 'EXPECTED') return 'pending'
+
+  return null
+}
+
+function mapRepositoryCommit(
+  context: { owner: string; repo: string },
+  item: CommitListItemResponse,
+): GitHubRepositoryCommit {
+  const sha = item.sha ?? ''
+  const message = item.commit?.message ?? ''
+  const headline = message.split('\n', 1)[0] ?? ''
+  const committedDate = item.commit?.committer?.date ?? item.commit?.author?.date ?? ''
+
+  return {
+    sha,
+    shortSha: sha.slice(0, 7),
+    message,
+    headline,
+    author: {
+      login: item.author?.login ?? null,
+      name: item.commit?.author?.name ?? null,
+      avatarUrl: item.author?.avatar_url ?? null,
+    },
+    committedDate,
+    htmlUrl: item.html_url ?? `https://github.com/${context.owner}/${context.repo}/commit/${sha}`,
+    ciState: null,
   }
 }
 

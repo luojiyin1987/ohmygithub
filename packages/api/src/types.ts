@@ -271,6 +271,8 @@ export interface GitHubRepositoryFileNode {
   size: number | null
   downloadUrl: string | null
   htmlUrl: string | null
+  additions?: number
+  deletions?: number
   children: GitHubRepositoryFileNode[]
 }
 
@@ -331,6 +333,112 @@ export type GitHubRepositoryFilePreview =
     }
 
 export type GitHubCiState = 'pending' | 'success' | 'failure'
+
+export type GitHubActionWorkflowState =
+  | 'active'
+  | 'deleted'
+  | 'disabled_fork'
+  | 'disabled_inactivity'
+  | 'disabled_manually'
+  | (string & {})
+
+export type GitHubActionRunStatus =
+  | 'queued'
+  | 'in_progress'
+  | 'completed'
+  | 'waiting'
+  | 'requested'
+  | 'pending'
+  | (string & {})
+
+export type GitHubActionConclusion =
+  | 'success'
+  | 'failure'
+  | 'neutral'
+  | 'cancelled'
+  | 'skipped'
+  | 'timed_out'
+  | 'action_required'
+  | 'stale'
+  | (string & {})
+
+export interface GitHubActionWorkflow {
+  id: number
+  nodeId: string | null
+  name: string
+  path: string
+  state: GitHubActionWorkflowState
+  createdAt: string | null
+  updatedAt: string | null
+  url: string
+  htmlUrl: string
+  badgeUrl: string | null
+}
+
+export interface GitHubActionRun {
+  id: number
+  runNumber: number
+  runAttempt: number
+  name: string | null
+  displayTitle: string
+  workflowId: number
+  workflowName: string | null
+  event: string
+  status: GitHubActionRunStatus | null
+  conclusion: GitHubActionConclusion | null
+  headBranch: string | null
+  headSha: string
+  actor: GitHubActor
+  triggeringActor: GitHubActor | null
+  checkSuiteId: number | null
+  createdAt: string | null
+  updatedAt: string | null
+  runStartedAt: string | null
+  completedAt: string | null
+  url: string
+  htmlUrl: string
+  jobsUrl: string | null
+  logsUrl: string | null
+}
+
+export interface GitHubActionRunPage {
+  items: GitHubActionRun[]
+  totalCount: number
+  page: number
+  perPage: number
+  hasNextPage: boolean
+}
+
+export interface GitHubActionStep {
+  number: number
+  name: string
+  status: GitHubActionRunStatus | null
+  conclusion: GitHubActionConclusion | null
+  startedAt: string | null
+  completedAt: string | null
+}
+
+export interface GitHubActionJob {
+  id: number
+  runId: number
+  runAttempt: number
+  name: string
+  status: GitHubActionRunStatus | null
+  conclusion: GitHubActionConclusion | null
+  startedAt: string | null
+  completedAt: string | null
+  htmlUrl: string | null
+  runnerName: string | null
+  labels: string[]
+  steps: GitHubActionStep[]
+}
+
+export interface GitHubActionJobLog {
+  jobId: number
+  content: string
+  fetchedAt: string
+  isAvailable: boolean
+}
 
 export type GitHubPullRequestState =
   | 'draft'
@@ -797,9 +905,20 @@ export interface GitHubClient {
   getRepositoryViewerState(options: RepositoryOptions): Promise<GitHubRepositoryViewerState>
   getRepositoryOverview(options: RepositoryOptions): Promise<GitHubRepositoryOverview>
   listRepositoryFiles(options: RepositoryFilesOptions): Promise<GitHubRepositoryFileTree>
+  listRepositoryCommits(options: RepositoryCommitsOptions): Promise<GitHubRepositoryCommitPage>
+  listRepositoryBranches(options: RepositoryBranchesOptions): Promise<GitHubRepositoryBranch[]>
+  getRepositoryCommit(options: RepositoryCommitOptions): Promise<GitHubCommitDetail>
   getRepositoryFilePreview(options: RepositoryFilePreviewOptions): Promise<GitHubRepositoryFilePreview>
   setRepositoryStarred(options: SetRepositoryStarredOptions): Promise<void>
   setRepositoryWatching(options: SetRepositoryWatchingOptions): Promise<void>
+  listRepositoryWorkflows(options: RepositoryOptions): Promise<GitHubActionWorkflow[]>
+  listRepositoryWorkflowRuns(options: ListRepositoryWorkflowRunsOptions): Promise<GitHubActionRunPage>
+  getWorkflowRun(options: GetWorkflowRunOptions): Promise<GitHubActionRun>
+  listWorkflowRunJobs(options: ListWorkflowRunJobsOptions): Promise<GitHubActionJob[]>
+  getWorkflowJobLog(options: GetWorkflowJobLogOptions): Promise<GitHubActionJobLog>
+  rerunWorkflowRun(options: RerunWorkflowRunOptions): Promise<void>
+  rerunFailedWorkflowRunJobs(options: RerunWorkflowRunOptions): Promise<void>
+  rerunWorkflowJob(options: RerunWorkflowJobOptions): Promise<void>
 }
 
 export interface GitHubApiOptions {
@@ -866,6 +985,34 @@ export interface SearchRepositoryIssuesOptions extends RepositoryOptions {
   state?: GitHubIssueSearchState
 }
 
+export interface ListRepositoryWorkflowRunsOptions extends RepositoryOptions {
+  headSha?: string | null
+  workflowId?: number | 'all' | null
+  page?: number
+  perPage?: number
+}
+
+export interface GetWorkflowRunOptions extends RepositoryOptions {
+  runId: number
+}
+
+export interface ListWorkflowRunJobsOptions extends GetWorkflowRunOptions {
+  filter?: 'latest' | 'all'
+}
+
+export interface GetWorkflowJobLogOptions extends RepositoryOptions {
+  jobId: number
+}
+
+export interface RerunWorkflowRunOptions extends GetWorkflowRunOptions {
+  enableDebugLogging?: boolean
+}
+
+export interface RerunWorkflowJobOptions extends GetWorkflowJobLogOptions {
+  enableDebugLogging?: boolean
+  enableDebugger?: boolean
+}
+
 export interface SearchWorkspaceOptions {
   mode: GitHubWorkspaceSearchMode
   query: string
@@ -906,6 +1053,95 @@ export interface RepositoryFilesOptions extends RepositoryOptions {
 
 export interface RepositoryFilePreviewOptions extends RepositoryFilesOptions {
   path: string
+}
+
+export interface GitHubRepositoryCommitAuthor {
+  login: string | null
+  name: string | null
+  avatarUrl: string | null
+}
+
+export interface GitHubRepositoryCommit {
+  sha: string
+  shortSha: string
+  message: string
+  headline: string
+  author: GitHubRepositoryCommitAuthor
+  committedDate: string
+  htmlUrl: string
+  ciState: GitHubCiState | null
+}
+
+export interface GitHubRepositoryCommitPage {
+  items: GitHubRepositoryCommit[]
+  page: number
+  perPage: number
+  hasPreviousPage: boolean
+  hasNextPage: boolean
+}
+
+export interface GitHubRepositoryBranch {
+  name: string
+  commitSha: string
+}
+
+export interface RepositoryCommitsOptions extends RepositoryOptions {
+  ref?: string | null
+  page?: number
+  perPage?: number
+}
+
+export type RepositoryBranchesOptions = RepositoryOptions
+
+export interface GitHubCommitActor {
+  login: string | null
+  name: string | null
+  avatarUrl: string | null
+  date: string | null
+}
+
+export interface GitHubCommitFile {
+  filename: string
+  previousFilename?: string
+  status: 'added' | 'modified' | 'removed' | 'renamed' | 'changed'
+  additions: number
+  deletions: number
+  patch?: string
+}
+
+export interface GitHubCommitParent {
+  sha: string
+  shortSha: string
+}
+
+export interface GitHubCommitVerification {
+  verified: boolean
+  reason: string | null
+}
+
+export interface GitHubCommitStats {
+  additions: number
+  deletions: number
+  total: number
+}
+
+export interface GitHubCommitDetail {
+  sha: string
+  shortSha: string
+  headline: string
+  message: string
+  htmlUrl: string
+  author: GitHubCommitActor
+  committer: GitHubCommitActor
+  parents: GitHubCommitParent[]
+  verification: GitHubCommitVerification | null
+  stats: GitHubCommitStats
+  files: GitHubCommitFile[]
+  ciState: GitHubCiState | null
+}
+
+export interface RepositoryCommitOptions extends RepositoryOptions {
+  sha: string
 }
 
 export interface SetRepositoryStarredOptions extends RepositoryOptions {

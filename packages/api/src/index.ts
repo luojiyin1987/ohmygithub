@@ -1,6 +1,7 @@
 export * from './client'
 export * from './mock'
 export * from './modules/accounts'
+export * from './modules/actions'
 export * from './modules/auth'
 export * from './modules/issues'
 export * from './modules/pulls'

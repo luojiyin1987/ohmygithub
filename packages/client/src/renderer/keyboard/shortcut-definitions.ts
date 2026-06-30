@@ -11,6 +11,7 @@ export type KeyboardShortcutCommandId =
   | 'workspace.copyGitHubUrl'
   | 'repository.section.overview'
   | 'repository.section.files'
+  | 'repository.section.commits'
   | 'repository.section.pullRequests'
   | 'repository.section.issues'
   | 'repository.section.actions'
@@ -123,32 +124,39 @@ export const KEYBOARD_SHORTCUT_DEFINITIONS: readonly KeyboardShortcutDefinition[
     defaultAccelerator: '2',
   },
   {
+    id: 'repository.section.commits',
+    group: 'repository',
+    labelKey: 'settings.keyboard.commands.repositorySectionCommits.label',
+    descriptionKey: 'settings.keyboard.commands.repositorySectionCommits.description',
+    defaultAccelerator: '3',
+  },
+  {
     id: 'repository.section.pullRequests',
     group: 'repository',
     labelKey: 'settings.keyboard.commands.repositorySectionPullRequests.label',
     descriptionKey: 'settings.keyboard.commands.repositorySectionPullRequests.description',
-    defaultAccelerator: '3',
+    defaultAccelerator: '4',
   },
   {
     id: 'repository.section.issues',
     group: 'repository',
     labelKey: 'settings.keyboard.commands.repositorySectionIssues.label',
     descriptionKey: 'settings.keyboard.commands.repositorySectionIssues.description',
-    defaultAccelerator: '4',
+    defaultAccelerator: '5',
   },
   {
     id: 'repository.section.actions',
     group: 'repository',
     labelKey: 'settings.keyboard.commands.repositorySectionActions.label',
     descriptionKey: 'settings.keyboard.commands.repositorySectionActions.description',
-    defaultAccelerator: '5',
+    defaultAccelerator: '6',
   },
   {
     id: 'repository.section.settings',
     group: 'repository',
     labelKey: 'settings.keyboard.commands.repositorySectionSettings.label',
     descriptionKey: 'settings.keyboard.commands.repositorySectionSettings.description',
-    defaultAccelerator: '6',
+    defaultAccelerator: '7',
   },
 ]
 

@@ -1,4 +1,5 @@
 import { AccountsApi } from './modules/accounts'
+import { ActionsApi } from './modules/actions'
 import { AuthApi } from './modules/auth'
 import { InboxApi } from './modules/inbox'
 import { IssuesApi } from './modules/issues'
@@ -14,6 +15,11 @@ import type {
   GitHubAccountRepository,
   GitHubAccountRepositoryPage,
   GitHubAccountViewerState,
+  GitHubActionJob,
+  GitHubActionJobLog,
+  GitHubActionRun,
+  GitHubActionRunPage,
+  GitHubActionWorkflow,
   GitHubClient,
   GitHubWorkspaceGotoResult,
   GitHubIssue,
@@ -38,6 +44,7 @@ import type {
 export interface GitHubApi extends GitHubClient {
   readonly octokit: GitHubOctokit
   readonly accounts: AccountsApi
+  readonly actions: ActionsApi
   readonly auth: AuthApi
   readonly inbox: InboxApi
   readonly issues: IssuesApi
@@ -49,6 +56,7 @@ export interface GitHubApi extends GitHubClient {
 export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
   const octokit = createOctokit(options)
   const accounts = new AccountsApi(octokit)
+  const actions = new ActionsApi(octokit)
   const auth = new AuthApi({ octokit, proxyUrl: options.proxyUrl })
   const inbox = new InboxApi(octokit)
   const issues = new IssuesApi(octokit)
@@ -59,6 +67,7 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
   return {
     octokit,
     accounts,
+    actions,
     auth,
     inbox,
     issues,
@@ -80,9 +89,20 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
     getRepositoryViewerState: (options) => repositories.getViewerState(options),
     getRepositoryOverview: (options) => repositories.getOverview(options),
     listRepositoryFiles: (options) => repositories.listFiles(options),
+    listRepositoryCommits: (options) => repositories.listCommits(options),
+    listRepositoryBranches: (options) => repositories.listBranches(options),
+    getRepositoryCommit: (options) => repositories.getCommit(options),
     getRepositoryFilePreview: (options) => repositories.getFilePreview(options),
     setRepositoryStarred: (options) => repositories.setStarred(options),
     setRepositoryWatching: (options) => repositories.setWatching(options),
+    listRepositoryWorkflows: (options) => actions.listRepositoryWorkflows(options),
+    listRepositoryWorkflowRuns: (options) => actions.listRepositoryWorkflowRuns(options),
+    getWorkflowRun: (options) => actions.getWorkflowRun(options),
+    listWorkflowRunJobs: (options) => actions.listWorkflowRunJobs(options),
+    getWorkflowJobLog: (options) => actions.getWorkflowJobLog(options),
+    rerunWorkflowRun: (options) => actions.rerunWorkflowRun(options),
+    rerunFailedWorkflowRunJobs: (options) => actions.rerunFailedWorkflowRunJobs(options),
+    rerunWorkflowJob: (options) => actions.rerunWorkflowJob(options),
     listNotifications: () => inbox.listNotifications(),
     listPullRequests: () => inbox.listPullRequests(),
     listIssues: () => inbox.listIssues(),
@@ -108,6 +128,11 @@ export type {
   GitHubAccountRepository,
   GitHubAccountRepositoryPage,
   GitHubAccountViewerState,
+  GitHubActionJob,
+  GitHubActionJobLog,
+  GitHubActionRun,
+  GitHubActionRunPage,
+  GitHubActionWorkflow,
   GitHubIssue,
   GitHubIssueSearchResult,
   GitHubIssueComment,
