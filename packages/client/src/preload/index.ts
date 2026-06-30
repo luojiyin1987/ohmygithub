@@ -77,7 +77,19 @@ const api = {
     getPullRequestDetail: (owner: string, repo: string, number: number) =>
       ipcRenderer.invoke('pulls:get-detail', owner, repo, number),
     createPullRequestComment: (owner: string, repo: string, number: number, body: string) =>
-      ipcRenderer.invoke('pulls:create-comment', owner, repo, number, body)
+      ipcRenderer.invoke('pulls:create-comment', owner, repo, number, body),
+    updatePullRequest: (owner: string, repo: string, number: number, changes: unknown) =>
+      ipcRenderer.invoke('pulls:update', owner, repo, number, changes),
+    closePullRequest: (owner: string, repo: string, number: number) =>
+      ipcRenderer.invoke('pulls:close', owner, repo, number),
+    requestPullRequestReviewers: (owner: string, repo: string, number: number, reviewers: string[], removeReviewers: string[]) =>
+      ipcRenderer.invoke('pulls:request-reviewers', owner, repo, number, reviewers, removeReviewers),
+    markPullRequestReadyForReview: (owner: string, repo: string, number: number, id: string) =>
+      ipcRenderer.invoke('pulls:mark-ready-for-review', owner, repo, number, id),
+    mergePullRequest: (owner: string, repo: string, number: number, options: unknown) =>
+      ipcRenderer.invoke('pulls:merge', owner, repo, number, options),
+    updatePullRequestComment: (owner: string, repo: string, commentId: string | number, body: string) =>
+      ipcRenderer.invoke('pulls:update-comment', owner, repo, commentId, body)
   },
   repositories: {
     getViewerState: (owner: string, repo: string) =>

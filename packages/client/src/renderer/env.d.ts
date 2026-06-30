@@ -593,6 +593,8 @@ type GitHubPullRequestReviewerType =
   | 'mannequin'
   | 'unknown'
 
+type GitHubPullRequestMergeMethod = 'merge' | 'squash' | 'rebase'
+
 type GitHubIssueState = 'open' | 'completed' | 'not_planned'
 
 type GitHubIssueSearchState = 'open' | 'closed' | 'all'
@@ -662,7 +664,7 @@ type GitHubPullRequest = {
   ciState: GitHubCiState | null
   author: GitHubActor
   updatedAt: string
-  labels: string[]
+  labels: GitHubLabel[]
   url: string
   hasUpdates: boolean
 }
@@ -715,6 +717,12 @@ type GitHubPullRequestStatusSummary = {
   ciState: GitHubCiState | null
   checksUrl: string | null
   mergeStateStatus: string | null
+  mergeable: string | null
+}
+
+type GitHubPullRequestMergePolicy = {
+  methods: GitHubPullRequestMergeMethod[]
+  defaultMethod: GitHubPullRequestMergeMethod | null
 }
 
 type GitHubPullRequestReviewRequest = {
@@ -975,6 +983,7 @@ type GitHubPullRequestComment = GitHubIssueComment
 
 type GitHubPullRequestDetail = {
   id: string
+  nodeId: string
   owner: string
   repo: string
   repository: string
@@ -989,7 +998,7 @@ type GitHubPullRequestDetail = {
   mergedAt: string | null
   mergedBy: GitHubActor | null
   body: string
-  labels: string[]
+  labels: GitHubLabel[]
   assignees: GitHubActor[]
   milestone: GitHubIssueMilestone | null
   participants: GitHubActor[]
@@ -998,16 +1007,25 @@ type GitHubPullRequestDetail = {
   reviewDecision: GitHubPullRequestReviewDecision | null
   baseBranch: GitHubPullRequestBranch
   headBranch: GitHubPullRequestBranch
+  headSha: string | null
   isCrossRepository: boolean
   maintainerCanModify: boolean
   diffStats: GitHubPullRequestDiffStats
   status: GitHubPullRequestStatusSummary
+  mergePolicy: GitHubPullRequestMergePolicy
   linkedIssues: GitHubPullRequestLinkedIssue[]
   comments: GitHubPullRequestComment[]
   timelineEvents: GitHubPullRequestTimelineEvent[]
   reactions: GitHubIssueReaction[]
   url: string
   hasUpdates: boolean
+  viewerCanUpdate: boolean
+  viewerCanClose: boolean
+  viewerCanReopen: boolean
+  viewerCanMergeAsAdmin: boolean
+  locked: boolean
+  viewerSubscription: 'SUBSCRIBED' | 'UNSUBSCRIBED' | 'IGNORED' | null
+  projects: Array<{ id: string, title: string, url: string | null, fields: Array<{ name: string, value: string }> }>
 }
 
 type AuthState = {
@@ -1150,11 +1168,51 @@ interface Window {
         number: number,
         body: string
       ) => Promise<GitHubPullRequestComment>
+      updatePullRequest: (
+        owner: string,
+        repo: string,
+        number: number,
+        changes: { title?: string, body?: string, state?: 'open' | 'closed', assignees?: string[], labels?: string[], milestone?: number | null }
+      ) => Promise<void>
+      closePullRequest: (owner: string, repo: string, number: number) => Promise<void>
+      requestPullRequestReviewers: (owner: string, repo: string, number: number, reviewers: string[], removeReviewers: string[]) => Promise<void>
+      markPullRequestReadyForReview: (
+        owner: string,
+        repo: string,
+        number: number,
+        id: string
+      ) => Promise<void>
+      mergePullRequest: (
+        owner: string,
+        repo: string,
+        number: number,
+        options: {
+          method: GitHubPullRequestMergeMethod
+          expectedHeadSha?: string | null
+          commitTitle?: string
+          commitMessage?: string
+        }
+      ) => Promise<void>
+      updatePullRequestComment: (
+        owner: string,
+        repo: string,
+        commentId: string | number,
+        body: string
+      ) => Promise<void>
     }
     repositories: {
       getViewerState: (owner: string, repo: string) => Promise<GitHubRepositoryViewerState>
       getOverview: (owner: string, repo: string) => Promise<GitHubRepositoryOverview>
       listFiles: (owner: string, repo: string, ref?: string | null) => Promise<GitHubRepositoryFileTree>
+      listCommits: (
+        owner: string,
+        repo: string,
+        ref?: string | null,
+        page?: number,
+        perPage?: number
+      ) => Promise<GitHubRepositoryCommitPage>
+      listBranches: (owner: string, repo: string) => Promise<GitHubRepositoryBranch[]>
+      getCommit: (owner: string, repo: string, sha: string) => Promise<GitHubCommitDetail>
       getFilePreview: (
         owner: string,
         repo: string,

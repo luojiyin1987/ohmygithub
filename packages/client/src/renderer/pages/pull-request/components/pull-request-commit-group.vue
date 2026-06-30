@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import type { PullRequestCommitSummary } from './types'
 import type { ConversationActor } from '../../../components'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
-  Check,
-  Circle,
   GitCommitHorizontal,
-  X,
 } from 'lucide-vue-next'
 import { GitHubActorLink } from '../../../components'
+import CommitActionsDialog from '../../../components/actions/commit-actions-dialog.vue'
+import CommitCiStatusButton from '../../../components/actions/commit-ci-status-button.vue'
 import {
   formatConversationDate,
   toConversationDateTime,
@@ -19,12 +18,16 @@ const props = defineProps<{
   actor: ConversationActor
   createdAt?: string | null
   commits: PullRequestCommitSummary[]
+  owner: string
+  repo: string
 }>()
 
 const { t } = useI18n()
 
 const createdLabel = computed(() => formatConversationDate(props.createdAt))
 const createdDateTime = computed(() => toConversationDateTime(props.createdAt))
+const checksDialogOpen = ref(false)
+const selectedCommitSha = ref<string | null>(null)
 const commitCountLabel = computed(() => {
   if (props.commits.length === 1) return t('pullRequest.timeline.addedCommit')
 
@@ -33,6 +36,11 @@ const commitCountLabel = computed(() => {
 
 function preventPlaceholderNavigation(event: MouseEvent): void {
   event.preventDefault()
+}
+
+function openCommitActions(commit: PullRequestCommitSummary): void {
+  selectedCommitSha.value = commit.oid
+  checksDialogOpen.value = true
 }
 </script>
 
@@ -92,27 +100,12 @@ function preventPlaceholderNavigation(event: MouseEvent): void {
         </a>
 
         <span class="grid w-[6.5rem] shrink-0 grid-cols-[1rem_minmax(0,1fr)] items-center gap-2 justify-self-end">
-          <span
-            class="flex size-4 items-center justify-center"
-            :class="commit.ciState ? '' : 'invisible'"
-            :title="commit.ciState ? t(`pullRequest.checks.${commit.ciState}`) : undefined"
-          >
-            <Check
-              v-if="commit.ciState === 'success'"
-              class="size-4 text-success"
-              :stroke-width="2"
-            />
-            <X
-              v-else-if="commit.ciState === 'failure'"
-              class="size-4 text-destructive"
-              :stroke-width="2"
-            />
-            <Circle
-              v-else-if="commit.ciState"
-              class="size-3 fill-warning text-warning"
-              :stroke-width="2"
-            />
-          </span>
+          <CommitCiStatusButton
+            :label="commit.ciState ? t(`pullRequest.checks.${commit.ciState}`) : ''"
+            preserve-space
+            :state="commit.ciState"
+            @click="openCommitActions(commit)"
+          />
 
           <a
             class="min-w-0 justify-self-end font-mono text-body text-muted-foreground underline-offset-4 outline-hidden hover:text-foreground hover:underline focus-visible:text-foreground focus-visible:underline focus-visible:ring-2 focus-visible:ring-ring/30"
@@ -124,5 +117,13 @@ function preventPlaceholderNavigation(event: MouseEvent): void {
         </span>
       </div>
     </div>
+
+    <CommitActionsDialog
+      v-if="selectedCommitSha"
+      v-model:open="checksDialogOpen"
+      :owner="owner"
+      :repo="repo"
+      :sha="selectedCommitSha"
+    />
   </div>
 </template>

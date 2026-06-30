@@ -29,6 +29,7 @@ export type PullRequestTimelineItem =
       updatedAt?: string | null
       badges: ConversationBadge[]
       reactions: ConversationReaction[]
+      viewerCanUpdate?: boolean
     }
   | SharedConversationTimelineItem & {
       id: string

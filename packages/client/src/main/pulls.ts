@@ -3,8 +3,10 @@ import {
   type CreatePullRequestCommentOptions,
   type GetPullRequestDetailOptions,
   type GitHubPullRequestCategory,
+  type GitHubPullRequestMergeMethod,
   type GitHubPullRequestSearchState,
   type SearchRepositoryPullRequestsOptions,
+  type UpdatePullRequestOptions,
 } from '@oh-my-github/api'
 import { ipcMain } from 'electron'
 import { getAuthenticatedAccessToken } from './auth'
@@ -26,6 +28,24 @@ export function registerPullsIpc(): void {
   )
   ipcMain.handle('pulls:create-comment', (_event, owner: string, repo: string, number: number, body: string) =>
     createPullRequestComment(owner, repo, number, body)
+  )
+  ipcMain.handle('pulls:update', (_event, owner: string, repo: string, number: number, changes: unknown) =>
+    updatePullRequest(owner, repo, number, changes)
+  )
+  ipcMain.handle('pulls:close', (_event, owner: string, repo: string, number: number) =>
+    closePullRequest(owner, repo, number)
+  )
+  ipcMain.handle('pulls:request-reviewers', (_event, owner: string, repo: string, number: number, reviewers: string[], removeReviewers: string[]) =>
+    requestPullRequestReviewers(owner, repo, number, reviewers, removeReviewers)
+  )
+  ipcMain.handle('pulls:mark-ready-for-review', (_event, owner: string, repo: string, number: number, id: string) =>
+    markPullRequestReadyForReview(owner, repo, number, id)
+  )
+  ipcMain.handle('pulls:merge', (_event, owner: string, repo: string, number: number, options: unknown) =>
+    mergePullRequest(owner, repo, number, options)
+  )
+  ipcMain.handle('pulls:update-comment', (_event, owner: string, repo: string, commentId: string | number, body: string) =>
+    updatePullRequestComment(owner, repo, commentId, body)
   )
 }
 
@@ -89,6 +109,100 @@ async function createPullRequestComment(owner: string, repo: string, number: num
   return api.pulls.createPullRequestComment(normalizedOptions)
 }
 
+async function updatePullRequest(owner: string, repo: string, number: number, changes: unknown) {
+  const normalizedOptions = normalizePullRequestDetailOptions({ owner, repo, number })
+  const update = (changes ?? {}) as {
+    title?: string
+    body?: string
+    state?: 'open' | 'closed'
+    assignees?: string[]
+    labels?: string[]
+    milestone?: number | null
+  }
+  const api = await createAuthenticatedGitHubApi()
+  const title = update.title?.trim()
+
+  return api.pulls.updatePullRequest({
+    ...normalizedOptions,
+    ...(update.title !== undefined ? { title: requireNonEmpty(title, 'Pull request title is required') } : {}),
+    ...(update.body !== undefined ? { body: String(update.body) } : {}),
+    ...(update.state !== undefined ? { state: normalizePullRequestUpdateState(update.state) } : {}),
+    ...(update.assignees !== undefined ? { assignees: update.assignees } : {}),
+    ...(update.labels !== undefined ? { labels: update.labels } : {}),
+    ...(update.milestone !== undefined ? { milestone: update.milestone } : {}),
+  })
+}
+
+async function closePullRequest(owner: string, repo: string, number: number) {
+  const normalizedOptions = normalizePullRequestDetailOptions({ owner, repo, number })
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.pulls.closePullRequest(normalizedOptions)
+}
+
+async function requestPullRequestReviewers(owner: string, repo: string, number: number, reviewers: string[], removeReviewers: string[]) {
+  const normalizedOptions = normalizePullRequestDetailOptions({ owner, repo, number })
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.pulls.requestPullRequestReviewers({
+    ...normalizedOptions,
+    reviewers: Array.isArray(reviewers) ? reviewers : [],
+    removeReviewers: Array.isArray(removeReviewers) ? removeReviewers : []
+  })
+}
+
+async function markPullRequestReadyForReview(owner: string, repo: string, number: number, id: string) {
+  const normalizedOptions = normalizePullRequestDetailOptions({ owner, repo, number })
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.pulls.markPullRequestReadyForReview({
+    ...normalizedOptions,
+    id: requireNonEmpty(id.trim(), 'Pull request id is required')
+  })
+}
+
+async function mergePullRequest(owner: string, repo: string, number: number, options: unknown) {
+  const normalizedOptions = normalizePullRequestDetailOptions({ owner, repo, number })
+  const payload = (options ?? {}) as {
+    method?: GitHubPullRequestMergeMethod
+    expectedHeadSha?: string | null
+    commitTitle?: string
+    commitMessage?: string
+  }
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.pulls.mergePullRequest({
+    ...normalizedOptions,
+    method: normalizeMergeMethod(payload.method),
+    expectedHeadSha: typeof payload.expectedHeadSha === 'string' ? payload.expectedHeadSha : null,
+    ...(payload.commitTitle ? { commitTitle: payload.commitTitle.trim() } : {}),
+    ...(payload.commitMessage ? { commitMessage: payload.commitMessage.trim() } : {}),
+  })
+}
+
+async function updatePullRequestComment(owner: string, repo: string, commentId: string | number, body: string) {
+  const normalizedOwner = owner.trim()
+  const normalizedRepo = repo.trim()
+  const normalizedBody = body.trim()
+
+  if (!normalizedOwner || !normalizedRepo) {
+    throw new Error('Repository owner and name are required')
+  }
+
+  if (!normalizedBody) {
+    throw new Error('Comment body is required')
+  }
+
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.pulls.updatePullRequestComment({
+    owner: normalizedOwner,
+    repo: normalizedRepo,
+    commentId,
+    body: normalizedBody
+  })
+}
+
 function normalizeSearchRepositoryPullRequestsOptions(
   options: SearchRepositoryPullRequestsOptions
 ): SearchRepositoryPullRequestsOptions {
@@ -147,6 +261,18 @@ function normalizePullRequestCommentOptions(
   }
 }
 
+function normalizePullRequestUpdateState(value: UpdatePullRequestOptions['state']): 'open' | 'closed' {
+  if (value === 'closed') return 'closed'
+
+  return 'open'
+}
+
+function normalizeMergeMethod(value: GitHubPullRequestMergeMethod | undefined): GitHubPullRequestMergeMethod {
+  if (value === 'merge' || value === 'rebase') return value
+
+  return 'squash'
+}
+
 function normalizePullRequestNumber(value: number): number {
   if (!Number.isInteger(value) || value <= 0) {
     throw new Error('Pull request number must be a positive integer')
@@ -159,6 +285,12 @@ function normalizePositiveInteger(value: number | undefined, fallback: number): 
   if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
 
   return Math.max(1, Math.round(value))
+}
+
+function requireNonEmpty(value: string | undefined, message: string): string {
+  if (!value) throw new Error(message)
+
+  return value
 }
 
 async function createAuthenticatedGitHubApi() {

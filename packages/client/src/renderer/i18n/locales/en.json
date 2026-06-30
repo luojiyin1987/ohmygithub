@@ -776,7 +776,88 @@
       "retry": "Retry",
       "title": "Could not load pull request"
     },
+    "edit": {
+      "bodyError": "Pull request description could not be updated. Check your permissions and try again.",
+      "cancelTitle": "Cancel title edit",
+      "commentError": "Comment could not be updated. Check your permissions and try again.",
+      "editTitle": "Edit title",
+      "saveTitle": "Save title",
+      "titleError": "Pull request title could not be updated. Check your permissions and try again.",
+      "titleInput": "Pull request title"
+    },
     "loading": "Loading pull request...",
+    "headerStatus": {
+      "awaitingApproval": "Awaiting approval",
+      "behind": "Branch behind",
+      "blocked": "Blocked",
+      "changesRequested": "Changes requested",
+      "checksFailing": "Checks failing",
+      "checksPending": "Checks pending",
+      "closed": "Closed",
+      "conflicts": "Conflicts",
+      "draft": "Draft",
+      "merged": "Merged",
+      "readyToMerge": "Ready to merge",
+      "unknown": "Status unknown"
+    },
+    "merge": {
+      "bypassButton": "Bypass rules and merge ({method})",
+      "bypassError": "GitHub could not merge with bypass from this client. Open GitHub to complete the admin bypass.",
+      "bypassRules": "Merge without waiting for requirements to be met (bypass rules)",
+      "chooseMethod": "Choose merge method",
+      "closeError": "Pull request could not be closed. Check your permissions and try again.",
+      "cancel": "Cancel",
+      "commitMessage": "Extended description",
+      "commitMessagePlaceholder": "Add optional commit details",
+      "commitTitle": "Commit message",
+      "commitTitleRequired": "Commit message is required.",
+      "confirmButton": "Confirm merge ({method})",
+      "confirmBypassButton": "Confirm bypass rules and merge ({method})",
+      "confirmDescription": "Review the commit message and extended description before merging this pull request.",
+      "confirmTitle": "Merge pull request",
+      "mergeError": "Pull request could not be merged. Check the merge status and try again.",
+      "methodShort": {
+        "merge": "merge",
+        "rebase": "rebase",
+        "squash": "squash"
+      },
+      "methods": {
+        "merge": "Create a merge commit",
+        "rebase": "Rebase and merge",
+        "squash": "Squash and merge"
+      },
+      "noMethods": "Merge unavailable",
+      "noMethodsDescription": "This repository does not allow merge, squash, or rebase for this pull request.",
+      "readyError": "Pull request could not be marked ready for review. Check your permissions and try again.",
+      "status": {
+        "behind": "Branch is behind",
+        "blocked": "Blocked",
+        "canMerge": "Ready to merge",
+        "changesRequested": "Changes requested",
+        "checksFailing": "Checks failing",
+        "checksPending": "Checks pending",
+        "closed": "Closed",
+        "conflicts": "Conflicts",
+        "draft": "Draft",
+        "merged": "Merged",
+        "needsReview": "Review required",
+        "unknown": "Merge status unknown"
+      },
+      "statusDescription": {
+        "behind": "Update the branch before merging, or bypass if repository rules allow it.",
+        "blocked": "Repository rules are blocking the merge.",
+        "canMerge": "This pull request satisfies the current merge requirements.",
+        "changesRequested": "A reviewer requested changes before this can merge.",
+        "checksFailing": "Required checks are failing.",
+        "checksPending": "Checks are still running.",
+        "closed": "Closed pull requests cannot be merged.",
+        "conflicts": "Resolve conflicts before merging.",
+        "draft": "Draft pull requests cannot be merged until they are ready for review.",
+        "merged": "This pull request has already been merged.",
+        "needsReview": "At least one required review is missing.",
+        "unknown": "GitHub did not return a definitive merge state."
+      }
+    },
     "meta": {
       "createdByDate": "on {date}",
       "createdByPrefix": "Opened by",
@@ -812,12 +893,20 @@
         "deletions": "Deletions",
         "files": "Files"
       },
+      "edit": "Edit",
+      "loading": "Loading…",
+      "noMatches": "No matches",
+      "searchReviewers": "Search users…",
+      "searchAssignees": "Search users…",
+      "searchLabels": "Search labels…",
+      "searchMilestones": "Search milestones…",
       "empty": {
         "assignees": "No assignees",
         "labels": "No labels",
         "linkedIssues": "No linked issues",
         "milestone": "No milestone",
         "participants": "No participants",
+        "projects": "No projects",
         "reviewers": "No reviewers"
       },
       "sections": {
@@ -828,8 +917,10 @@
         "labels": "Labels",
         "latestReviews": "Latest reviews",
         "linkedIssues": "Linked issues",
+        "merge": "Merge",
         "milestone": "Milestone",
         "participants": "Participants",
+        "projects": "Projects",
         "reviewers": "Reviewers",
         "status": "Status"
       },

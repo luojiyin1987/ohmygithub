@@ -776,7 +776,88 @@
       "retry": "重试",
       "title": "无法加载 Pull Request"
     },
+    "edit": {
+      "bodyError": "无法更新 Pull Request 描述。请检查权限后重试。",
+      "cancelTitle": "取消标题编辑",
+      "commentError": "无法更新评论。请检查权限后重试。",
+      "editTitle": "编辑标题",
+      "saveTitle": "保存标题",
+      "titleError": "无法更新 Pull Request 标题。请检查权限后重试。",
+      "titleInput": "Pull Request 标题"
+    },
     "loading": "正在加载 Pull Request...",
+    "headerStatus": {
+      "awaitingApproval": "等待批准",
+      "behind": "分支落后",
+      "blocked": "合并受阻",
+      "changesRequested": "需要修改",
+      "checksFailing": "检查未通过",
+      "checksPending": "检查等待中",
+      "closed": "已关闭",
+      "conflicts": "存在冲突",
+      "draft": "Draft",
+      "merged": "已合并",
+      "readyToMerge": "可以合并",
+      "unknown": "状态未知"
+    },
+    "merge": {
+      "bypassButton": "绕过规则并合并（{method}）",
+      "bypassError": "当前客户端无法通过 GitHub 完成绕过规则合并。请在 GitHub 网页完成管理员 bypass。",
+      "bypassRules": "不等待要求满足，直接合并（bypass rules）",
+      "chooseMethod": "选择合并方式",
+      "closeError": "无法关闭 Pull Request。请检查权限后重试。",
+      "cancel": "取消",
+      "commitMessage": "扩展描述",
+      "commitMessagePlaceholder": "添加可选的 commit 说明",
+      "commitTitle": "Commit message",
+      "commitTitleRequired": "Commit message 不能为空。",
+      "confirmButton": "确认合并（{method}）",
+      "confirmBypassButton": "确认绕过规则并合并（{method}）",
+      "confirmDescription": "合并这个 Pull Request 前，可以先检查并编辑 commit message 和扩展描述。",
+      "confirmTitle": "合并 Pull Request",
+      "mergeError": "无法合并 Pull Request。请检查合并状态后重试。",
+      "methodShort": {
+        "merge": "merge",
+        "rebase": "rebase",
+        "squash": "squash"
+      },
+      "methods": {
+        "merge": "Create a merge commit",
+        "rebase": "Rebase and merge",
+        "squash": "Squash and merge"
+      },
+      "noMethods": "无法合并",
+      "noMethodsDescription": "这个仓库没有为此 Pull Request 启用 merge、squash 或 rebase。",
+      "readyError": "无法将 Pull Request 标记为 Ready for review。请检查权限后重试。",
+      "status": {
+        "behind": "分支落后",
+        "blocked": "合并受阻",
+        "canMerge": "可以合并",
+        "changesRequested": "需要修改",
+        "checksFailing": "检查未通过",
+        "checksPending": "检查等待中",
+        "closed": "已关闭",
+        "conflicts": "存在冲突",
+        "draft": "Draft",
+        "merged": "已合并",
+        "needsReview": "需要 Review",
+        "unknown": "合并状态未知"
+      },
+      "statusDescription": {
+        "behind": "合并前需要更新分支；如果仓库规则允许，也可以绕过。",
+        "blocked": "仓库规则正在阻止合并。",
+        "canMerge": "这个 Pull Request 已满足当前合并要求。",
+        "changesRequested": "Reviewer 要求修改后才能合并。",
+        "checksFailing": "必需检查未通过。",
+        "checksPending": "检查仍在运行。",
+        "closed": "已关闭的 Pull Request 不能合并。",
+        "conflicts": "合并前需要先解决冲突。",
+        "draft": "Draft Pull Request 需要先标记为 ready for review。",
+        "merged": "这个 Pull Request 已经合并。",
+        "needsReview": "缺少至少一个必需 Review。",
+        "unknown": "GitHub 没有返回明确的合并状态。"
+      }
+    },
     "meta": {
       "createdByDate": "于 {date} 打开",
       "createdByPrefix": "由",
@@ -812,12 +893,20 @@
         "deletions": "删除",
         "files": "文件"
       },
+      "edit": "编辑",
+      "loading": "加载中…",
+      "noMatches": "没有匹配项",
+      "searchReviewers": "搜索用户…",
+      "searchAssignees": "搜索用户…",
+      "searchLabels": "搜索标签…",
+      "searchMilestones": "搜索里程碑…",
       "empty": {
         "assignees": "没有负责人",
         "labels": "没有标签",
         "linkedIssues": "没有关联 Issue",
         "milestone": "没有里程碑",
         "participants": "没有参与者",
+        "projects": "没有项目",
         "reviewers": "没有 Reviewers"
       },
       "sections": {
@@ -828,8 +917,10 @@
         "labels": "标签",
         "latestReviews": "最近 Review",
         "linkedIssues": "关联 Issue",
+        "merge": "合并",
         "milestone": "里程碑",
         "participants": "参与者",
+        "projects": "项目",
         "reviewers": "Reviewers",
         "status": "状态"
       },

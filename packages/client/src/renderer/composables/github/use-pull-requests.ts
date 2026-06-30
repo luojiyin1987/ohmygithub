@@ -137,3 +137,79 @@ export async function createPullRequestComment(
 
   return window.ohMyGithub.pulls.createPullRequestComment(owner, repo, pullRequestNumber, body)
 }
+
+export async function updatePullRequest(
+  owner: string,
+  repo: string,
+  pullRequestNumber: number,
+  changes: { title?: string, body?: string, state?: 'open' | 'closed', assignees?: string[], labels?: string[], milestone?: number | null },
+): Promise<void> {
+  if (!window.ohMyGithub?.pulls) {
+    throw new Error('GitHub pulls bridge is unavailable')
+  }
+
+  return window.ohMyGithub.pulls.updatePullRequest(owner, repo, pullRequestNumber, changes)
+}
+
+export async function closePullRequest(
+  owner: string,
+  repo: string,
+  pullRequestNumber: number,
+): Promise<void> {
+  if (!window.ohMyGithub?.pulls) {
+    throw new Error('GitHub pulls bridge is unavailable')
+  }
+
+  return window.ohMyGithub.pulls.closePullRequest(owner, repo, pullRequestNumber)
+}
+
+export async function requestPullRequestReviewers(
+  owner: string, repo: string, pullRequestNumber: number, reviewers: string[], removeReviewers: string[],
+): Promise<void> {
+  if (!window.ohMyGithub?.pulls) throw new Error('GitHub pull requests bridge is unavailable')
+  return window.ohMyGithub.pulls.requestPullRequestReviewers(owner, repo, pullRequestNumber, reviewers, removeReviewers)
+}
+
+export async function markPullRequestReadyForReview(
+  owner: string,
+  repo: string,
+  pullRequestNumber: number,
+  id: string,
+): Promise<void> {
+  if (!window.ohMyGithub?.pulls) {
+    throw new Error('GitHub pulls bridge is unavailable')
+  }
+
+  return window.ohMyGithub.pulls.markPullRequestReadyForReview(owner, repo, pullRequestNumber, id)
+}
+
+export async function mergePullRequest(
+  owner: string,
+  repo: string,
+  pullRequestNumber: number,
+  options: {
+    method: GitHubPullRequestMergeMethod
+    expectedHeadSha?: string | null
+    commitTitle?: string
+    commitMessage?: string
+  },
+): Promise<void> {
+  if (!window.ohMyGithub?.pulls) {
+    throw new Error('GitHub pulls bridge is unavailable')
+  }
+
+  return window.ohMyGithub.pulls.mergePullRequest(owner, repo, pullRequestNumber, options)
+}
+
+export async function updatePullRequestComment(
+  owner: string,
+  repo: string,
+  commentId: string | number,
+  body: string,
+): Promise<void> {
+  if (!window.ohMyGithub?.pulls) {
+    throw new Error('GitHub pulls bridge is unavailable')
+  }
+
+  return window.ohMyGithub.pulls.updatePullRequestComment(owner, repo, commentId, body)
+}

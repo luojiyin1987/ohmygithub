@@ -55,6 +55,7 @@ export function usePullRequestTimelineItems(
       updatedAt: comment.updatedAt,
       badges: [],
       reactions: toConversationReactions(comment.reactions),
+      viewerCanUpdate: Boolean(comment.viewerCanUpdate),
     }))
 
     const events = (currentPullRequest.timelineEvents ?? []).flatMap<UngroupedPullRequestTimelineItem>((event) => {

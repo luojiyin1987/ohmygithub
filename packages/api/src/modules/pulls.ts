@@ -1,16 +1,21 @@
 import type { GitHubOctokit } from '../transport'
 import type {
+  ClosePullRequestOptions,
   CreatePullRequestCommentOptions,
   GetPullRequestDetailOptions,
+  RequestPullRequestReviewersOptions,
   GitHubActor,
   GitHubCiState,
   GitHubIssueMilestone,
+  GitHubIssueProjectItem,
   GitHubIssueReaction,
+  GitHubIssueSubscription,
   GitHubPullRequest,
   GitHubPullRequestComment,
   GitHubPullRequestCommitSummary,
   GitHubPullRequestDetail,
   GitHubPullRequestLinkedIssue,
+  GitHubPullRequestMergeMethod,
   GitHubPullRequestReviewDecision,
   GitHubPullRequestReviewRequest,
   GitHubPullRequestReviewState,
@@ -24,7 +29,11 @@ import type {
   ListPullRequestCategoryOptions,
   ListRepositoryWorkspaceItemsOptions,
   ListWorkspaceItemsOptions,
-  SearchRepositoryPullRequestsOptions
+  MarkPullRequestReadyForReviewOptions,
+  MergePullRequestOptions,
+  SearchRepositoryPullRequestsOptions,
+  UpdatePullRequestCommentOptions,
+  UpdatePullRequestOptions
 } from '../types'
 import {
   createWorkItemKey,
@@ -79,6 +88,7 @@ interface GraphQLMilestoneNode {
 
 interface GraphQLIssueCommentNode {
   id: string
+  databaseId?: number | null
   body: string
   createdAt: string
   updatedAt: string
@@ -86,6 +96,7 @@ interface GraphQLIssueCommentNode {
   url: string
   author: GraphQLActorNode | null
   reactionGroups?: GraphQLReactionGroup[] | null
+  viewerCanUpdate?: boolean | null
 }
 
 interface RestIssueCommentNode {
@@ -224,12 +235,14 @@ interface GraphQLPullRequestDetailNode extends GraphQLPullRequestNode {
   deletions: number
   changedFiles: number
   checksUrl?: string | null
+  headRefOid?: string | null
   baseRefName: string
   headRefName: string
   baseRepository?: GraphQLRepositoryNode | null
   headRepository?: GraphQLRepositoryNode | null
   isCrossRepository: boolean
   maintainerCanModify: boolean
+  mergeable?: string | null
   mergeStateStatus?: string | null
   reviewDecision?: string | null
   assignees?: {
@@ -255,6 +268,27 @@ interface GraphQLPullRequestDetailNode extends GraphQLPullRequestNode {
     nodes?: Array<GraphQLPullRequestTimelineNode | null> | null
   } | null
   reactionGroups?: GraphQLReactionGroup[] | null
+  viewerCanUpdate?: boolean | null
+  viewerCanClose?: boolean | null
+  viewerCanReopen?: boolean | null
+  viewerCanMergeAsAdmin?: boolean | null
+  locked?: boolean | null
+  viewerSubscription?: string | null
+  projectItems?: {
+    nodes?: Array<{
+      id: string
+      project?: { title: string, url?: string | null } | null
+      fieldValues?: {
+        nodes?: Array<{
+          __typename?: string
+          name?: string | null
+          text?: string | null
+          number?: number | null
+          field?: { name?: string | null } | null
+        } | null> | null
+      } | null
+    } | null> | null
+  } | null
 }
 
 interface ViewerPullRequestsResponse {
@@ -281,9 +315,21 @@ interface PullRequestNodesResponse {
   nodes?: Array<GraphQLPullRequestNode | null> | null
 }
 
+interface MarkPullRequestReadyForReviewResponse {
+  markPullRequestReadyForReview?: {
+    pullRequest?: {
+      id: string
+    } | null
+  } | null
+}
+
 interface PullRequestDetailResponse {
   repository: {
     pullRequest: GraphQLPullRequestDetailNode | null
+    mergeCommitAllowed?: boolean | null
+    squashMergeAllowed?: boolean | null
+    rebaseMergeAllowed?: boolean | null
+    viewerDefaultMergeMethod?: string | null
   } | null
 }
 
@@ -317,6 +363,8 @@ const pullRequestFields = `
     labels(first: 8) {
       nodes {
         name
+        color
+        description
       }
     }
     statusCheckRollup {
@@ -390,6 +438,7 @@ const pullRequestDetailQuery = `
         deletions
         changedFiles
         checksUrl
+        headRefOid
         baseRefName
         headRefName
         baseRepository {
@@ -402,6 +451,7 @@ const pullRequestDetailQuery = `
         }
         isCrossRepository
         maintainerCanModify
+        mergeable
         mergeStateStatus
         reviewDecision
         assignees(first: 10) {
@@ -479,11 +529,13 @@ const pullRequestDetailQuery = `
         comments(last: 100) {
           nodes {
             id
+            databaseId
             body
             createdAt
             updatedAt
             authorAssociation
             url
+            viewerCanUpdate
             author {
               login
               avatarUrl
@@ -1137,11 +1189,45 @@ const pullRequestDetailQuery = `
           }
           viewerHasReacted
         }
+        viewerCanUpdate
+        viewerCanClose
+        viewerCanReopen
+        viewerCanMergeAsAdmin
+        locked
+        viewerSubscription
+        projectItems(first: 10) {
+          nodes {
+            id
+            project { title url }
+            fieldValues(first: 20) {
+              nodes {
+                __typename
+                ... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2SingleSelectField { name } } }
+                ... on ProjectV2ItemFieldTextValue { text field { ... on ProjectV2FieldCommon { name } } }
+                ... on ProjectV2ItemFieldNumberValue { number field { ... on ProjectV2FieldCommon { name } } }
+              }
+            }
+          }
+        }
       }
+      mergeCommitAllowed
+      squashMergeAllowed
+      rebaseMergeAllowed
+      viewerDefaultMergeMethod
     }
   }
 
   ${pullRequestFields}
+`
+
+const markPullRequestReadyForReviewMutation = `
+  mutation MarkPullRequestReadyForReview($pullRequestId: ID!) {
+    markPullRequestReadyForReview(input: { pullRequestId: $pullRequestId }) {
+      pullRequest {
+        id
+      }
+    }
+  }
 `
 
 const MAX_SEARCH_RESULTS = 1000
@@ -1244,7 +1330,7 @@ export class PullsApi {
 
     const unreadKeys = await listUnreadWorkItemKeys(this.octokit)
 
-    return mapPullRequestDetailNode(pullRequest, unreadKeys)
+    return mapPullRequestDetailNode(pullRequest, unreadKeys, response.repository)
   }
 
   async createPullRequestComment(options: CreatePullRequestCommentOptions): Promise<GitHubPullRequestComment> {
@@ -1256,6 +1342,85 @@ export class PullsApi {
     })
 
     return mapRestIssueComment(response.data)
+  }
+
+  async updatePullRequest(options: UpdatePullRequestOptions): Promise<void> {
+    const hasPullFields = options.title !== undefined || options.body !== undefined || options.state !== undefined
+    const hasIssueFields = options.assignees !== undefined || options.labels !== undefined || options.milestone !== undefined
+
+    if (hasPullFields) {
+      await this.octokit.rest.pulls.update({
+        owner: options.owner,
+        repo: options.repo,
+        pull_number: options.number,
+        ...(options.title !== undefined ? { title: options.title } : {}),
+        ...(options.body !== undefined ? { body: options.body } : {}),
+        ...(options.state !== undefined ? { state: options.state } : {})
+      })
+    }
+
+    if (hasIssueFields) {
+      await this.octokit.rest.issues.update({
+        owner: options.owner,
+        repo: options.repo,
+        issue_number: options.number,
+        ...(options.assignees !== undefined ? { assignees: options.assignees } : {}),
+        ...(options.labels !== undefined ? { labels: options.labels } : {}),
+        ...(options.milestone !== undefined ? { milestone: options.milestone } : {})
+      })
+    }
+  }
+
+  async closePullRequest(options: ClosePullRequestOptions): Promise<void> {
+    await this.octokit.rest.issues.update({
+      owner: options.owner,
+      repo: options.repo,
+      issue_number: options.number,
+      state: 'closed'
+    })
+  }
+
+  async requestPullRequestReviewers(options: RequestPullRequestReviewersOptions): Promise<void> {
+    if (options.removeReviewers.length > 0) {
+      await this.octokit.rest.pulls.removeRequestedReviewers({
+        owner: options.owner, repo: options.repo, pull_number: options.number, reviewers: options.removeReviewers
+      })
+    }
+    if (options.reviewers.length > 0) {
+      await this.octokit.rest.pulls.requestReviewers({
+        owner: options.owner, repo: options.repo, pull_number: options.number, reviewers: options.reviewers
+      })
+    }
+  }
+
+  async markPullRequestReadyForReview(options: MarkPullRequestReadyForReviewOptions): Promise<void> {
+    await this.octokit.graphql<MarkPullRequestReadyForReviewResponse>(
+      markPullRequestReadyForReviewMutation,
+      {
+        pullRequestId: normalizePullRequestNodeId(options.id)
+      }
+    )
+  }
+
+  async mergePullRequest(options: MergePullRequestOptions): Promise<void> {
+    await this.octokit.rest.pulls.merge({
+      owner: options.owner,
+      repo: options.repo,
+      pull_number: options.number,
+      merge_method: options.method,
+      ...(options.expectedHeadSha ? { sha: options.expectedHeadSha } : {}),
+      ...(options.commitTitle ? { commit_title: options.commitTitle } : {}),
+      ...(options.commitMessage ? { commit_message: options.commitMessage } : {})
+    })
+  }
+
+  async updatePullRequestComment(options: UpdatePullRequestCommentOptions): Promise<void> {
+    await this.octokit.rest.issues.updateComment({
+      owner: options.owner,
+      repo: options.repo,
+      comment_id: normalizeIssueCommentId(options.commentId),
+      body: options.body
+    })
   }
 
   private async searchPullRequests(searchQuery: string, limit: number): Promise<GitHubPullRequest[]> {
@@ -1391,13 +1556,21 @@ function mapPullRequestNodes(
 
 function mapPullRequestDetailNode(
   node: GraphQLPullRequestDetailNode,
-  unreadKeys: Set<string>
+  unreadKeys: Set<string>,
+  repositoryNode?: PullRequestDetailResponse['repository']
 ): GitHubPullRequestDetail {
   const repository = splitRepositoryName(node.repository.nameWithOwner)
   const ciState = normalizeCiState(node.statusCheckRollup?.state)
+  const mergePolicy = resolvePullRequestMergeMethods({
+    mergeCommitAllowed: repositoryNode?.mergeCommitAllowed ?? false,
+    squashMergeAllowed: repositoryNode?.squashMergeAllowed ?? false,
+    rebaseMergeAllowed: repositoryNode?.rebaseMergeAllowed ?? false,
+    viewerDefaultMergeMethod: normalizeMergeMethod(repositoryNode?.viewerDefaultMergeMethod)
+  })
 
   return {
     id: `pull-request:${node.id}`,
+    nodeId: node.id,
     owner: repository.owner,
     repo: repository.repo,
     repository: repository.repository,
@@ -1429,6 +1602,7 @@ function mapPullRequestDetailNode(
       repository: node.headRepository?.nameWithOwner ?? null,
       url: node.headRepository?.url ?? null
     },
+    headSha: node.headRefOid ?? null,
     isCrossRepository: node.isCrossRepository,
     maintainerCanModify: node.maintainerCanModify,
     diffStats: {
@@ -1439,15 +1613,28 @@ function mapPullRequestDetailNode(
     status: {
       ciState,
       checksUrl: node.checksUrl ?? null,
-      mergeStateStatus: node.mergeStateStatus ?? null
+      mergeStateStatus: node.mergeStateStatus ?? null,
+      mergeable: node.mergeable ?? null
     },
+    mergePolicy,
     linkedIssues: mapLinkedIssues(node.closingIssuesReferences?.nodes),
     comments: mapComments(node.comments?.nodes),
     timelineEvents: mapTimelineEvents(node.timelineItems?.nodes),
     reactions: mapReactions(node.reactionGroups),
     url: node.url,
-    hasUpdates: unreadKeys.has(createWorkItemKey('pull-request', repository.repository, node.number))
+    hasUpdates: unreadKeys.has(createWorkItemKey('pull-request', repository.repository, node.number)),
+    viewerCanUpdate: node.viewerCanUpdate ?? false,
+    viewerCanClose: node.viewerCanClose ?? false,
+    viewerCanReopen: node.viewerCanReopen ?? false,
+    viewerCanMergeAsAdmin: node.viewerCanMergeAsAdmin ?? false,
+    locked: node.locked ?? false,
+    viewerSubscription: normalizePullRequestSubscription(node.viewerSubscription),
+    projects: mapPullRequestProjects(node),
   }
+}
+
+function normalizePullRequestNodeId(id: string): string {
+  return id.startsWith('pull-request:') ? id.slice('pull-request:'.length) : id
 }
 
 function mapActorNodes(
@@ -1490,14 +1677,15 @@ function mapComments(
 
     return [
       {
-        id: `pull-request-comment:${comment.id}`,
+        id: `pull-request-comment:${comment.databaseId ?? comment.id}`,
         author: normalizeActor(comment.author),
         body: comment.body,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
         authorAssociation: comment.authorAssociation,
         reactions: mapReactions(comment.reactionGroups),
-        url: comment.url
+        url: comment.url,
+        viewerCanUpdate: comment.viewerCanUpdate ?? false
       }
     ]
   })
@@ -1505,7 +1693,7 @@ function mapComments(
 
 function mapRestIssueComment(comment: RestIssueCommentNode): GitHubPullRequestComment {
   return {
-    id: `pull-request-comment:${comment.node_id ?? comment.id}`,
+    id: `pull-request-comment:${comment.id}`,
     author: {
       login: comment.user?.login ?? 'unknown',
       avatarUrl: comment.user?.avatar_url ?? undefined
@@ -1515,8 +1703,55 @@ function mapRestIssueComment(comment: RestIssueCommentNode): GitHubPullRequestCo
     updatedAt: comment.updated_at ?? comment.created_at ?? '',
     authorAssociation: comment.author_association ?? 'NONE',
     reactions: [],
-    url: comment.html_url ?? ''
+    url: comment.html_url ?? '',
+    viewerCanUpdate: true
   }
+}
+
+interface PullRequestMergeMethodResolutionOptions {
+  mergeCommitAllowed: boolean
+  squashMergeAllowed: boolean
+  rebaseMergeAllowed: boolean
+  viewerDefaultMergeMethod?: GitHubPullRequestMergeMethod | null
+}
+
+export function resolvePullRequestMergeMethods(options: PullRequestMergeMethodResolutionOptions): {
+  methods: GitHubPullRequestMergeMethod[]
+  defaultMethod: GitHubPullRequestMergeMethod | null
+} {
+  const methods: GitHubPullRequestMergeMethod[] = []
+
+  if (options.mergeCommitAllowed) methods.push('merge')
+  if (options.squashMergeAllowed) methods.push('squash')
+  if (options.rebaseMergeAllowed) methods.push('rebase')
+
+  const defaultMethod = options.viewerDefaultMergeMethod && methods.includes(options.viewerDefaultMergeMethod)
+    ? options.viewerDefaultMergeMethod
+    : methods[0] ?? null
+
+  return { methods, defaultMethod }
+}
+
+function normalizeMergeMethod(value: string | null | undefined): GitHubPullRequestMergeMethod | null {
+  if (value === 'MERGE' || value === 'merge') return 'merge'
+  if (value === 'SQUASH' || value === 'squash') return 'squash'
+  if (value === 'REBASE' || value === 'rebase') return 'rebase'
+
+  return null
+}
+
+function normalizeIssueCommentId(value: string | number): number {
+  if (typeof value === 'number' && Number.isInteger(value) && value > 0) return value
+
+  const raw = String(value)
+  const numericPart = raw.includes(':') ? raw.split(':').at(-1) : raw
+  const parsed = Number(numericPart)
+
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error('Pull request comment id must be a positive integer')
+  }
+
+  return parsed
 }
 
 function mapReactions(
@@ -2046,4 +2281,26 @@ function mapCommitAuthor(
 
 function commitLabel(commit: GraphQLCommitNode | null | undefined): string | null {
   return commit?.abbreviatedOid ?? commit?.oid?.slice(0, 7) ?? null
+}
+
+export function mapPullRequestProjects(
+  node: Pick<GraphQLPullRequestDetailNode, 'projectItems'>
+): GitHubIssueProjectItem[] {
+  const itemNodes = (node.projectItems?.nodes ?? []).filter(
+    (item): item is NonNullable<typeof item> => Boolean(item?.project)
+  )
+  return itemNodes.map((item) => {
+    const fieldNodes = (item.fieldValues?.nodes ?? []).filter((f): f is NonNullable<typeof f> => Boolean(f))
+    const fields = fieldNodes.flatMap((field) => {
+      const name = field.field?.name
+      const value = field.name ?? field.text ?? (typeof field.number === 'number' ? String(field.number) : null)
+      return name && value ? [{ name, value }] : []
+    })
+    return { id: item.id, title: item.project?.title ?? '', url: item.project?.url ?? null, fields }
+  })
+}
+
+function normalizePullRequestSubscription(value: string | null | undefined): GitHubIssueSubscription | null {
+  if (value === 'SUBSCRIBED' || value === 'UNSUBSCRIBED' || value === 'IGNORED') return value
+  return null
 }

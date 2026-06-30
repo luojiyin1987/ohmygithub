@@ -466,8 +466,19 @@ export type GitHubPullRequestReviewerType =
   | 'mannequin'
   | 'unknown'
 
+export type GitHubPullRequestMergeMethod =
+  | 'merge'
+  | 'squash'
+  | 'rebase'
+
 export type GitHubIssueState =
   | 'open'
+  | 'completed'
+  | 'not_planned'
+
+export type GitHubIssueUpdateState = 'open' | 'closed'
+
+export type GitHubIssueStateReason =
   | 'completed'
   | 'not_planned'
 
@@ -526,7 +537,7 @@ export interface GitHubPullRequest {
   ciState: GitHubCiState | null
   author: GitHubActor
   updatedAt: string
-  labels: string[]
+  labels: GitHubLabel[]
   url: string
   hasUpdates: boolean
 }
@@ -556,6 +567,12 @@ export interface GitHubPullRequestStatusSummary {
   ciState: GitHubCiState | null
   checksUrl: string | null
   mergeStateStatus: string | null
+  mergeable: string | null
+}
+
+export interface GitHubPullRequestMergePolicy {
+  methods: GitHubPullRequestMergeMethod[]
+  defaultMethod: GitHubPullRequestMergeMethod | null
 }
 
 export interface GitHubPullRequestReviewRequest {
@@ -839,6 +856,7 @@ export type GitHubPullRequestComment = GitHubIssueComment
 
 export interface GitHubPullRequestDetail {
   id: string
+  nodeId: string
   owner: string
   repo: string
   repository: string
@@ -853,7 +871,7 @@ export interface GitHubPullRequestDetail {
   mergedAt: string | null
   mergedBy: GitHubActor | null
   body: string
-  labels: string[]
+  labels: GitHubLabel[]
   assignees: GitHubActor[]
   milestone: GitHubIssueMilestone | null
   participants: GitHubActor[]
@@ -862,16 +880,25 @@ export interface GitHubPullRequestDetail {
   reviewDecision: GitHubPullRequestReviewDecision | null
   baseBranch: GitHubPullRequestBranch
   headBranch: GitHubPullRequestBranch
+  headSha: string | null
   isCrossRepository: boolean
   maintainerCanModify: boolean
   diffStats: GitHubPullRequestDiffStats
   status: GitHubPullRequestStatusSummary
+  mergePolicy: GitHubPullRequestMergePolicy
   linkedIssues: GitHubPullRequestLinkedIssue[]
   comments: GitHubPullRequestComment[]
   timelineEvents: GitHubPullRequestTimelineEvent[]
   reactions: GitHubIssueReaction[]
   url: string
   hasUpdates: boolean
+  viewerCanUpdate: boolean
+  viewerCanClose: boolean
+  viewerCanReopen: boolean
+  viewerCanMergeAsAdmin: boolean
+  locked: boolean
+  viewerSubscription: GitHubIssueSubscription | null
+  projects: GitHubIssueProjectItem[]
 }
 
 export interface GitHubDeviceAuthorization {
@@ -1068,6 +1095,38 @@ export interface GetPullRequestDetailOptions extends RepositoryOptions {
 }
 
 export interface CreatePullRequestCommentOptions extends GetPullRequestDetailOptions {
+  body: string
+}
+
+export interface UpdatePullRequestOptions extends GetPullRequestDetailOptions {
+  title?: string
+  body?: string
+  state?: 'open' | 'closed'
+  assignees?: string[]
+  labels?: string[]
+  milestone?: number | null
+}
+
+export interface ClosePullRequestOptions extends GetPullRequestDetailOptions {}
+
+export interface RequestPullRequestReviewersOptions extends GetPullRequestDetailOptions {
+  reviewers: string[]
+  removeReviewers: string[]
+}
+
+export interface MarkPullRequestReadyForReviewOptions extends GetPullRequestDetailOptions {
+  id: string
+}
+
+export interface MergePullRequestOptions extends GetPullRequestDetailOptions {
+  method: GitHubPullRequestMergeMethod
+  expectedHeadSha?: string | null
+  commitTitle?: string
+  commitMessage?: string
+}
+
+export interface UpdatePullRequestCommentOptions extends RepositoryOptions {
+  commentId: string | number
   body: string
 }
 

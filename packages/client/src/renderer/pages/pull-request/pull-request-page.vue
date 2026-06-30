@@ -12,17 +12,20 @@ import {
   EmptyTitle,
   Skeleton,
 } from '@oh-my-github/ui'
-import { AlertCircle, GitPullRequest } from 'lucide-vue-next'
+import { AlertCircle, GitPullRequest, Pencil } from 'lucide-vue-next'
 import {
   ConversationBodyCard,
   ConversationCommentCard,
   ConversationCommentComposer,
   ConversationEventRow,
+  ConversationMarkdownEditor,
   ConversationTimeline,
   GitHubActorLink,
 } from '../../components'
 import {
   createPullRequestComment,
+  updatePullRequest,
+  updatePullRequestComment,
   usePullRequestDetailQuery,
 } from '../../composables/github/use-pull-requests'
 import PullRequestHeader from './components/pull-request-header.vue'
@@ -56,6 +59,14 @@ const timelineItems = usePullRequestTimelineItems(pullRequest)
 const commentBody = ref('')
 const commentError = ref<string | null>(null)
 const isSubmittingComment = ref(false)
+const isEditingBody = ref(false)
+const bodyDraft = ref('')
+const bodyError = ref<string | null>(null)
+const isSavingBody = ref(false)
+const editingCommentId = ref<string | null>(null)
+const commentDraft = ref('')
+const commentEditError = ref<string | null>(null)
+const savingCommentId = ref<string | null>(null)
 const isLoading = computed(() => hasIdentity.value && pullRequestQuery.isLoading.value && !pullRequest.value)
 const hasError = computed(() => Boolean(pullRequestQuery.error.value))
 const showUnavailable = computed(() =>
@@ -84,6 +95,70 @@ async function submitPullRequestComment(): Promise<void> {
     commentError.value = t('pullRequest.comment.error')
   } finally {
     isSubmittingComment.value = false
+  }
+}
+
+function startBodyEdit(): void {
+  if (!pullRequest.value?.viewerCanUpdate) return
+
+  bodyDraft.value = pullRequest.value.body ?? ''
+  bodyError.value = null
+  isEditingBody.value = true
+}
+
+function cancelBodyEdit(): void {
+  isEditingBody.value = false
+  bodyDraft.value = ''
+  bodyError.value = null
+}
+
+async function savePullRequestBody(): Promise<void> {
+  if (!pullRequest.value || isSavingBody.value) return
+
+  isSavingBody.value = true
+  bodyError.value = null
+
+  try {
+    await updatePullRequest(owner.value, repo.value, number.value, {
+      body: bodyDraft.value,
+    })
+    isEditingBody.value = false
+    bodyDraft.value = ''
+    await pullRequestQuery.refetch()
+  } catch {
+    bodyError.value = t('pullRequest.edit.bodyError')
+  } finally {
+    isSavingBody.value = false
+  }
+}
+
+function startCommentEdit(commentId: string, body: string): void {
+  editingCommentId.value = commentId
+  commentDraft.value = body
+  commentEditError.value = null
+}
+
+function cancelCommentEdit(): void {
+  editingCommentId.value = null
+  commentDraft.value = ''
+  commentEditError.value = null
+}
+
+async function savePullRequestCommentEdit(): Promise<void> {
+  if (!editingCommentId.value || savingCommentId.value) return
+
+  const commentId = editingCommentId.value
+  savingCommentId.value = commentId
+  commentEditError.value = null
+
+  try {
+    await updatePullRequestComment(owner.value, repo.value, commentId, commentDraft.value)
+    cancelCommentEdit()
+    await pullRequestQuery.refetch()
+  } catch {
+    commentEditError.value = t('pullRequest.edit.commentError')
+  } finally {
+    savingCommentId.value = null
   }
 }
 </script>
@@ -183,6 +258,7 @@ async function submitPullRequestComment(): Promise<void> {
         <PullRequestHeader
           :pull-request="pullRequest"
           :repository="repository"
+          @refetch="pullRequestQuery.refetch()"
         />
 
         <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
@@ -191,12 +267,42 @@ async function submitPullRequestComment(): Promise<void> {
               :actor="pullRequest.author"
               :body="pullRequest.body ?? ''"
               :created-at="pullRequest.createdAt"
+              :editing="isEditingBody"
               :empty-label="t('pullRequest.empty.body')"
               :owner="owner"
               :repo="repo"
               :reactions="pullRequest.reactions ?? []"
               :updated-at="pullRequest.updatedAt"
-            />
+            >
+              <template
+                v-if="pullRequest.viewerCanUpdate && !isEditingBody"
+                #actions
+              >
+                <Button
+                  :aria-label="t('pullRequest.actions.editBody')"
+                  class="size-7 text-muted-foreground"
+                  size="icon-sm"
+                  type="button"
+                  variant="ghost"
+                  @click="startBodyEdit"
+                >
+                  <Pencil class="size-3.5" />
+                </Button>
+              </template>
+
+              <template #editor>
+                <ConversationMarkdownEditor
+                  v-model="bodyDraft"
+                  allow-empty
+                  :error="bodyError"
+                  :is-submitting="isSavingBody"
+                  :owner="owner"
+                  :repo="repo"
+                  @cancel="cancelBodyEdit"
+                  @submit="savePullRequestBody"
+                />
+              </template>
+            </ConversationBodyCard>
 
             <section class="min-w-0">
               <ConversationTimeline
@@ -226,18 +332,49 @@ async function submitPullRequestComment(): Promise<void> {
                         :body="item.body"
                         :comment-id="item.commentId"
                         :created-at="item.createdAt"
+                        :editing="editingCommentId === item.commentId"
                         :owner="owner"
                         :repo="repo"
                         :reactions="item.reactions"
                         :show-avatar="false"
                         :updated-at="item.updatedAt"
-                      />
+                      >
+                        <template
+                          v-if="item.viewerCanUpdate && editingCommentId !== item.commentId"
+                          #actions
+                        >
+                          <Button
+                            :aria-label="t('pullRequest.actions.editComment')"
+                            class="size-7 text-muted-foreground"
+                            size="icon-sm"
+                            type="button"
+                            variant="ghost"
+                            @click="startCommentEdit(item.commentId, item.body)"
+                          >
+                            <Pencil class="size-3.5" />
+                          </Button>
+                        </template>
+
+                        <template #editor>
+                          <ConversationMarkdownEditor
+                            v-model="commentDraft"
+                            :error="commentEditError"
+                            :is-submitting="savingCommentId === item.commentId"
+                            :owner="owner"
+                            :repo="repo"
+                            @cancel="cancelCommentEdit"
+                            @submit="savePullRequestCommentEdit"
+                          />
+                        </template>
+                      </ConversationCommentCard>
                     </div>
                     <PullRequestCommitGroup
                       v-else-if="item.kind === 'commit-group'"
                       :actor="item.actor"
                       :commits="item.commits"
                       :created-at="item.createdAt"
+                      :owner="owner"
+                      :repo="repo"
                     />
                     <ConversationEventRow
                       v-else
@@ -268,6 +405,7 @@ async function submitPullRequestComment(): Promise<void> {
           <PullRequestSidebar
             class="min-w-0 xl:sticky xl:top-4 xl:self-start"
             :pull-request="pullRequest"
+            @refetch="pullRequestQuery.refetch()"
           />
         </div>
       </template>
