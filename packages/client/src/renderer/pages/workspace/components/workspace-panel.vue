@@ -13,6 +13,7 @@ import PullRequestPage from '../../pull-request/pull-request-page.vue'
 import RepositoryPage from '../../repository/repository-page.vue'
 import SearchResultPage from '../../search-result/search-result-page.vue'
 import NotFoundPage from '../../not-found/not-found-page.vue'
+import InboxPage from '../../inbox/inbox-page.vue'
 import { getWorkspaceTabView } from '../tab-presentation'
 
 const props = defineProps<{
@@ -90,6 +91,11 @@ function translate(key: string, params?: WorkspaceMessageParams): string {
     v-else-if="tab.type === 'not-found'"
     :tab="tab"
     @search="emit('search')"
+  />
+
+  <InboxPage
+    v-else-if="tab.type === 'inbox'"
+    :tab="tab"
   />
 
   <section
