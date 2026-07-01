@@ -7,6 +7,7 @@ import { initializeAuth, registerAuthIpc } from './auth'
 import { registerBookmarksIpc } from './bookmarks'
 import { initializeConfig, registerConfigIpc } from './config'
 import { configureDevRemoteDebugging } from './debug'
+import { registerInboxIpc } from './inbox'
 import { registerIssuesIpc } from './issues'
 import { registerLinksIpc } from './links'
 import { registerPullsIpc } from './pulls'
@@ -93,6 +94,7 @@ void app.whenReady().then(() => {
   registerAuthIpc()
   registerBookmarksIpc()
   registerConfigIpc()
+  registerInboxIpc()
   registerIssuesIpc()
   registerLinksIpc()
   registerPullsIpc()
