@@ -98,3 +98,48 @@ describe('InboxApi.listInboxNotifications', () => {
     })
   })
 })
+
+describe('InboxApi triage', () => {
+  function createTriageApi() {
+    const markThreadAsRead = vi.fn().mockResolvedValue({ data: {} })
+    const markNotificationsAsRead = vi.fn().mockResolvedValue({ data: {} })
+    const markThreadAsDone = vi.fn().mockResolvedValue({ data: {} })
+    const setThreadSubscription = vi.fn().mockResolvedValue({ data: {} })
+    const api = new InboxApi({
+      rest: {
+        activity: {
+          markThreadAsRead,
+          markNotificationsAsRead,
+          markThreadAsDone,
+          setThreadSubscription,
+        },
+      },
+    } as unknown as GitHubOctokit)
+
+    return { api, markThreadAsRead, markNotificationsAsRead, markThreadAsDone, setThreadSubscription }
+  }
+
+  it('marks a single thread as read with a numeric thread id', async () => {
+    const { api, markThreadAsRead } = createTriageApi()
+    await api.markThreadAsRead('42')
+    expect(markThreadAsRead).toHaveBeenCalledWith({ thread_id: 42 })
+  })
+
+  it('marks all notifications as read', async () => {
+    const { api, markNotificationsAsRead } = createTriageApi()
+    await api.markAllAsRead()
+    expect(markNotificationsAsRead).toHaveBeenCalledWith({})
+  })
+
+  it('marks a thread as done', async () => {
+    const { api, markThreadAsDone } = createTriageApi()
+    await api.markThreadAsDone('42')
+    expect(markThreadAsDone).toHaveBeenCalledWith({ thread_id: 42 })
+  })
+
+  it('unsubscribes by ignoring the thread subscription', async () => {
+    const { api, setThreadSubscription } = createTriageApi()
+    await api.unsubscribe('42')
+    expect(setThreadSubscription).toHaveBeenCalledWith({ thread_id: 42, ignored: true })
+  })
+})

@@ -175,6 +175,24 @@ export class InboxApi {
     }))
   }
 
+  async markThreadAsRead(threadId: string): Promise<void> {
+    await this.octokit.rest.activity.markThreadAsRead({ thread_id: Number(threadId) })
+  }
+
+  async markAllAsRead(lastReadAt?: string): Promise<void> {
+    await this.octokit.rest.activity.markNotificationsAsRead(
+      lastReadAt ? { last_read_at: lastReadAt } : {},
+    )
+  }
+
+  async markThreadAsDone(threadId: string): Promise<void> {
+    await this.octokit.rest.activity.markThreadAsDone({ thread_id: Number(threadId) })
+  }
+
+  async unsubscribe(threadId: string): Promise<void> {
+    await this.octokit.rest.activity.setThreadSubscription({ thread_id: Number(threadId), ignored: true })
+  }
+
   async listPullRequests(options: ListWorkspaceItemsOptions = {}): Promise<GitHubWorkspaceItem[]> {
     const response = await this.fetchViewerWorkItems(options)
     return mapGraphQLNodes(response.viewer.pullRequests.nodes, 'pull_request')
