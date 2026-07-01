@@ -1178,6 +1178,51 @@
     "description": "{category} 分类下的 Issue。"
   },
   "workspace": {
+    "inbox": {
+      "title": "收件箱",
+      "filters": {
+        "all": "全部",
+        "unread": "未读",
+        "assigned": "指派给我",
+        "participating": "参与的",
+        "review-requested": "请求审查",
+        "mentioned": "提及我"
+      },
+      "actions": {
+        "markAllRead": "全部标为已读",
+        "refresh": "刷新",
+        "markRead": "标为已读",
+        "done": "完成",
+        "unsubscribe": "取消订阅"
+      },
+      "reasons": {
+        "assign": "指派",
+        "author": "作者",
+        "comment": "评论",
+        "ci_activity": "CI 活动",
+        "invitation": "邀请",
+        "manual": "已订阅",
+        "mention": "提及",
+        "review_requested": "请求审查",
+        "security_alert": "安全告警",
+        "security_advisory_credit": "安全公告",
+        "state_change": "状态变更",
+        "subscribed": "已订阅",
+        "team_mention": "团队提及",
+        "approval_requested": "请求批准"
+      },
+      "empty": {
+        "title": "已全部处理完毕",
+        "description": "暂无通知。"
+      },
+      "error": {
+        "title": "无法加载通知",
+        "retry": "重试"
+      },
+      "toast": {
+        "actionFailed": "操作失败,请重试。"
+      }
+    },
     "title": "Workspace",
     "copy": {
       "error": "无法复制 GitHub 链接。",

@@ -1178,6 +1178,51 @@
     "description": "Issues in the {category} category."
   },
   "workspace": {
+    "inbox": {
+      "title": "Inbox",
+      "filters": {
+        "all": "All",
+        "unread": "Unread",
+        "assigned": "Assigned",
+        "participating": "Participating",
+        "review-requested": "Review requested",
+        "mentioned": "Mentioned"
+      },
+      "actions": {
+        "markAllRead": "Mark all as read",
+        "refresh": "Refresh",
+        "markRead": "Mark as read",
+        "done": "Done",
+        "unsubscribe": "Unsubscribe"
+      },
+      "reasons": {
+        "assign": "Assigned",
+        "author": "Author",
+        "comment": "Comment",
+        "ci_activity": "CI activity",
+        "invitation": "Invitation",
+        "manual": "Subscribed",
+        "mention": "Mentioned",
+        "review_requested": "Review requested",
+        "security_alert": "Security alert",
+        "security_advisory_credit": "Security advisory",
+        "state_change": "State change",
+        "subscribed": "Subscribed",
+        "team_mention": "Team mentioned",
+        "approval_requested": "Approval requested"
+      },
+      "empty": {
+        "title": "You're all caught up",
+        "description": "No notifications to show."
+      },
+      "error": {
+        "title": "Couldn't load notifications",
+        "retry": "Try again"
+      },
+      "toast": {
+        "actionFailed": "Something went wrong. Please try again."
+      }
+    },
     "title": "Workspace",
     "copy": {
       "error": "Could not copy GitHub link.",
