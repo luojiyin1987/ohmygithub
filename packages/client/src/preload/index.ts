@@ -91,6 +91,14 @@ const api = {
     updatePullRequestComment: (owner: string, repo: string, commentId: string | number, body: string) =>
       ipcRenderer.invoke('pulls:update-comment', owner, repo, commentId, body)
   },
+  inbox: {
+    listNotifications: (options?: { all?: boolean, participating?: boolean, limit?: number }) =>
+      ipcRenderer.invoke('inbox:list-notifications', options),
+    markThreadAsRead: (threadId: string) => ipcRenderer.invoke('inbox:mark-thread-read', threadId),
+    markAllAsRead: () => ipcRenderer.invoke('inbox:mark-all-read'),
+    markThreadAsDone: (threadId: string) => ipcRenderer.invoke('inbox:mark-thread-done', threadId),
+    unsubscribe: (threadId: string) => ipcRenderer.invoke('inbox:unsubscribe', threadId),
+  },
   repositories: {
     getViewerState: (owner: string, repo: string) =>
       ipcRenderer.invoke('repositories:get-viewer-state', owner, repo),

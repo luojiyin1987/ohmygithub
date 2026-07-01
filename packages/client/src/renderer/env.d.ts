@@ -653,6 +653,19 @@ type GitHubIssueLinkedRef = {
   url: string | null
 }
 
+type GitHubNotification = {
+  id: string
+  unread: boolean
+  reason: string
+  updatedAt: string
+  subjectType: string
+  subjectTitle: string
+  repositoryFullName: string
+  repositoryHtmlUrl: string
+  number?: number
+  htmlUrl: string
+}
+
 type GitHubPullRequest = {
   id: string
   owner: string
@@ -1200,6 +1213,13 @@ interface Window {
         commentId: string | number,
         body: string
       ) => Promise<void>
+    }
+    inbox: {
+      listNotifications: (options?: { all?: boolean, participating?: boolean, limit?: number }) => Promise<GitHubNotification[]>
+      markThreadAsRead: (threadId: string) => Promise<void>
+      markAllAsRead: () => Promise<void>
+      markThreadAsDone: (threadId: string) => Promise<void>
+      unsubscribe: (threadId: string) => Promise<void>
     }
     repositories: {
       getViewerState: (owner: string, repo: string) => Promise<GitHubRepositoryViewerState>
