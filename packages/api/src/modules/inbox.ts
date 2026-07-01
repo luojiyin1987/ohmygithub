@@ -1,5 +1,12 @@
 import type { GitHubOctokit } from '../transport'
-import type { GitHubItemKind, GitHubItemState, GitHubWorkspaceItem, ListWorkspaceItemsOptions } from '../types'
+import type {
+  GitHubItemKind,
+  GitHubItemState,
+  GitHubNotification,
+  GitHubWorkspaceItem,
+  ListNotificationsOptions,
+  ListWorkspaceItemsOptions,
+} from '../types'
 
 type GraphQLActor = {
   login: string
@@ -143,6 +150,31 @@ export class InboxApi {
     })
   }
 
+  async listInboxNotifications(options: ListNotificationsOptions = {}): Promise<GitHubNotification[]> {
+    const limit = options.limit ?? 50
+    const notifications = await this.octokit.paginate(
+      this.octokit.rest.activity.listNotificationsForAuthenticatedUser,
+      {
+        all: options.all ?? false,
+        participating: options.participating ?? false,
+        per_page: Math.min(limit, 50),
+      },
+    )
+
+    return notifications.slice(0, limit).map((notification) => ({
+      id: notification.id,
+      unread: notification.unread,
+      reason: notification.reason,
+      updatedAt: notification.updated_at,
+      subjectType: notification.subject.type,
+      subjectTitle: notification.subject.title,
+      repositoryFullName: notification.repository.full_name,
+      repositoryHtmlUrl: notification.repository.html_url,
+      number: parseSubjectNumber(notification.subject.url),
+      htmlUrl: notificationHtmlUrl(notification.subject.url, notification.repository.html_url),
+    }))
+  }
+
   async listPullRequests(options: ListWorkspaceItemsOptions = {}): Promise<GitHubWorkspaceItem[]> {
     const response = await this.fetchViewerWorkItems(options)
     return mapGraphQLNodes(response.viewer.pullRequests.nodes, 'pull_request')
@@ -224,7 +256,29 @@ function normalizeState(value: string): GitHubItemState {
   return 'open'
 }
 
-function parseSubjectNumber(url: string | undefined): number | undefined {
+export function parseSubjectNumber(url: string | undefined | null): number | undefined {
   const match = url?.match(/\/(?:issues|pulls)\/(\d+)$/)
   return match ? Number(match[1]) : undefined
+}
+
+export function notificationHtmlUrl(
+  subjectUrl: string | null | undefined,
+  repositoryHtmlUrl: string,
+): string {
+  if (!subjectUrl) {
+    return repositoryHtmlUrl
+  }
+
+  const match = subjectUrl.match(/^https:\/\/api\.github\.com\/repos\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/)
+  if (!match) {
+    return repositoryHtmlUrl
+  }
+
+  const [, owner, repo, segment, rest] = match
+  const mapped = segment === 'pulls' ? 'pull' : segment === 'commits' ? 'commit' : segment
+  if (mapped !== 'pull' && mapped !== 'commit' && mapped !== 'issues') {
+    return repositoryHtmlUrl
+  }
+
+  return `https://github.com/${owner}/${repo}/${mapped}/${rest}`
 }

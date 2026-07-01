@@ -953,6 +953,42 @@ export interface GitHubWorkspaceItem {
   url?: string
 }
 
+export type GitHubNotificationReason =
+  | 'assign'
+  | 'author'
+  | 'comment'
+  | 'ci_activity'
+  | 'invitation'
+  | 'manual'
+  | 'mention'
+  | 'review_requested'
+  | 'security_alert'
+  | 'security_advisory_credit'
+  | 'state_change'
+  | 'subscribed'
+  | 'team_mention'
+  | 'approval_requested'
+  | (string & {})
+
+export interface GitHubNotification {
+  id: string
+  unread: boolean
+  reason: GitHubNotificationReason
+  updatedAt: string
+  subjectType: string
+  subjectTitle: string
+  repositoryFullName: string
+  repositoryHtmlUrl: string
+  number?: number
+  htmlUrl: string
+}
+
+export interface ListNotificationsOptions {
+  all?: boolean
+  participating?: boolean
+  limit?: number
+}
+
 export interface GitHubClient {
   listNotifications(): Promise<GitHubWorkspaceItem[]>
   listPullRequests(): Promise<GitHubWorkspaceItem[]>
