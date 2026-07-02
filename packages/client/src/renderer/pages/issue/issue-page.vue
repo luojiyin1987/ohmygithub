@@ -373,7 +373,7 @@ async function saveIssueCommentEdit(): Promise<void> {
                 </div>
               </ConversationTimeline>
 
-              <div class="relative mt-5 min-w-0 pl-2">
+              <div class="relative mt-5 min-w-0">
                 <div
                   class="absolute bottom-full left-7 h-3 w-px bg-border"
                   aria-hidden="true"

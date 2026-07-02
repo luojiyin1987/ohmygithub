@@ -39,7 +39,9 @@ const monaco = useMonaco({
   automaticLayout: true,
   autoScrollInitial: false,
   autoScrollOnUpdate: false,
+  fontFamily: settingsStore.codeFontStack,
   fontSize: settingsStore.codeFontSizePx,
+  lineHeight: 1.5,
   lineNumbers: 'on',
   minimap: { enabled: false },
   padding: { bottom: 12, top: 12 },
@@ -105,20 +107,37 @@ watch(
     monaco.getEditorView()?.updateOptions({ fontSize })
   }
 )
+
+watch(
+  () => settingsStore.codeFontStack,
+  (fontFamily) => {
+    monaco.getEditorView()?.updateOptions({ fontFamily })
+  }
+)
+
+watch(
+  () => props.options,
+  (options) => {
+    if (options) {
+      monaco.getEditorView()?.updateOptions(options)
+    }
+  },
+  { deep: true }
+)
 </script>
 
 <template>
   <div
     ref="editorElement"
-    class="h-full min-h-0 w-full overflow-hidden bg-card"
+    class="monaco-editor-host min-h-0 w-full overflow-hidden"
   />
 </template>
 
 <style scoped>
-:deep(.monaco-editor),
-:deep(.monaco-editor .overflow-guard),
-:deep(.monaco-editor-background),
-:deep(.monaco-editor .margin) {
-  background-color: var(--card) !important;
+/* stream-monaco sizes the container to the editor content via inline styles;
+   force the editor to fill whatever box the parent gives it instead. */
+.monaco-editor-host {
+  height: 100% !important;
+  max-height: 100% !important;
 }
 </style>

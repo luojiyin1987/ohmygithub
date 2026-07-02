@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import {
-  Button,
-  Textarea,
-} from '@oh-my-github/ui'
+import { Button } from '@oh-my-github/ui'
 import { Check, X } from 'lucide-vue-next'
+import MonacoCodeEditor from '../editor/monaco-code-editor.vue'
 import GitHubMarkdownRenderer from '../github/github-markdown-renderer.vue'
 import MarkdownRenderer from '../markdown/markdown-renderer.vue'
 
@@ -55,45 +53,44 @@ function submitEdit(): void {
     class="grid min-w-0 gap-3"
     @submit.prevent="submitEdit"
   >
-    <div class="grid min-w-0 gap-3 md:grid-cols-2">
-      <div class="grid min-w-0 gap-1.5">
-        <div class="select-none text-label font-medium text-foreground">
-          {{ message('write') }}
-        </div>
-        <Textarea
+    <div class="grid min-w-0 overflow-hidden rounded-md border border-border md:grid-cols-2">
+      <div class="h-48 min-w-0 border-b border-border md:border-b-0 md:border-r">
+        <MonacoCodeEditor
           v-model="body"
-          class="min-h-32"
-          :aria-label="message('inputLabel')"
-          :disabled="isSubmitting"
-          :placeholder="message('placeholder')"
-          size="lg"
+          language="markdown"
+          :options="{
+            ariaLabel: message('inputLabel'),
+            folding: false,
+            hideCursorInOverviewRuler: true,
+            lineNumbers: 'on',
+            overviewRulerBorder: false,
+            overviewRulerLanes: 0,
+            placeholder: message('placeholder'),
+            renderLineHighlight: 'line',
+          }"
+          :readonly="isSubmitting"
         />
       </div>
 
-      <div class="grid min-w-0 gap-1.5">
-        <div class="select-none text-label font-medium text-foreground">
-          {{ message('preview') }}
-        </div>
-        <div class="min-h-32 min-w-0 overflow-auto rounded-md border border-border bg-background/60 p-3">
-          <MarkdownRenderer
-            v-if="hasBody && !(owner && repo)"
-            class="rich-content-markdown--compact"
-            :content="body"
-          />
-          <GitHubMarkdownRenderer
-            v-else-if="hasBody"
-            class="rich-content-markdown--compact"
-            :content="body"
-            :owner="owner"
-            :repo="repo"
-          />
-          <p
-            v-else
-            class="text-body text-muted-foreground"
-          >
-            {{ message('emptyPreview') }}
-          </p>
-        </div>
+      <div class="h-48 min-w-0 overflow-auto bg-card p-3">
+        <MarkdownRenderer
+          v-if="hasBody && !(owner && repo)"
+          class="rich-content-markdown--compact"
+          :content="body"
+        />
+        <GitHubMarkdownRenderer
+          v-else-if="hasBody"
+          class="rich-content-markdown--compact"
+          :content="body"
+          :owner="owner"
+          :repo="repo"
+        />
+        <p
+          v-else
+          class="text-body text-muted-foreground"
+        >
+          {{ message('emptyPreview') }}
+        </p>
       </div>
     </div>
 

@@ -5,7 +5,7 @@
       "eyebrow": "Debug",
       "sample": {
         "body": "This Markdown preview uses the shared code renderer and the Mermaid renderer.",
-        "githubSyntax": "GitHub syntax: @sheepbox8646, #595, https://github.com/memohai/Memoh/issues/595, and [linked PR](https://github.com/memohai/Memoh/pull/595). Inline code stays literal: `#595 @sheepbox8646 https://github.com/memohai/Memoh/issues/595`.",
+        "githubSyntax": "GitHub syntax: {'@'}sheepbox8646, #595, https://github.com/memohai/Memoh/issues/595, and [linked PR](https://github.com/memohai/Memoh/pull/595). Inline code stays literal: `#595 {'@'}sheepbox8646 https://github.com/memohai/Memoh/issues/595`.",
         "heading": "Markdown preview",
         "inlineMath": "Inline math",
         "mermaid": {
@@ -739,9 +739,7 @@
       "emptyPreview": "Nothing to preview.",
       "inputLabel": "Markdown body",
       "placeholder": "Write Markdown",
-      "preview": "Preview",
-      "save": "Save",
-      "write": "Write"
+      "save": "Save"
     }
   },
   "pullRequest": {
@@ -770,9 +768,7 @@
       "error": "Comment could not be posted. Check your permissions and try again.",
       "inputLabel": "Pull request comment",
       "placeholder": "Leave a comment",
-      "preview": "Preview",
-      "submit": "Comment",
-      "write": "Write"
+      "submit": "Comment"
     },
     "empty": {
       "body": "No description provided.",
@@ -1047,9 +1043,7 @@
       "error": "Comment could not be posted. Check your permissions and try again.",
       "inputLabel": "Issue comment",
       "placeholder": "Leave a comment",
-      "preview": "Preview",
-      "submit": "Comment",
-      "write": "Write"
+      "submit": "Comment"
     },
     "empty": {
       "body": "No description provided.",

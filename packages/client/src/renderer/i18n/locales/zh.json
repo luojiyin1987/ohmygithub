@@ -5,7 +5,7 @@
       "eyebrow": "调试",
       "sample": {
         "body": "这个 Markdown 预览会复用统一的代码渲染器，并通过 Mermaid renderer 渲染流程图。",
-        "githubSyntax": "GitHub 语法：@sheepbox8646、#595、https://github.com/memohai/Memoh/issues/595，以及 [linked PR](https://github.com/memohai/Memoh/pull/595)。行内代码保持原样：`#595 @sheepbox8646 https://github.com/memohai/Memoh/issues/595`。",
+        "githubSyntax": "GitHub 语法：{'@'}sheepbox8646、#595、https://github.com/memohai/Memoh/issues/595，以及 [linked PR](https://github.com/memohai/Memoh/pull/595)。行内代码保持原样：`#595 {'@'}sheepbox8646 https://github.com/memohai/Memoh/issues/595`。",
         "heading": "Markdown 预览",
         "inlineMath": "行内公式",
         "mermaid": {
@@ -739,9 +739,7 @@
       "emptyPreview": "没有可预览的内容。",
       "inputLabel": "Markdown 内容",
       "placeholder": "编写 Markdown",
-      "preview": "预览",
-      "save": "保存",
-      "write": "编辑"
+      "save": "保存"
     }
   },
   "pullRequest": {
@@ -770,9 +768,7 @@
       "error": "无法发表评论。请检查权限后重试。",
       "inputLabel": "Pull Request 评论",
       "placeholder": "留下评论",
-      "preview": "预览",
-      "submit": "评论",
-      "write": "编辑"
+      "submit": "评论"
     },
     "empty": {
       "body": "没有填写描述。",
@@ -1047,9 +1043,7 @@
       "error": "无法发表评论。请检查权限后重试。",
       "inputLabel": "Issue 评论",
       "placeholder": "留下评论",
-      "preview": "预览",
-      "submit": "评论",
-      "write": "编辑"
+      "submit": "评论"
     },
     "empty": {
       "body": "没有填写描述。",
