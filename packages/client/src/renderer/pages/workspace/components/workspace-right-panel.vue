@@ -175,9 +175,11 @@ const panelStyle = computed<Record<string, string>>(() => ({
   max-width: 48rem;
 }
 
-.workspace-right-panel-code :deep(.rich-content-code),
-.workspace-right-panel-code :deep(.shiki) {
-  min-height: 100%;
+/* min-height percentages don't resolve against the auto-height wrapper,
+   so stretch the code block with grid instead */
+.workspace-right-panel-code,
+.workspace-right-panel-code :deep(.rich-content-code) {
+  display: grid;
 }
 
 .workspace-right-panel-code :deep(.shiki) {
