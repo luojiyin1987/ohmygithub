@@ -321,6 +321,17 @@ html:not([data-focus-ring-modality="keyboard"])
   border-collapse: collapse;
 }
 
+/* markstream tables: display:block above would turn the bordered .table-node
+   into a full-width block around a shrink-to-fit anonymous table, leaving an
+   empty strip on the right. Its .table-node-wrapper already scrolls, so render
+   a real table sized to its content. Needs > .table-node[data-v] specificity. */
+.rich-content-markdown table.table-node {
+  display: table;
+  width: max-content;
+  max-width: 100%;
+  table-layout: auto;
+}
+
 .rich-content-markdown :where(th, td) {
   border: 1px solid var(--border);
   padding: 0.375rem 0.625rem;
