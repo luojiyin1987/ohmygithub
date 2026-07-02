@@ -72,7 +72,6 @@ const panelStyle = computed<Record<string, string>>(() => ({
             :diff="true"
             :filename="content.filename"
             :language="content.language"
-            :padded="true"
             :themed-background="true"
           />
         </div>
