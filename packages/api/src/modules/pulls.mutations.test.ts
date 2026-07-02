@@ -91,6 +91,151 @@ describe('PullsApi mutations', () => {
       pullRequestId: 'PR_kwDOExample',
     })
   })
+
+  it('submits a review with the event and body', async () => {
+    const { api, createReview } = createApi()
+
+    await api.submitPullRequestReview({
+      owner: 'octo-org',
+      repo: 'hello-world',
+      number: 24,
+      event: 'REQUEST_CHANGES',
+      body: 'needs work',
+    })
+
+    expect(createReview).toHaveBeenCalledWith({
+      owner: 'octo-org',
+      repo: 'hello-world',
+      pull_number: 24,
+      event: 'REQUEST_CHANGES',
+      body: 'needs work',
+    })
+  })
+
+  it('submits an approval without a body', async () => {
+    const { api, createReview } = createApi()
+
+    await api.submitPullRequestReview({
+      owner: 'octo-org',
+      repo: 'hello-world',
+      number: 24,
+      event: 'APPROVE',
+    })
+
+    expect(createReview).toHaveBeenCalledWith({
+      owner: 'octo-org',
+      repo: 'hello-world',
+      pull_number: 24,
+      event: 'APPROVE',
+    })
+  })
+
+  it('lists pull request commits with pagination flags', async () => {
+    const { api, listCommits } = createApi()
+    listCommits.mockResolvedValue({
+      data: [
+        {
+          sha: 'abc1234000000000000000000000000000000000',
+          html_url: 'https://github.com/octo-org/hello-world/commit/abc1234',
+          commit: {
+            message: 'First line\nBody',
+            author: { name: 'The Octocat', date: '2026-01-01T00:00:00Z' },
+            committer: { name: 'The Octocat', date: '2026-01-02T00:00:00Z' },
+          },
+          author: { login: 'octocat', avatar_url: 'https://avatars.githubusercontent.com/u/1?v=4' },
+        },
+      ],
+    })
+
+    const result = await api.listPullRequestCommits({
+      owner: 'octo-org',
+      repo: 'hello-world',
+      number: 24,
+      page: 2,
+      perPage: 30,
+    })
+
+    expect(listCommits).toHaveBeenCalledWith({
+      owner: 'octo-org',
+      repo: 'hello-world',
+      pull_number: 24,
+      page: 2,
+      per_page: 30,
+    })
+    expect(result.page).toBe(2)
+    expect(result.hasPreviousPage).toBe(true)
+    expect(result.hasNextPage).toBe(false)
+    expect(result.items).toEqual([
+      {
+        sha: 'abc1234000000000000000000000000000000000',
+        shortSha: 'abc1234',
+        message: 'First line\nBody',
+        headline: 'First line',
+        author: {
+          login: 'octocat',
+          name: 'The Octocat',
+          avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4',
+        },
+        committedDate: '2026-01-02T00:00:00Z',
+        htmlUrl: 'https://github.com/octo-org/hello-world/commit/abc1234',
+        ciState: null,
+      },
+    ])
+  })
+
+  it('lists pull request files with normalized statuses', async () => {
+    const { api, paginate, listFiles } = createApi()
+    paginate.mockResolvedValue([
+      {
+        filename: 'src/renamed.ts',
+        previous_filename: 'src/old.ts',
+        status: 'renamed',
+        additions: 1,
+        deletions: 2,
+        patch: '@@ -1 +1 @@',
+      },
+      {
+        filename: 'src/unknown.ts',
+        status: 'copied',
+        additions: 3,
+        deletions: 0,
+      },
+      {
+        status: 'modified',
+      },
+    ])
+
+    const files = await api.listPullRequestFiles({
+      owner: 'octo-org',
+      repo: 'hello-world',
+      number: 24,
+    })
+
+    expect(paginate).toHaveBeenCalledWith(listFiles, {
+      owner: 'octo-org',
+      repo: 'hello-world',
+      pull_number: 24,
+      per_page: 100,
+    })
+    expect(files).toEqual([
+      {
+        filename: 'src/renamed.ts',
+        previousFilename: 'src/old.ts',
+        status: 'renamed',
+        additions: 1,
+        deletions: 2,
+        patch: '@@ -1 +1 @@',
+      },
+      {
+        filename: 'src/unknown.ts',
+        previousFilename: undefined,
+        status: 'modified',
+        additions: 3,
+        deletions: 0,
+        patch: undefined,
+      },
+    ])
+  })
 })
 
 describe('resolvePullRequestMergeMethods', () => {
@@ -172,6 +317,10 @@ function createApi() {
   const updateIssue = vi.fn().mockResolvedValue({ data: {} })
   const merge = vi.fn().mockResolvedValue({ data: {} })
   const updateComment = vi.fn().mockResolvedValue({ data: {} })
+  const createReview = vi.fn().mockResolvedValue({ data: {} })
+  const listCommits = vi.fn().mockResolvedValue({ data: [] })
+  const listFiles = vi.fn()
+  const paginate = vi.fn().mockResolvedValue([])
   const graphql = vi.fn().mockResolvedValue({
     markPullRequestReadyForReview: {
       pullRequest: {
@@ -181,6 +330,7 @@ function createApi() {
   })
   const api = new PullsApi({
     graphql,
+    paginate,
     rest: {
       issues: {
         update: updateIssue,
@@ -188,9 +338,12 @@ function createApi() {
       },
       pulls: {
         merge,
+        createReview,
+        listCommits,
+        listFiles,
       },
     },
   } as unknown as GitHubOctokit)
 
-  return { api, updateIssue, merge, updateComment, graphql }
+  return { api, updateIssue, merge, updateComment, createReview, listCommits, listFiles, paginate, graphql }
 }

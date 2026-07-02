@@ -125,6 +125,80 @@ export function usePullRequestDetailQuery(
   })
 }
 
+export function usePullRequestFilesQuery(
+  owner: MaybeRefOrGetter<string>,
+  repo: MaybeRefOrGetter<string>,
+  pullRequestNumber: MaybeRefOrGetter<number>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubCommitFile[]>({
+    key: () => ['github', 'pull-request-files', toValue(owner), toValue(repo), toValue(pullRequestNumber)],
+    enabled: () => {
+      const number = toValue(pullRequestNumber)
+
+      return Boolean(toValue(owner))
+        && Boolean(toValue(repo))
+        && Number.isInteger(number)
+        && number > 0
+        && toValue(enabled)
+    },
+    query: async () => {
+      if (!window.ohMyGithub?.pulls) {
+        throw new Error('GitHub pulls bridge is unavailable')
+      }
+
+      return window.ohMyGithub.pulls.listPullRequestFiles(
+        toValue(owner),
+        toValue(repo),
+        toValue(pullRequestNumber),
+      )
+    },
+  })
+}
+
+export function usePullRequestCommitsQuery(
+  owner: MaybeRefOrGetter<string>,
+  repo: MaybeRefOrGetter<string>,
+  pullRequestNumber: MaybeRefOrGetter<number>,
+  page: MaybeRefOrGetter<number>,
+  perPage: MaybeRefOrGetter<number>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubRepositoryCommitPage>({
+    key: () => [
+      'github',
+      'pull-request-commits',
+      toValue(owner),
+      toValue(repo),
+      toValue(pullRequestNumber),
+      toValue(page),
+      toValue(perPage),
+    ],
+    enabled: () => {
+      const number = toValue(pullRequestNumber)
+
+      return Boolean(toValue(owner))
+        && Boolean(toValue(repo))
+        && Number.isInteger(number)
+        && number > 0
+        && toValue(enabled)
+    },
+    query: async () => {
+      if (!window.ohMyGithub?.pulls) {
+        throw new Error('GitHub pulls bridge is unavailable')
+      }
+
+      return window.ohMyGithub.pulls.listPullRequestCommits(
+        toValue(owner),
+        toValue(repo),
+        toValue(pullRequestNumber),
+        toValue(page),
+        toValue(perPage),
+      )
+    },
+  })
+}
+
 export async function createPullRequestComment(
   owner: string,
   repo: string,
@@ -199,6 +273,22 @@ export async function mergePullRequest(
   }
 
   return window.ohMyGithub.pulls.mergePullRequest(owner, repo, pullRequestNumber, options)
+}
+
+export async function submitPullRequestReview(
+  owner: string,
+  repo: string,
+  pullRequestNumber: number,
+  options: {
+    event: GitHubPullRequestReviewEvent
+    body?: string
+  },
+): Promise<void> {
+  if (!window.ohMyGithub?.pulls) {
+    throw new Error('GitHub pulls bridge is unavailable')
+  }
+
+  return window.ohMyGithub.pulls.submitPullRequestReview(owner, repo, pullRequestNumber, options)
 }
 
 export async function updatePullRequestComment(

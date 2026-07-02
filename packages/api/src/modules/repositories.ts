@@ -84,7 +84,7 @@ interface RepositoryTreeEntry {
   size?: number
 }
 
-interface CommitListItemResponse {
+export interface CommitListItemResponse {
   sha?: string
   html_url?: string | null
   commit?: {
@@ -297,7 +297,7 @@ export class RepositoriesApi {
     const baseItems = (response.data as CommitListItemResponse[]).map((item) =>
       mapRepositoryCommit(options, item)
     )
-    const ciStates = await this.fetchCommitCiStates(options, baseItems.map((item) => item.sha))
+    const ciStates = await fetchCommitCiStates(this.octokit, options, baseItems.map((item) => item.sha))
     const items = baseItems.map((item) => ({
       ...item,
       ciState: ciStates.get(item.sha) ?? null,
@@ -310,40 +310,6 @@ export class RepositoriesApi {
       hasPreviousPage: page > 1,
       hasNextPage: items.length === perPage,
     }
-  }
-
-  private async fetchCommitCiStates(
-    options: RepositoryOptions,
-    shas: string[],
-  ): Promise<Map<string, GitHubCiState | null>> {
-    const result = new Map<string, GitHubCiState | null>()
-    const uniqueShas = [...new Set(shas.filter(Boolean))]
-    if (uniqueShas.length === 0) return result
-
-    const fields = uniqueShas
-      .map((sha, index) => `c${index}: object(oid: "${sha}") { ... on Commit { statusCheckRollup { state } } }`)
-      .join('\n')
-    const query = `query CommitCiStates($owner: String!, $repo: String!) {
-      repository(owner: $owner, name: $repo) {
-        ${fields}
-      }
-    }`
-
-    try {
-      const response = await this.octokit.graphql<CommitCiStatesResponse>(query, {
-        owner: options.owner,
-        repo: options.repo,
-      })
-      const repository = response.repository ?? {}
-
-      uniqueShas.forEach((sha, index) => {
-        result.set(sha, normalizeCiState(repository[`c${index}`]?.statusCheckRollup?.state))
-      })
-    } catch {
-      // CI state is best-effort; leave it unset on failure.
-    }
-
-    return result
   }
 
   async listBranches(options: RepositoryBranchesOptions): Promise<GitHubRepositoryBranch[]> {
@@ -369,7 +335,7 @@ export class RepositoriesApi {
     const data = response.data as CommitDetailResponse
     const sha = data.sha ?? options.sha
     const message = data.commit?.message ?? ''
-    const ciStates = await this.fetchCommitCiStates(options, [sha])
+    const ciStates = await fetchCommitCiStates(this.octokit, options, [sha])
 
     return {
       sha,
@@ -993,7 +959,42 @@ function normalizeCiState(value: string | null | undefined): GitHubCiState | nul
   return null
 }
 
-function mapRepositoryCommit(
+export async function fetchCommitCiStates(
+  octokit: GitHubOctokit,
+  options: RepositoryOptions,
+  shas: string[],
+): Promise<Map<string, GitHubCiState | null>> {
+  const result = new Map<string, GitHubCiState | null>()
+  const uniqueShas = [...new Set(shas.filter(Boolean))]
+  if (uniqueShas.length === 0) return result
+
+  const fields = uniqueShas
+    .map((sha, index) => `c${index}: object(oid: "${sha}") { ... on Commit { statusCheckRollup { state } } }`)
+    .join('\n')
+  const query = `query CommitCiStates($owner: String!, $repo: String!) {
+    repository(owner: $owner, name: $repo) {
+      ${fields}
+    }
+  }`
+
+  try {
+    const response = await octokit.graphql<CommitCiStatesResponse>(query, {
+      owner: options.owner,
+      repo: options.repo,
+    })
+    const repository = response.repository ?? {}
+
+    uniqueShas.forEach((sha, index) => {
+      result.set(sha, normalizeCiState(repository[`c${index}`]?.statusCheckRollup?.state))
+    })
+  } catch {
+    // CI state is best-effort; leave it unset on failure.
+  }
+
+  return result
+}
+
+export function mapRepositoryCommit(
   context: { owner: string; repo: string },
   item: CommitListItemResponse,
 ): GitHubRepositoryCommit {

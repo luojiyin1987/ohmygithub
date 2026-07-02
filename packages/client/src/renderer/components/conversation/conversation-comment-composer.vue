@@ -105,17 +105,22 @@ function submitComment(): void {
         aria-hidden="true"
       />
 
-      <Button
-        class="shrink-0"
-        :disabled="!canSubmit"
-        :loading="isSubmitting"
-        loading-mode="leading"
-        size="sm"
-        type="submit"
+      <slot
+        :can-submit="canSubmit"
+        name="actions"
       >
-        <Send class="size-3.5" />
-        <span>{{ message('submit') }}</span>
-      </Button>
+        <Button
+          class="shrink-0"
+          :disabled="!canSubmit"
+          :loading="isSubmitting"
+          loading-mode="leading"
+          size="sm"
+          type="submit"
+        >
+          <Send class="size-3.5" />
+          <span>{{ message('submit') }}</span>
+        </Button>
+      </slot>
     </div>
   </form>
 </template>

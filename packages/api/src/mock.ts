@@ -29,6 +29,7 @@ import type {
   GitHubPullRequestDetail,
   GitHubPullRequestSearchResult,
   GitHubCommitDetail,
+  GitHubCommitFile,
   GitHubRepository,
   GitHubRepositoryBranch,
   GitHubRepositoryCommit,
@@ -46,6 +47,7 @@ import type {
   ListAccountRepositoriesOptions,
   ListIssueCategoryOptions,
   ListPullRequestCategoryOptions,
+  ListPullRequestCommitsOptions,
   ListRepositoryWorkspaceItemsOptions,
   ListRepositoryWorkflowRunsOptions,
   ListWorkflowRunJobsOptions,
@@ -712,6 +714,50 @@ export class MockGitHubClient implements GitHubClient {
   }
 
   async updatePullRequestComment(): Promise<void> {
+    return
+  }
+
+  async listPullRequestFiles(): Promise<GitHubCommitFile[]> {
+    return [
+      {
+        filename: 'README.md',
+        status: 'modified',
+        additions: 2,
+        deletions: 1,
+        patch: '@@ -1,2 +1,3 @@\n title\n-old line\n+new line\n+added line',
+      },
+      {
+        filename: 'src/index.ts',
+        status: 'added',
+        additions: 5,
+        deletions: 0,
+        patch: '@@ -0,0 +1,5 @@\n+export function main(): void {\n+  console.log(\'hello\')\n+}\n+\n+main()',
+      },
+    ]
+  }
+
+  async listPullRequestCommits(options: ListPullRequestCommitsOptions): Promise<GitHubRepositoryCommitPage> {
+    const page = Math.max(1, Math.floor(options.page ?? 1))
+    const perPage = Math.max(1, Math.min(100, Math.floor(options.perPage ?? 30)))
+    const items: GitHubRepositoryCommit[] = page > 1
+      ? []
+      : [
+          {
+            sha: 'bbbbbbb000000000000000000000000000000000',
+            shortSha: 'bbbbbbb',
+            message: 'Add pull request feature',
+            headline: 'Add pull request feature',
+            author: { login: 'octocat', name: 'The Octocat', avatarUrl: null },
+            committedDate: '2026-01-02T00:00:00Z',
+            htmlUrl: `https://github.com/${options.owner}/${options.repo}/commit/bbbbbbb`,
+            ciState: 'success',
+          },
+        ]
+
+    return { items, page, perPage, hasPreviousPage: page > 1, hasNextPage: false }
+  }
+
+  async submitPullRequestReview(): Promise<void> {
     return
   }
 

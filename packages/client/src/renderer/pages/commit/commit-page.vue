@@ -18,7 +18,7 @@ import {
 import CommitActionsDialog from '../../components/actions/commit-actions-dialog.vue'
 import CommitCiStatusButton from '../../components/actions/commit-ci-status-button.vue'
 import { useRepositoryCommitQuery } from '../../composables/github/use-repositories'
-import CommitFiles from './components/commit-files.vue'
+import ChangedFilesTree from '../../components/file-tree/changed-files-tree.vue'
 
 const props = defineProps<{
   tab: WorkspaceTab
@@ -240,7 +240,7 @@ function openOnGitHub(): void {
               {{ t('commit.filesTitle') }}
             </h2>
             <div class="rounded-xl border border-border bg-card p-2">
-              <CommitFiles
+              <ChangedFilesTree
                 :files="commit.files"
                 :owner="owner"
                 :repo="repo"

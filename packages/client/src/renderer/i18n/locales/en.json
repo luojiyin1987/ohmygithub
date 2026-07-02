@@ -761,7 +761,8 @@
     "checks": {
       "failure": "Failing",
       "pending": "Pending",
-      "success": "Passing"
+      "success": "Passing",
+      "title": "Checks"
     },
     "comment": {
       "emptyPreview": "Nothing to preview.",
@@ -873,6 +874,24 @@
       "createdByPrefix": "Opened by",
       "updated": "Updated {date}"
     },
+    "review": {
+      "approve": "Approve",
+      "comment": "Comment",
+      "diffSummary": "{files} files changed, +{additions} −{deletions}",
+      "emptyPreview": "Nothing to preview.",
+      "error": "The review could not be submitted. Check your permissions and try again.",
+      "filesEmptyDescription": "GitHub did not return any changed files for this pull request.",
+      "filesEmptyTitle": "No changed files",
+      "filesErrorDescription": "Changed files could not be loaded. Check the connection and try again.",
+      "filesErrorTitle": "Could not load changed files",
+      "filesTitle": "Changed files",
+      "inputLabel": "Pull request review comment",
+      "ownPullRequest": "You cannot approve or request changes on your own pull request.",
+      "placeholder": "Leave a review comment",
+      "requestChanges": "Request changes",
+      "retry": "Retry",
+      "title": "Submit a review"
+    },
     "reviewDecision": {
       "approved": "Approved",
       "changes_requested": "Changes requested",
@@ -948,7 +967,6 @@
       "unknown": "Unknown"
     },
     "tabs": {
-      "checks": "Checks",
       "commits": "Commits",
       "conversations": "Conversations",
       "label": "Pull request sections",

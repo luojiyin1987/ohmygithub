@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { FileTree } from '../../../components'
-import { useRightPanel } from '../../../composables/use-right-panel'
+import { useRightPanel } from '../../composables/use-right-panel'
+import FileTree from './file-tree.vue'
 
 const props = defineProps<{
   files: GitHubCommitFile[]

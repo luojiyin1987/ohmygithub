@@ -31,6 +31,9 @@ import {
 import PullRequestHeader from './components/pull-request-header.vue'
 import PullRequestSidebar from './components/pull-request-sidebar.vue'
 import PullRequestCommitGroup from './components/pull-request-commit-group.vue'
+import PullRequestChecksCard from './components/pull-request-checks-card.vue'
+import PullRequestCommitsTab from './components/pull-request-commits-tab.vue'
+import PullRequestReviewTab from './components/pull-request-review-tab.vue'
 import { usePullRequestTimelineItems } from './composables/use-pull-request-timeline-items'
 
 const props = defineProps<{
@@ -56,6 +59,7 @@ const pullRequest = computed<PullRequestDetail | null>(() =>
   (pullRequestQuery.data.value ?? null) as PullRequestDetail | null
 )
 const timelineItems = usePullRequestTimelineItems(pullRequest)
+const activeTab = ref<'conversations' | 'commits' | 'review'>('conversations')
 const commentBody = ref('')
 const commentError = ref<string | null>(null)
 const isSubmittingComment = ref(false)
@@ -256,12 +260,17 @@ async function savePullRequestCommentEdit(): Promise<void> {
 
       <template v-else-if="pullRequest">
         <PullRequestHeader
+          :active-tab="activeTab"
           :pull-request="pullRequest"
           :repository="repository"
           @refetch="pullRequestQuery.refetch()"
+          @select-tab="activeTab = $event as 'conversations' | 'commits' | 'review'"
         />
 
-        <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
+        <div
+          v-if="activeTab === 'conversations'"
+          class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]"
+        >
           <main class="grid min-w-0 content-start gap-4">
             <ConversationBodyCard
               :actor="pullRequest.author"
@@ -384,6 +393,15 @@ async function savePullRequestCommentEdit(): Promise<void> {
                 </div>
               </ConversationTimeline>
 
+              <PullRequestChecksCard
+                v-if="pullRequest.headSha"
+                class="mt-5"
+                :open="activeTab === 'conversations'"
+                :owner="owner"
+                :repo="repo"
+                :sha="pullRequest.headSha"
+              />
+
               <div class="relative mt-5 min-w-0">
                 <div
                   class="absolute bottom-full left-7 h-3 w-px bg-border"
@@ -408,6 +426,24 @@ async function savePullRequestCommentEdit(): Promise<void> {
             @refetch="pullRequestQuery.refetch()"
           />
         </div>
+
+        <PullRequestCommitsTab
+          v-else-if="activeTab === 'commits'"
+          :active="activeTab === 'commits'"
+          :number="number"
+          :owner="owner"
+          :repo="repo"
+        />
+
+        <PullRequestReviewTab
+          v-else
+          :active="activeTab === 'review'"
+          :number="number"
+          :owner="owner"
+          :pull-request="pullRequest"
+          :repo="repo"
+          @refetch="pullRequestQuery.refetch()"
+        />
       </template>
     </div>
   </section>

@@ -761,7 +761,8 @@
     "checks": {
       "failure": "未通过",
       "pending": "等待中",
-      "success": "已通过"
+      "success": "已通过",
+      "title": "检查"
     },
     "comment": {
       "emptyPreview": "没有可预览的内容。",
@@ -873,6 +874,24 @@
       "createdByPrefix": "由",
       "updated": "更新于 {date}"
     },
+    "review": {
+      "approve": "批准",
+      "comment": "评论",
+      "diffSummary": "{files} 个文件变更，+{additions} −{deletions}",
+      "emptyPreview": "没有可预览的内容。",
+      "error": "无法提交 Review。请检查权限后重试。",
+      "filesEmptyDescription": "GitHub 没有返回这个 Pull Request 的变更文件。",
+      "filesEmptyTitle": "没有变更文件",
+      "filesErrorDescription": "无法加载变更文件。请检查网络后重试。",
+      "filesErrorTitle": "变更文件加载失败",
+      "filesTitle": "变更文件",
+      "inputLabel": "Pull Request Review 评论",
+      "ownPullRequest": "不能批准或请求修改自己的 Pull Request。",
+      "placeholder": "填写 Review 评论",
+      "requestChanges": "请求修改",
+      "retry": "重试",
+      "title": "提交 Review"
+    },
     "reviewDecision": {
       "approved": "已批准",
       "changes_requested": "需要修改",
@@ -948,7 +967,6 @@
       "unknown": "未知"
     },
     "tabs": {
-      "checks": "Checks",
       "commits": "Commits",
       "conversations": "Conversations",
       "label": "Pull Request 分区",

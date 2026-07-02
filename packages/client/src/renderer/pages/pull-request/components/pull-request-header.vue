@@ -38,9 +38,13 @@ import { updatePullRequest } from '../../../composables/github/use-pull-requests
 const props = defineProps<{
   pullRequest: PullRequestDetail
   repository: string
+  activeTab: string
 }>()
 
-const emit = defineEmits<{ refetch: [] }>()
+const emit = defineEmits<{
+  refetch: []
+  selectTab: [id: string]
+}>()
 
 interface PullRequestTabItem {
   id: string
@@ -202,21 +206,21 @@ const tabs = computed<PullRequestTabItem[]>(() => [
     id: 'commits',
     icon: GitCommitHorizontal,
     label: t('pullRequest.tabs.commits'),
-    disabled: true,
-  },
-  {
-    id: 'checks',
-    icon: ShieldCheck,
-    label: t('pullRequest.tabs.checks'),
-    disabled: true,
+    disabled: false,
   },
   {
     id: 'review',
     icon: ShieldCheck,
     label: t('pullRequest.tabs.review'),
-    disabled: true,
+    disabled: false,
   },
 ])
+
+function selectTab(tab: PullRequestTabItem): void {
+  if (tab.disabled || tab.id === props.activeTab) return
+
+  emit('selectTab', tab.id)
+}
 
 async function runAction(action: () => Promise<void>): Promise<void> {
   if (isBusy.value) return
@@ -449,12 +453,17 @@ function formatDate(value: string | null | undefined): string {
       <button
         v-for="tab in tabs"
         :key="tab.id"
-        class="inline-flex h-8 select-none items-center gap-1.5 border-b px-2 text-body font-medium outline-hidden transition-colors"
-        :class="tab.disabled ? 'cursor-not-allowed border-transparent text-muted-foreground/70' : 'border-foreground text-foreground'"
-        :aria-current="tab.disabled ? undefined : 'page'"
+        class="inline-flex h-8 select-none items-center gap-1.5 border-b px-2 text-body font-medium outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring/30"
+        :class="tab.disabled
+          ? 'cursor-not-allowed border-transparent text-muted-foreground/70'
+          : tab.id === activeTab
+            ? 'border-foreground text-foreground'
+            : 'border-transparent text-muted-foreground hover:text-foreground'"
+        :aria-current="tab.id === activeTab ? 'page' : undefined"
         :aria-disabled="tab.disabled ? 'true' : undefined"
         :disabled="tab.disabled"
         type="button"
+        @click="selectTab(tab)"
       >
         <component
           :is="tab.icon"

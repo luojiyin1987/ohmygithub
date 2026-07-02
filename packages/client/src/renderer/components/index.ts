@@ -1,4 +1,5 @@
 export { default as MonacoCodeEditor } from "./editor/monaco-code-editor.vue";
+export { default as ChangedFilesTree } from "./file-tree/changed-files-tree.vue";
 export { default as FileTree } from "./file-tree/file-tree.vue";
 export { default as GitHubActorLink } from "./github/github-actor-link.vue";
 export { default as GitHubBranchSelect } from "./github/github-branch-select.vue";

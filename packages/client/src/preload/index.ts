@@ -89,7 +89,13 @@ const api = {
     mergePullRequest: (owner: string, repo: string, number: number, options: unknown) =>
       ipcRenderer.invoke('pulls:merge', owner, repo, number, options),
     updatePullRequestComment: (owner: string, repo: string, commentId: string | number, body: string) =>
-      ipcRenderer.invoke('pulls:update-comment', owner, repo, commentId, body)
+      ipcRenderer.invoke('pulls:update-comment', owner, repo, commentId, body),
+    listPullRequestFiles: (owner: string, repo: string, number: number) =>
+      ipcRenderer.invoke('pulls:list-files', owner, repo, number),
+    listPullRequestCommits: (owner: string, repo: string, number: number, page?: number, perPage?: number) =>
+      ipcRenderer.invoke('pulls:list-commits', owner, repo, number, page, perPage),
+    submitPullRequestReview: (owner: string, repo: string, number: number, options: unknown) =>
+      ipcRenderer.invoke('pulls:submit-review', owner, repo, number, options)
   },
   inbox: {
     listNotifications: (options?: { all?: boolean, participating?: boolean, limit?: number }) =>

@@ -4,6 +4,7 @@ import {
   type GetPullRequestDetailOptions,
   type GitHubPullRequestCategory,
   type GitHubPullRequestMergeMethod,
+  type GitHubPullRequestReviewEvent,
   type GitHubPullRequestSearchState,
   type SearchRepositoryPullRequestsOptions,
   type UpdatePullRequestOptions,
@@ -46,6 +47,15 @@ export function registerPullsIpc(): void {
   )
   ipcMain.handle('pulls:update-comment', (_event, owner: string, repo: string, commentId: string | number, body: string) =>
     updatePullRequestComment(owner, repo, commentId, body)
+  )
+  ipcMain.handle('pulls:list-files', (_event, owner: string, repo: string, number: number) =>
+    listPullRequestFiles(owner, repo, number)
+  )
+  ipcMain.handle('pulls:list-commits', (_event, owner: string, repo: string, number: number, page?: number, perPage?: number) =>
+    listPullRequestCommits(owner, repo, number, page, perPage)
+  )
+  ipcMain.handle('pulls:submit-review', (_event, owner: string, repo: string, number: number, options: unknown) =>
+    submitPullRequestReview(owner, repo, number, options)
   )
 }
 
@@ -178,6 +188,52 @@ async function mergePullRequest(owner: string, repo: string, number: number, opt
     ...(payload.commitTitle ? { commitTitle: payload.commitTitle.trim() } : {}),
     ...(payload.commitMessage ? { commitMessage: payload.commitMessage.trim() } : {}),
   })
+}
+
+async function listPullRequestFiles(owner: string, repo: string, number: number) {
+  const normalizedOptions = normalizePullRequestDetailOptions({ owner, repo, number })
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.pulls.listPullRequestFiles(normalizedOptions)
+}
+
+async function listPullRequestCommits(owner: string, repo: string, number: number, page?: number, perPage?: number) {
+  const normalizedOptions = normalizePullRequestDetailOptions({ owner, repo, number })
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.pulls.listPullRequestCommits({
+    ...normalizedOptions,
+    page: normalizePositiveInteger(page, 1),
+    perPage: normalizePositiveInteger(perPage, 30),
+  })
+}
+
+async function submitPullRequestReview(owner: string, repo: string, number: number, options: unknown) {
+  const normalizedOptions = normalizePullRequestDetailOptions({ owner, repo, number })
+  const payload = (options ?? {}) as {
+    event?: GitHubPullRequestReviewEvent
+    body?: string
+  }
+  const event = normalizeReviewEvent(payload.event)
+  const body = typeof payload.body === 'string' ? payload.body.trim() : ''
+
+  if (!body && event !== 'APPROVE') {
+    throw new Error('Review body is required for comment and request changes reviews')
+  }
+
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.pulls.submitPullRequestReview({
+    ...normalizedOptions,
+    event,
+    ...(body ? { body } : {}),
+  })
+}
+
+function normalizeReviewEvent(value: GitHubPullRequestReviewEvent | undefined): GitHubPullRequestReviewEvent {
+  if (value === 'APPROVE' || value === 'COMMENT' || value === 'REQUEST_CHANGES') return value
+
+  throw new Error('Unknown pull request review event')
 }
 
 async function updatePullRequestComment(owner: string, repo: string, commentId: string | number, body: string) {

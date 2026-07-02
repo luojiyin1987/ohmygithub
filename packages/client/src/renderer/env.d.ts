@@ -595,6 +595,8 @@ type GitHubPullRequestReviewerType =
 
 type GitHubPullRequestMergeMethod = 'merge' | 'squash' | 'rebase'
 
+type GitHubPullRequestReviewEvent = 'APPROVE' | 'COMMENT' | 'REQUEST_CHANGES'
+
 type GitHubIssueState = 'open' | 'completed' | 'not_planned'
 
 type GitHubIssueSearchState = 'open' | 'closed' | 'all'
@@ -1212,6 +1214,23 @@ interface Window {
         repo: string,
         commentId: string | number,
         body: string
+      ) => Promise<void>
+      listPullRequestFiles: (owner: string, repo: string, number: number) => Promise<GitHubCommitFile[]>
+      listPullRequestCommits: (
+        owner: string,
+        repo: string,
+        number: number,
+        page?: number,
+        perPage?: number
+      ) => Promise<GitHubRepositoryCommitPage>
+      submitPullRequestReview: (
+        owner: string,
+        repo: string,
+        number: number,
+        options: {
+          event: GitHubPullRequestReviewEvent
+          body?: string
+        }
       ) => Promise<void>
     }
     inbox: {

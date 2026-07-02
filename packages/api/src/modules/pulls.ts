@@ -6,6 +6,7 @@ import type {
   RequestPullRequestReviewersOptions,
   GitHubActor,
   GitHubCiState,
+  GitHubCommitFile,
   GitHubIssueMilestone,
   GitHubIssueProjectItem,
   GitHubIssueReaction,
@@ -26,12 +27,15 @@ import type {
   GitHubPullRequestState,
   GitHubPullRequestTimelineEvent,
   GitHubPullRequestTimelineReference,
+  GitHubRepositoryCommitPage,
   ListPullRequestCategoryOptions,
+  ListPullRequestCommitsOptions,
   ListRepositoryWorkspaceItemsOptions,
   ListWorkspaceItemsOptions,
   MarkPullRequestReadyForReviewOptions,
   MergePullRequestOptions,
   SearchRepositoryPullRequestsOptions,
+  SubmitPullRequestReviewOptions,
   UpdatePullRequestCommentOptions,
   UpdatePullRequestOptions
 } from '../types'
@@ -45,6 +49,11 @@ import {
   splitRepositoryName,
   type GraphQLWorkItemBase
 } from './work-items'
+import {
+  fetchCommitCiStates,
+  mapRepositoryCommit,
+  type CommitListItemResponse
+} from './repositories'
 
 interface GraphQLPullRequestNode extends GraphQLWorkItemBase {
   isDraft: boolean
@@ -1411,6 +1420,77 @@ export class PullsApi {
       ...(options.expectedHeadSha ? { sha: options.expectedHeadSha } : {}),
       ...(options.commitTitle ? { commit_title: options.commitTitle } : {}),
       ...(options.commitMessage ? { commit_message: options.commitMessage } : {})
+    })
+  }
+
+  async listPullRequestFiles(options: GetPullRequestDetailOptions): Promise<GitHubCommitFile[]> {
+    const files = await this.octokit.paginate(
+      this.octokit.rest.pulls.listFiles,
+      {
+        owner: options.owner,
+        repo: options.repo,
+        pull_number: options.number,
+        per_page: 100
+      }
+    )
+
+    return files.flatMap((file): GitHubCommitFile[] => {
+      if (!file.filename) return []
+
+      const status: GitHubCommitFile['status'] =
+        file.status === 'added'
+        || file.status === 'removed'
+        || file.status === 'renamed'
+        || file.status === 'changed'
+          ? file.status
+          : 'modified'
+
+      return [{
+        filename: file.filename,
+        previousFilename: file.previous_filename,
+        status,
+        additions: file.additions ?? 0,
+        deletions: file.deletions ?? 0,
+        patch: file.patch
+      }]
+    })
+  }
+
+  async listPullRequestCommits(options: ListPullRequestCommitsOptions): Promise<GitHubRepositoryCommitPage> {
+    const page = Math.max(1, Math.floor(options.page ?? 1))
+    const perPage = Math.max(1, Math.min(100, Math.floor(options.perPage ?? 30)))
+    const response = await this.octokit.rest.pulls.listCommits({
+      owner: options.owner,
+      repo: options.repo,
+      pull_number: options.number,
+      page,
+      per_page: perPage
+    })
+    const baseItems = (response.data as CommitListItemResponse[]).map((item) =>
+      mapRepositoryCommit(options, item)
+    )
+    const ciStates = await fetchCommitCiStates(this.octokit, options, baseItems.map((item) => item.sha))
+    const items = baseItems.map((item) => ({
+      ...item,
+      ciState: ciStates.get(item.sha) ?? null
+    }))
+
+    return {
+      items,
+      page,
+      perPage,
+      hasPreviousPage: page > 1,
+      hasNextPage: items.length === perPage
+    }
+  }
+
+  async submitPullRequestReview(options: SubmitPullRequestReviewOptions): Promise<void> {
+    await this.octokit.rest.pulls.createReview({
+      owner: options.owner,
+      repo: options.repo,
+      pull_number: options.number,
+      event: options.event,
+      ...(options.body ? { body: options.body } : {})
     })
   }
 

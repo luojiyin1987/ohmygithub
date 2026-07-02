@@ -1005,6 +1005,9 @@ export interface GitHubClient {
   markPullRequestReadyForReview(options: MarkPullRequestReadyForReviewOptions): Promise<void>
   mergePullRequest(options: MergePullRequestOptions): Promise<void>
   updatePullRequestComment(options: UpdatePullRequestCommentOptions): Promise<void>
+  listPullRequestFiles(options: GetPullRequestDetailOptions): Promise<GitHubCommitFile[]>
+  listPullRequestCommits(options: ListPullRequestCommitsOptions): Promise<GitHubRepositoryCommitPage>
+  submitPullRequestReview(options: SubmitPullRequestReviewOptions): Promise<void>
   listIssueCategory(options: ListIssueCategoryOptions): Promise<GitHubIssue[]>
   listViewerIssues(options?: ListWorkspaceItemsOptions): Promise<GitHubIssue[]>
   listRepositoryIssues(options: ListRepositoryWorkspaceItemsOptions): Promise<GitHubIssue[]>
@@ -1164,6 +1167,18 @@ export interface MergePullRequestOptions extends GetPullRequestDetailOptions {
 export interface UpdatePullRequestCommentOptions extends RepositoryOptions {
   commentId: string | number
   body: string
+}
+
+export interface ListPullRequestCommitsOptions extends GetPullRequestDetailOptions {
+  page?: number
+  perPage?: number
+}
+
+export type GitHubPullRequestReviewEvent = 'APPROVE' | 'COMMENT' | 'REQUEST_CHANGES'
+
+export interface SubmitPullRequestReviewOptions extends GetPullRequestDetailOptions {
+  event: GitHubPullRequestReviewEvent
+  body?: string
 }
 
 export interface SearchRepositoryPullRequestsOptions extends RepositoryOptions {
