@@ -33,28 +33,28 @@ rest are optional and used only for signed/published release builds.
 
 | Variable | Required | Purpose | Local | GitHub Actions |
 |---|---|---|---|---|
-| `OAUTH_CLIENT_ID` | **yes** | GitHub OAuth App client id, baked into the app at build time | `.env` | **Variable** |
-| `APP_ID` | no | Override the app/bundle id (defaults to `electron-builder.yml`'s `appId`) | `.env` | **Variable** |
-| `CSC_LINK` | no | Code-signing cert — `.p12` path or base64 string | `.env` | **Secret** |
-| `CSC_KEY_PASSWORD` | no | Code-signing cert password | `.env` | **Secret** |
-| `APPLE_CERTIFICATE` | no | Alias for `CSC_LINK`, useful with Apple-named CI templates | `.env` | **Secret** |
-| `APPLE_CERTIFICATE_PASSWORD` | no | Alias for `CSC_KEY_PASSWORD`, useful with Apple-named CI templates | `.env` | **Secret** |
-| `APPLE_API_KEY` | no | App Store Connect API key — `AuthKey_*.p8` path, pasted PEM, or base64 string (notarization) | `.env` | **Secret** |
+| `OAUTH_CLIENT_ID` | **yes** | GitHub OAuth App client id, baked into the app at build time | `.env` | **Variable or Secret** |
+| `APP_ID` | no | Override the app/bundle id (defaults to `electron-builder.yml`'s `appId`) | `.env` | **Variable or Secret** |
+| `CSC_LINK` | no | Code-signing cert — `.p12` path or base64 string | `.env` | **Secret or Variable** |
+| `CSC_KEY_PASSWORD` | no | Code-signing cert password | `.env` | **Secret or Variable** |
+| `APPLE_CERTIFICATE` | no | Alias for `CSC_LINK`, useful with Apple-named CI templates | `.env` | **Secret or Variable** |
+| `APPLE_CERTIFICATE_PASSWORD` | no | Alias for `CSC_KEY_PASSWORD`, useful with Apple-named CI templates | `.env` | **Secret or Variable** |
+| `APPLE_API_KEY` | no | App Store Connect API key — `AuthKey_*.p8` path, pasted PEM, or base64 string (notarization) | `.env` | **Secret or Variable** |
 | `APPLE_API_KEY_ID` | no | App Store Connect API key id (notarization) | `.env` | **Variable or Secret** |
 | `APPLE_API_ISSUER` | no | App Store Connect issuer id (notarization) | `.env` | **Variable or Secret** |
 | `APPLE_TEAM_ID` | no | Apple Developer Team ID (notarization) | `.env` | **Variable or Secret** |
-| `R2_ACCOUNT_ID` | no | Cloudflare account id (R2 upload) | `.env` | **Variable** |
-| `R2_BUCKET` | no | R2 bucket name (publish uploads here; also gates the R2 step) | `.env` | **Variable** |
-| `R2_PUBLIC_BASE_URL` | no | Public URL the R2 files are served from; also triggers `latest*.yml` (update manifest) generation | `.env` | **Variable** |
-| `R2_ACCESS_KEY_ID` | no | R2 S3 access key id | `.env` | **Secret** |
-| `R2_SECRET_ACCESS_KEY` | no | R2 S3 secret access key | `.env` | **Secret** |
+| `R2_ACCOUNT_ID` | no | Cloudflare account id (R2 upload) | `.env` | **Variable or Secret** |
+| `R2_BUCKET` | no | R2 bucket name (publish uploads here; also gates the R2 step) | `.env` | **Variable or Secret** |
+| `R2_PUBLIC_BASE_URL` | no | Public URL the R2 files are served from; also triggers `latest*.yml` (update manifest) generation | `.env` | **Variable or Secret** |
+| `R2_ACCESS_KEY_ID` | no | R2 S3 access key id | `.env` | **Secret or Variable** |
+| `R2_SECRET_ACCESS_KEY` | no | R2 S3 secret access key | `.env` | **Secret or Variable** |
 | `OH_MY_GITHUB_CDP_PORT` | no | Dev-only Chrome DevTools Protocol port (see README) | env | — |
 | `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` | no | Dev network proxy (see README) | env | — |
 
 > **Variable vs Secret:** non-sensitive values usually go in repo/Org **Variables** (`vars.*`),
-> credentials go in **Secrets** (`secrets.*`). The publish workflow also accepts the Apple
-> notarization identifiers from **Secrets** for teams that keep the whole Apple credential set
-> together. `GITHUB_TOKEN` is provided automatically.
+> credentials should go in **Secrets** (`secrets.*`). The build and publish workflows accept
+> custom CI values from either place, preferring Secrets when both are set. `GITHUB_TOKEN` is
+> provided automatically.
 
 ## CI/CD
 

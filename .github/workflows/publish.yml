@@ -25,16 +25,16 @@ jobs:
             script: package:linux
     runs-on: ${{ matrix.os }}
     env:
-      OAUTH_CLIENT_ID: ${{ vars.OAUTH_CLIENT_ID }}
-      APP_ID: ${{ vars.APP_ID }}
+      OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID || vars.OAUTH_CLIENT_ID }}
+      APP_ID: ${{ secrets.APP_ID || vars.APP_ID }}
       # When set, the build also emits latest*.yml + app-update.yml (update manifest for R2).
-      R2_PUBLIC_BASE_URL: ${{ vars.R2_PUBLIC_BASE_URL }}
+      R2_PUBLIC_BASE_URL: ${{ secrets.R2_PUBLIC_BASE_URL || vars.R2_PUBLIC_BASE_URL }}
       # Code signing (optional — empty = unsigned build).
-      CSC_LINK: ${{ secrets.CSC_LINK }}
-      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+      CSC_LINK: ${{ secrets.CSC_LINK || vars.CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD || vars.CSC_KEY_PASSWORD }}
+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE || vars.APPLE_CERTIFICATE }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD || vars.APPLE_CERTIFICATE_PASSWORD }}
+      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY || vars.APPLE_API_KEY }}
       APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID || vars.APPLE_API_KEY_ID }}
       APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER || vars.APPLE_API_ISSUER }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID || vars.APPLE_TEAM_ID }}
@@ -60,6 +60,12 @@ jobs:
   release:
     needs: package
     runs-on: ubuntu-latest
+    env:
+      R2_BUCKET: ${{ secrets.R2_BUCKET || vars.R2_BUCKET }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID || vars.R2_ACCOUNT_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID || vars.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || vars.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
     steps:
       - uses: actions/checkout@v4
         with:
@@ -89,13 +95,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload to Cloudflare R2
-        if: ${{ vars.R2_BUCKET != '' }}
-        env:
-          R2_BUCKET: ${{ vars.R2_BUCKET }}
-          R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
+        if: ${{ env.R2_BUCKET != '' }}
         run: |
           endpoint="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
           # Installers + blockmaps: immutable filenames, fine to cache.

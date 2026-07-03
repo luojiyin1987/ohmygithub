@@ -28,8 +28,8 @@ jobs:
             script: package:linux
     runs-on: ${{ matrix.os }}
     env:
-      OAUTH_CLIENT_ID: ${{ vars.OAUTH_CLIENT_ID }}
-      APP_ID: ${{ vars.APP_ID }}
+      OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID || vars.OAUTH_CLIENT_ID }}
+      APP_ID: ${{ secrets.APP_ID || vars.APP_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
