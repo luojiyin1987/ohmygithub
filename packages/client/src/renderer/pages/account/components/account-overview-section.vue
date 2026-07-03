@@ -2,8 +2,8 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { FileText, Pin } from 'lucide-vue-next'
-import { GitHubMarkdownRenderer } from '../../../components'
-import RepositoryCard from '../../../components/github/repository-card.vue'
+import { GitHubMarkdownRenderer } from '@/components'
+import RepositoryCard from '@/components/github/repository-card.vue'
 import AccountContributionsCard from './account-contributions-card.vue'
 
 const props = defineProps<{

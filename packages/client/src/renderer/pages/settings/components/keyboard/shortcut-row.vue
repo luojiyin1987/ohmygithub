@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { KeyboardShortcutCommandId, KeyboardShortcutDefinition } from '../../../../keyboard/shortcut-definitions'
+import type { KeyboardShortcutCommandId, KeyboardShortcutDefinition } from '@/keyboard/shortcut-definitions'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Ban, Pencil, RotateCcw } from 'lucide-vue-next'

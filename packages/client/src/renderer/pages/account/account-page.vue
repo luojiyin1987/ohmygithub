@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AccountTabId, WorkspaceTab } from '../workspace/types'
+import type { AccountTabId, WorkspaceTab } from '@/pages/workspace/types'
 import type { Component } from 'vue'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -37,10 +37,10 @@ import {
   useAccountRepositoriesQuery,
   useAccountStarredRepositoriesQuery,
   useAccountViewerStateQuery,
-} from '../../composables/github/use-accounts'
-import SectionSidebar from '../../components/navigation/section-sidebar.vue'
-import GitHubOrganizationAvatar from '../../components/github/github-organization-avatar.vue'
-import { createAccountWorkspaceUrl, createRepositoryWorkspaceUrl } from '../workspace/workspace-url'
+} from '@/composables/github/use-accounts'
+import SectionSidebar from '@/components/navigation/section-sidebar.vue'
+import GitHubOrganizationAvatar from '@/components/github/github-organization-avatar.vue'
+import { createAccountWorkspaceUrl, createRepositoryWorkspaceUrl } from '@/pages/workspace/workspace-url'
 import AccountOverviewSection from './components/account-overview-section.vue'
 import AccountRepositoryGrid from './components/account-repository-grid.vue'
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CommitActionRun } from '../../composables/github/use-actions'
+import type { CommitActionRun } from '@/composables/github/use-actions'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
@@ -10,8 +10,8 @@ import {
   EmptyTitle,
   Skeleton,
 } from '@oh-my-github/ui'
-import { createActionRunWorkspaceUrl } from '../../pages/workspace/workspace-url'
-import { useCommitActionRunsQuery } from '../../composables/github/use-actions'
+import { createActionRunWorkspaceUrl } from '@/pages/workspace/workspace-url'
+import { useCommitActionRunsQuery } from '@/composables/github/use-actions'
 import { actionStatusLabelKey } from './action-status'
 import ActionStatusBadge from './action-status-badge.vue'
 import ActionStatusIcon from './action-status-icon.vue'

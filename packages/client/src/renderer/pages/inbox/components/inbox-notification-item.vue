@@ -12,7 +12,7 @@ import {
   PlayCircle,
   Tag,
 } from 'lucide-vue-next'
-import { formatConversationDate } from '../../../components/conversation/format'
+import { formatConversationDate } from '@/components/conversation/format'
 
 const props = defineProps<{
   notification: GitHubNotification

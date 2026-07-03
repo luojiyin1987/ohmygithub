@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useRepositoryIssueSearchQuery } from '../../../../composables/github/use-issues'
+import { useRepositoryIssueSearchQuery } from '@/composables/github/use-issues'
 import FilterBar from './filter-bar.vue'
 import IssueList from './list.vue'
 

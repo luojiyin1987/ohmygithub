@@ -7,7 +7,7 @@ import {
   MonacoCodeEditor,
   ShikiCode,
   ShikiDiff
-} from '../../components'
+} from '@/components'
 
 const { t } = useI18n()
 

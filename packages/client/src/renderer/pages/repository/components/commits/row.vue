@@ -8,8 +8,8 @@ import {
   AvatarImage,
   Button,
 } from '@oh-my-github/ui'
-import CommitActionsDialog from '../../../../components/actions/commit-actions-dialog.vue'
-import CommitCiStatusButton from '../../../../components/actions/commit-ci-status-button.vue'
+import CommitActionsDialog from '@/components/actions/commit-actions-dialog.vue'
+import CommitCiStatusButton from '@/components/actions/commit-ci-status-button.vue'
 
 const props = defineProps<{
   commit: GitHubRepositoryCommit

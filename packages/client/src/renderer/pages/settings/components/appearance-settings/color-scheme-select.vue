@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@oh-my-github/ui'
-import { colorSchemes, type ColorSchemeId, type ColorSchemeOption } from '../../../../stores/settings'
+import { colorSchemes, type ColorSchemeId, type ColorSchemeOption } from '@/stores/settings'
 
 const props = defineProps<{
   isDark: boolean

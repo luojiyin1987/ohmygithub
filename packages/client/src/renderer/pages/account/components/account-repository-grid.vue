@@ -13,8 +13,8 @@ import {
   InputGroupInput,
   Skeleton,
 } from '@oh-my-github/ui'
-import AppPagination from '../../../components/navigation/app-pagination.vue'
-import RepositoryCard from '../../../components/github/repository-card.vue'
+import AppPagination from '@/components/navigation/app-pagination.vue'
+import RepositoryCard from '@/components/github/repository-card.vue'
 
 const props = defineProps<{
   disabled?: boolean

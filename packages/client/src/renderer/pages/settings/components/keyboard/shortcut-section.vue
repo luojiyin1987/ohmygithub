@@ -3,7 +3,7 @@ import type {
   KeyboardShortcutCommandId,
   KeyboardShortcutDefinition,
   KeyboardShortcutGroupId,
-} from '../../../../keyboard/shortcut-definitions'
+} from '@/keyboard/shortcut-definitions'
 import { useI18n } from 'vue-i18n'
 import ShortcutRow from './shortcut-row.vue'
 

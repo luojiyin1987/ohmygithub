@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@pinia/colada'
-import WorkItemStateIcon from '../work-item/work-item-state-icon.vue'
+import WorkItemStateIcon from '@/components/work-item/work-item-state-icon.vue'
 import { createReferenceWorkspaceUrl } from './github-reference'
 
 defineOptions({

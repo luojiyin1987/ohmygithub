@@ -31,9 +31,9 @@ import {
   Unlock,
   X,
 } from 'lucide-vue-next'
-import { GitHubActorLink, WorkItemStateBadge } from '../../../components'
-import { setIssueLock, setIssueSubscription } from '../../../composables/github/use-issues'
-import { updatePullRequest } from '../../../composables/github/use-pull-requests'
+import { GitHubActorLink, WorkItemStateBadge } from '@/components'
+import { setIssueLock, setIssueSubscription } from '@/composables/github/use-issues'
+import { updatePullRequest } from '@/composables/github/use-pull-requests'
 
 const props = defineProps<{
   pullRequest: PullRequestDetail

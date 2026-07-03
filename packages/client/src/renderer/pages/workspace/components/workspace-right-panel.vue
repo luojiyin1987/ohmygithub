@@ -3,8 +3,8 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Download } from 'lucide-vue-next'
 import { Button } from '@oh-my-github/ui'
-import { useRightPanel } from '../../../composables/use-right-panel'
-import { GitHubMarkdownRenderer, MarkdownRenderer, ShikiCode } from '../../../components'
+import { useRightPanel } from '@/composables/use-right-panel'
+import { GitHubMarkdownRenderer, MarkdownRenderer, ShikiCode } from '@/components'
 
 const props = defineProps<{
   isResizing: boolean

@@ -55,6 +55,10 @@ Use these directories under `packages/client/src/renderer`:
 - `components/`: shared renderer-only components.
 - `composables/`: shared renderer composables.
 
+Renderer-internal imports that need to walk up directories should use the `@/` alias, which
+points at `packages/client/src/renderer`. Keep relative imports only for local siblings or
+feature-local child paths, such as `./types` or `./components/foo.vue`.
+
 Prefer Pinia stores for client state such as settings, selected account, active workspace, and UI layout. Prefer Pinia Colada for data fetched from GitHub or from main-process IPC wrappers that represent cacheable server-like state.
 
 ## UI Rules

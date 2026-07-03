@@ -4,13 +4,13 @@ import {
   acceleratorToDisplayParts,
   getShortcutPlatform,
   parseAccelerator,
-} from '../keyboard/shortcut-accelerator'
+} from '@/keyboard/shortcut-accelerator'
 import {
   KEYBOARD_SHORTCUT_DEFINITIONS,
   type KeyboardShortcutCommandId,
   type ShortcutPlatform,
   defaultAcceleratorForPlatform,
-} from '../keyboard/shortcut-definitions'
+} from '@/keyboard/shortcut-definitions'
 
 export interface KeyboardShortcutOverride {
   accelerator: string | null

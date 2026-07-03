@@ -8,7 +8,7 @@ import {
   EmptyTitle,
   Skeleton,
 } from '@oh-my-github/ui'
-import { GitHubMarkdownRenderer, MarkdownRenderer } from '../../../../components'
+import { GitHubMarkdownRenderer, MarkdownRenderer } from '@/components'
 
 defineProps<{
   activeDocument: GitHubRepositoryDocument | null

@@ -4,7 +4,7 @@ import type {
   WorkspaceSidebarTreeItem as WorkspaceSidebarTreeItemData,
   WorkspaceSidebarTreeMenuAction,
   WorkspaceSidebarTreeSortInput,
-} from '../types'
+} from '@/pages/workspace/types'
 import type { UseSortableOptions } from '@vueuse/integrations/useSortable'
 import { computed, ref, watch } from 'vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
@@ -15,7 +15,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@oh-my-github/ui'
-import { BOOKMARK_FOLDER_LIST_PREFIX, BOOKMARK_ITEM_ID_PREFIX } from '../composables/use-workspace-bookmarks'
+import { BOOKMARK_FOLDER_LIST_PREFIX, BOOKMARK_ITEM_ID_PREFIX } from '@/pages/workspace/composables/use-workspace-bookmarks'
 import WorkspaceSidebarTreeItemComponent from './workspace-sidebar-tree-item.vue'
 
 const ROOT_VISIBLE_STEP = 4

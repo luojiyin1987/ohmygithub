@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { WorkspaceTab } from '../workspace/types'
+import type { WorkspaceTab } from '@/pages/workspace/types'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { usePullRequestCategoryQuery } from '../../composables/github/use-pull-requests'
-import { clampPage, filterPullRequests, paginate } from '../workspace/work-item-list-filter'
-import FilterBar from '../repository/components/pulls/filter-bar.vue'
-import PullRequestList from '../repository/components/pulls/list.vue'
+import { usePullRequestCategoryQuery } from '@/composables/github/use-pull-requests'
+import { clampPage, filterPullRequests, paginate } from '@/pages/workspace/work-item-list-filter'
+import FilterBar from '@/pages/repository/components/pulls/filter-bar.vue'
+import PullRequestList from '@/pages/repository/components/pulls/list.vue'
 
 const props = defineProps<{
   tab: WorkspaceTab

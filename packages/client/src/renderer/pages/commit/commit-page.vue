@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkspaceTab } from '../workspace/types'
+import type { WorkspaceTab } from '@/pages/workspace/types'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Check, Copy, GitCommitHorizontal, ShieldCheck } from 'lucide-vue-next'
@@ -15,10 +15,10 @@ import {
   EmptyTitle,
   Skeleton,
 } from '@oh-my-github/ui'
-import CommitActionsDialog from '../../components/actions/commit-actions-dialog.vue'
-import CommitCiStatusButton from '../../components/actions/commit-ci-status-button.vue'
-import { useRepositoryCommitQuery } from '../../composables/github/use-repositories'
-import ChangedFilesTree from '../../components/file-tree/changed-files-tree.vue'
+import CommitActionsDialog from '@/components/actions/commit-actions-dialog.vue'
+import CommitCiStatusButton from '@/components/actions/commit-ci-status-button.vue'
+import { useRepositoryCommitQuery } from '@/composables/github/use-repositories'
+import ChangedFilesTree from '@/components/file-tree/changed-files-tree.vue'
 
 const props = defineProps<{
   tab: WorkspaceTab

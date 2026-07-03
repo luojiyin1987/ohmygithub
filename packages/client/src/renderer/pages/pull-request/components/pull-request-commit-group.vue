@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import type { PullRequestCommitSummary } from './types'
-import type { ConversationActor } from '../../../components'
+import type { ConversationActor } from '@/components'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   GitCommitHorizontal,
 } from 'lucide-vue-next'
-import { GitHubActorLink } from '../../../components'
-import CommitActionsDialog from '../../../components/actions/commit-actions-dialog.vue'
-import CommitCiStatusButton from '../../../components/actions/commit-ci-status-button.vue'
+import { GitHubActorLink } from '@/components'
+import CommitActionsDialog from '@/components/actions/commit-actions-dialog.vue'
+import CommitCiStatusButton from '@/components/actions/commit-ci-status-button.vue'
 import {
   formatConversationDate,
   toConversationDateTime,
-} from '../../../components/conversation/format'
+} from '@/components/conversation/format'
 
 const props = defineProps<{
   actor: ConversationActor

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import SearchableSelect from '../navigation/searchable-select.vue'
-import type { SearchableSelectOption } from '../navigation/searchable-select.vue'
-import { useRepositoryBranchesQuery } from '../../composables/github/use-repositories'
+import SearchableSelect from '@/components/navigation/searchable-select.vue'
+import type { SearchableSelectOption } from '@/components/navigation/searchable-select.vue'
+import { useRepositoryBranchesQuery } from '@/composables/github/use-repositories'
 
 const props = defineProps<{
   owner: string

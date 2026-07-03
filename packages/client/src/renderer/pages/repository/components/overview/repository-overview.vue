@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RepositoryOverviewInfoItem } from '../types'
+import type { RepositoryOverviewInfoItem } from '@/pages/repository/components/types'
 import OverviewDocumentsCard from './overview-documents-card.vue'
 import OverviewSummaryCard from './overview-summary-card.vue'
 

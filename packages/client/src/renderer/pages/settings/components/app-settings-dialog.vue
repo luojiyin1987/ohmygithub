@@ -8,7 +8,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@oh-my-github/ui'
-import type { SettingsTabId } from '../settings-tabs'
+import type { SettingsTabId } from '@/pages/settings/settings-tabs'
 import AppearanceSettings from './appearance-settings/index.vue'
 import KeyboardSettingsPage from './keyboard/keyboard-settings-page.vue'
 

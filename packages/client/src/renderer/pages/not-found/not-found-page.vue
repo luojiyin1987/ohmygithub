@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkspaceTab } from '../workspace/types'
+import type { WorkspaceTab } from '@/pages/workspace/types'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'

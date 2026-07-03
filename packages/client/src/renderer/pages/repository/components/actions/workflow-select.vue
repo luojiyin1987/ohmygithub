@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import SearchableSelect from '../../../../components/navigation/searchable-select.vue'
-import type { SearchableSelectOption } from '../../../../components/navigation/searchable-select.vue'
+import SearchableSelect from '@/components/navigation/searchable-select.vue'
+import type { SearchableSelectOption } from '@/components/navigation/searchable-select.vue'
 
 const ALL_WORKFLOWS_VALUE = 'all'
 

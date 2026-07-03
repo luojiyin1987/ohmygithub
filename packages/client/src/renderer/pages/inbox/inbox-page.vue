@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkspaceTab } from '../workspace/types'
+import type { WorkspaceTab } from '@/pages/workspace/types'
 import type { ReasonFilterKey } from './inbox-helpers'
 import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -12,8 +12,8 @@ import {
   markNotificationRead,
   unsubscribeNotification,
   useInboxNotificationsQuery,
-} from '../../composables/github/use-inbox'
-import { useToast } from '../../composables/use-toast'
+} from '@/composables/github/use-inbox'
+import { useToast } from '@/composables/use-toast'
 import {
   REASON_FILTER_KEYS,
   matchesReasonFilter,

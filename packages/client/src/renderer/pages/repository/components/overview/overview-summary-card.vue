@@ -2,7 +2,7 @@
 import { AlertTriangle, ExternalLink, Globe } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { Skeleton } from '@oh-my-github/ui'
-import type { RepositoryOverviewInfoItem } from '../types'
+import type { RepositoryOverviewInfoItem } from '@/pages/repository/components/types'
 import OverviewInfoGrid from './overview-info-grid.vue'
 
 defineProps<{

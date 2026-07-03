@@ -3,9 +3,9 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@oh-my-github/ui'
 import { Send } from 'lucide-vue-next'
-import MonacoCodeEditor from '../editor/monaco-code-editor.vue'
-import GitHubMarkdownRenderer from '../github/github-markdown-renderer.vue'
-import MarkdownRenderer from '../markdown/markdown-renderer.vue'
+import MonacoCodeEditor from '@/components/editor/monaco-code-editor.vue'
+import GitHubMarkdownRenderer from '@/components/github/github-markdown-renderer.vue'
+import MarkdownRenderer from '@/components/markdown/markdown-renderer.vue'
 
 const props = withDefaults(defineProps<{
   modelValue: string

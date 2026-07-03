@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { eventToAccelerator } from '../../../../keyboard/shortcut-accelerator'
-import { useKeyboardShortcutStore } from '../../../../stores/keyboard-shortcuts'
+import { eventToAccelerator } from '@/keyboard/shortcut-accelerator'
+import { useKeyboardShortcutStore } from '@/stores/keyboard-shortcuts'
 import ShortcutKbd from './shortcut-kbd.vue'
 
 const emit = defineEmits<{

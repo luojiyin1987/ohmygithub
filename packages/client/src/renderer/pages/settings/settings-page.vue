@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import WorkspacePage from '../workspace/workspace-page.vue'
+import WorkspacePage from '@/pages/workspace/workspace-page.vue'
 import AppSettingsDialog from './components/app-settings-dialog.vue'
 import {
   DEFAULT_SETTINGS_TAB,

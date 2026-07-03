@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import GitHubBranchSelect from '../../../../components/github/github-branch-select.vue'
-import { useRepositoryCommitsQuery } from '../../../../composables/github/use-repositories'
+import GitHubBranchSelect from '@/components/github/github-branch-select.vue'
+import { useRepositoryCommitsQuery } from '@/composables/github/use-repositories'
 import CommitList from './list.vue'
 
 const props = defineProps<{

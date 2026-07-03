@@ -8,9 +8,9 @@ import {
   KEYBOARD_SHORTCUT_GROUPS,
   type KeyboardShortcutCommandId,
   type KeyboardShortcutGroupId,
-} from '../../../../keyboard/shortcut-definitions'
-import { parseAccelerator } from '../../../../keyboard/shortcut-accelerator'
-import { useKeyboardShortcutStore } from '../../../../stores/keyboard-shortcuts'
+} from '@/keyboard/shortcut-definitions'
+import { parseAccelerator } from '@/keyboard/shortcut-accelerator'
+import { useKeyboardShortcutStore } from '@/stores/keyboard-shortcuts'
 import ShortcutSection from './shortcut-section.vue'
 
 const { t } = useI18n()

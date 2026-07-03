@@ -12,11 +12,11 @@ import {
   Skeleton,
 } from '@oh-my-github/ui'
 import { AlertCircle, FileDiff } from 'lucide-vue-next'
-import { ChangedFilesTree, ConversationCommentComposer } from '../../../components'
+import { ChangedFilesTree, ConversationCommentComposer } from '@/components'
 import {
   submitPullRequestReview,
   usePullRequestFilesQuery,
-} from '../../../composables/github/use-pull-requests'
+} from '@/composables/github/use-pull-requests'
 
 const props = defineProps<{
   active: boolean

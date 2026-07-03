@@ -1,4 +1,4 @@
-import type { MermaidTheme } from '../../stores/settings'
+import type { MermaidTheme } from '@/stores/settings'
 
 const INIT_DIRECTIVE_PREFIX = /^\s*%%\{/
 

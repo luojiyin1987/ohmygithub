@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { MermaidBlockNode } from 'markstream-vue'
-import { useSettingsStore } from '../../stores/settings'
-import type { MarkdownCodeNode, MarkstreamCodeNode } from '../markdown/markstream-node-types'
+import { useSettingsStore } from '@/stores/settings'
+import type { MarkdownCodeNode, MarkstreamCodeNode } from '@/components/markdown/markstream-node-types'
 import { applyMermaidThemeToSource, resolveMermaidIsDark } from './mermaid-theme'
 
 const props = withDefaults(defineProps<{

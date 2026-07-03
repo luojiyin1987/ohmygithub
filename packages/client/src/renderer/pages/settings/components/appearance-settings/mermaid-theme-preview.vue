@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import MermaidRenderer from '../../../../components/mermaid/mermaid-renderer.vue'
-import type { MermaidTheme } from '../../../../stores/settings'
+import MermaidRenderer from '@/components/mermaid/mermaid-renderer.vue'
+import type { MermaidTheme } from '@/stores/settings'
 
 const props = defineProps<{
   isDark: boolean

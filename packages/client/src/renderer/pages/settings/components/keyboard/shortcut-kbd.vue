@@ -2,8 +2,8 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Kbd, KbdGroup } from '@oh-my-github/ui'
-import { acceleratorToDisplayParts } from '../../../../keyboard/shortcut-accelerator'
-import { useKeyboardShortcutStore } from '../../../../stores/keyboard-shortcuts'
+import { acceleratorToDisplayParts } from '@/keyboard/shortcut-accelerator'
+import { useKeyboardShortcutStore } from '@/stores/keyboard-shortcuts'
 
 const props = defineProps<{
   accelerator: string | null

@@ -2,7 +2,7 @@
 import type { Component } from 'vue'
 import { Monitor, Moon, Sun } from 'lucide-vue-next'
 import { SegmentedControl, type SegmentedItem } from '@oh-my-github/ui'
-import type { ThemePreference } from '../../../../stores/settings'
+import type { ThemePreference } from '@/stores/settings'
 
 const props = defineProps<{
   controlLabel: string

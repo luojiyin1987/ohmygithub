@@ -4,7 +4,7 @@ import type {
   WorkspaceSidebarTreeItem,
   WorkspaceSidebarTreeMenuAction,
   WorkspaceSidebarTreeSortInput,
-} from '../types'
+} from '@/pages/workspace/types'
 import type { UseSortableOptions } from '@vueuse/integrations/useSortable'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -43,16 +43,16 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@oh-my-github/ui'
-import { useIssueCategoryQuery, useRepositoryIssuesQuery } from '../../../composables/github/use-issues'
-import { useAccountRepositoriesQuery } from '../../../composables/github/use-accounts'
-import { useOrganizationRepositoriesQuery } from '../../../composables/github/use-organizations'
+import { useIssueCategoryQuery, useRepositoryIssuesQuery } from '@/composables/github/use-issues'
+import { useAccountRepositoriesQuery } from '@/composables/github/use-accounts'
+import { useOrganizationRepositoriesQuery } from '@/composables/github/use-organizations'
 import {
   usePullRequestCategoryQuery,
   useRepositoryPullRequestsQuery,
-} from '../../../composables/github/use-pull-requests'
-import { BOOKMARK_ITEM_ID_PREFIX } from '../composables/use-workspace-bookmarks'
-import { repositoryToTreeItem } from '../sidebar-tree-items'
-import { issueToTreeItem, pullRequestToTreeItem, resolvedReferenceToTreeItem } from '../sidebar-work-items'
+} from '@/composables/github/use-pull-requests'
+import { BOOKMARK_ITEM_ID_PREFIX } from '@/pages/workspace/composables/use-workspace-bookmarks'
+import { repositoryToTreeItem } from '@/pages/workspace/sidebar-tree-items'
+import { issueToTreeItem, pullRequestToTreeItem, resolvedReferenceToTreeItem } from '@/pages/workspace/sidebar-work-items'
 
 defineOptions({
   name: 'WorkspaceSidebarTreeItem',

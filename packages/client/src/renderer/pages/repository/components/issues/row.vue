@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import {
   Badge,
 } from '@oh-my-github/ui'
-import { GitHubActorLink, LabelBadge, WorkItemStateIcon } from '../../../../components'
+import { GitHubActorLink, LabelBadge, WorkItemStateIcon } from '@/components'
 
 const props = defineProps<{
   issue: GitHubIssue

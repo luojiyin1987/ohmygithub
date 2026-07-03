@@ -1,4 +1,4 @@
-import { createReferenceWorkspaceUrl } from '../../components/github/github-reference'
+import { createReferenceWorkspaceUrl } from '@/components/github/github-reference'
 
 export type NotificationTarget =
   | { kind: 'internal', url: string }

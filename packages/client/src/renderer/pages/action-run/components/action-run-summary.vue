@@ -12,7 +12,7 @@ import {
   Workflow,
 } from 'lucide-vue-next'
 import { Badge, Skeleton } from '@oh-my-github/ui'
-import { GitHubActorLink } from '../../../components'
+import { GitHubActorLink } from '@/components'
 
 interface SummaryItem {
   id: string

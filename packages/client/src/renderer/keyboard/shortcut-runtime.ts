@@ -1,7 +1,7 @@
 import { onBeforeUnmount, onMounted } from 'vue'
 import type { KeyboardShortcutCommandId } from './shortcut-definitions'
 import { signatureForEvent } from './shortcut-accelerator'
-import { useKeyboardShortcutStore } from '../stores/keyboard-shortcuts'
+import { useKeyboardShortcutStore } from '@/stores/keyboard-shortcuts'
 
 type KeyboardShortcutHandler = () => boolean | void
 

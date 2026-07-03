@@ -9,7 +9,7 @@ import {
   EmptyTitle,
   Skeleton,
 } from '@oh-my-github/ui'
-import AppPagination from '../../../../components/navigation/app-pagination.vue'
+import AppPagination from '@/components/navigation/app-pagination.vue'
 import CommitRow from './row.vue'
 
 const props = defineProps<{

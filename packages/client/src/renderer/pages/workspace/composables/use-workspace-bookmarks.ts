@@ -1,6 +1,6 @@
-import type { WorkspaceBookmark, WorkspaceBookmarkFolder, WorkspaceTab } from '../types'
+import type { WorkspaceBookmark, WorkspaceBookmarkFolder, WorkspaceTab } from '@/pages/workspace/types'
 import { computed, ref } from 'vue'
-import { createWorkspaceTabFromUrl, isWorkspaceTabType, normalizeWorkspaceUrl } from '../workspace-url'
+import { createWorkspaceTabFromUrl, isWorkspaceTabType, normalizeWorkspaceUrl } from '@/pages/workspace/workspace-url'
 
 export const BOOKMARK_ROOT_LIST_ID = 'bookmarks-root'
 export const BOOKMARK_ITEM_ID_PREFIX = 'bookmark:'

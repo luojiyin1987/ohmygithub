@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import type { RepositoryTabId } from '../../workspace/types'
+import type { RepositoryTabId } from '@/pages/workspace/types'
 
 export type RepositorySectionId = RepositoryTabId
 

@@ -5,8 +5,8 @@ import { useRouter } from 'vue-router'
 import {
   useRepositoryWorkflowRunsQuery,
   useRepositoryWorkflowsQuery,
-} from '../../../../composables/github/use-actions'
-import { createActionRunWorkspaceUrl } from '../../../workspace/workspace-url'
+} from '@/composables/github/use-actions'
+import { createActionRunWorkspaceUrl } from '@/pages/workspace/workspace-url'
 import RunList from './run-list.vue'
 import WorkflowSelect from './workflow-select.vue'
 

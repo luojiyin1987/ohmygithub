@@ -9,7 +9,7 @@ import {
 import {
   Badge,
 } from '@oh-my-github/ui'
-import { GitHubActorLink, LabelBadge, WorkItemStateIcon } from '../../../../components'
+import { GitHubActorLink, LabelBadge, WorkItemStateIcon } from '@/components'
 
 const props = defineProps<{
   pullRequest: GitHubPullRequest

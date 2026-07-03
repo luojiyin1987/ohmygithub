@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RefreshCw, RotateCcw } from 'lucide-vue-next'
 import { Button, Empty, EmptyDescription, EmptyHeader, EmptyTitle, Skeleton, Spinner } from '@oh-my-github/ui'
-import ActionStatusIcon from '../../../components/actions/action-status-icon.vue'
+import ActionStatusIcon from '@/components/actions/action-status-icon.vue'
 
 const props = defineProps<{
   canRerunJobs: boolean

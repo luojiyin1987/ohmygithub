@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useRepositoryPullRequestSearchQuery } from '../../../../composables/github/use-pull-requests'
+import { useRepositoryPullRequestSearchQuery } from '@/composables/github/use-pull-requests'
 import FilterBar from './filter-bar.vue'
 import PullRequestList from './list.vue'
 

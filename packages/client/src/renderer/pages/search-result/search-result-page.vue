@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
-import type { WorkspaceTab } from '../workspace/types'
+import type { WorkspaceTab } from '@/pages/workspace/types'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -23,8 +23,8 @@ import {
   EmptyTitle,
   Skeleton,
 } from '@oh-my-github/ui'
-import AppPagination from '../../components/navigation/app-pagination.vue'
-import { useWorkspaceSearchQuery } from '../../composables/github/use-workspace-search'
+import AppPagination from '@/components/navigation/app-pagination.vue'
+import { useWorkspaceSearchQuery } from '@/composables/github/use-workspace-search'
 
 const props = defineProps<{
   tab: WorkspaceTab

@@ -19,14 +19,14 @@ import {
   Input,
 } from '@oh-my-github/ui'
 import { Bell, BellOff, Check, Lock, MoreHorizontal, Pencil, Pin, Trash2, Unlock, X } from 'lucide-vue-next'
-import { GitHubActorLink, WorkItemStateBadge } from '../../../components'
+import { GitHubActorLink, WorkItemStateBadge } from '@/components'
 import {
   deleteIssue,
   setIssueLock,
   setIssuePinned,
   setIssueSubscription,
   updateIssue,
-} from '../../../composables/github/use-issues'
+} from '@/composables/github/use-issues'
 
 const props = defineProps<{
   issue: IssueDetail

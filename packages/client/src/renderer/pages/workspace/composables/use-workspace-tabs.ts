@@ -1,5 +1,5 @@
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { WorkspaceTab } from '../types'
+import type { WorkspaceTab } from '@/pages/workspace/types'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -8,7 +8,7 @@ import {
   isReservedInternalPath,
   isWorkspaceTabType,
   routeToWorkspaceUrl,
-} from '../workspace-url'
+} from '@/pages/workspace/workspace-url'
 
 const STORAGE_KEY = 'oh-my-github:workspace-tabs:v1'
 const STORAGE_VERSION = 1

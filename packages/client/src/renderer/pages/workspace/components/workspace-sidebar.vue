@@ -5,8 +5,8 @@ import type {
   WorkspaceSidebarTreeItem,
   WorkspaceSidebarTreeMenuAction,
   WorkspaceSidebarTreeSortInput,
-} from '../types'
-import type { BookmarkMutationResult, CreateBookmarkFolderResult } from '../composables/use-workspace-bookmarks'
+} from '@/pages/workspace/types'
+import type { BookmarkMutationResult, CreateBookmarkFolderResult } from '@/pages/workspace/composables/use-workspace-bookmarks'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronDown, ChevronRight, Folder, Inbox, Plus, Search } from 'lucide-vue-next'
@@ -32,18 +32,18 @@ import {
   SidebarMenuSkeleton,
   useSidebar,
 } from '@oh-my-github/ui'
-import { BOOKMARK_ROOT_LIST_ID } from '../composables/use-workspace-bookmarks'
+import { BOOKMARK_ROOT_LIST_ID } from '@/pages/workspace/composables/use-workspace-bookmarks'
 import {
   accountToTreeItem,
   bookmarkToTreeItem,
   organizationToTreeItem,
-} from '../sidebar-tree-items'
+} from '@/pages/workspace/sidebar-tree-items'
 import {
   ISSUE_CATEGORIES,
   PULL_REQUEST_CATEGORIES,
   issueCategoryToTreeItem,
   pullRequestCategoryToTreeItem,
-} from '../sidebar-work-items'
+} from '@/pages/workspace/sidebar-work-items'
 import WorkspaceSidebarTree from './workspace-sidebar-tree.vue'
 import WorkspaceUserPanel from './workspace-user-panel.vue'
 

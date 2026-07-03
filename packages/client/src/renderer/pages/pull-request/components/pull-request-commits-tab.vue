@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { usePullRequestCommitsQuery } from '../../../composables/github/use-pull-requests'
-import CommitList from '../../repository/components/commits/list.vue'
+import { usePullRequestCommitsQuery } from '@/composables/github/use-pull-requests'
+import CommitList from '@/pages/repository/components/commits/list.vue'
 
 const props = defineProps<{
   active: boolean
