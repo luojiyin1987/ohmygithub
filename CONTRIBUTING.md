@@ -40,9 +40,9 @@ rest are optional and used only for signed/published release builds.
 | `APPLE_CERTIFICATE` | no | Alias for `CSC_LINK`, useful with Apple-named CI templates | `.env` | **Secret** |
 | `APPLE_CERTIFICATE_PASSWORD` | no | Alias for `CSC_KEY_PASSWORD`, useful with Apple-named CI templates | `.env` | **Secret** |
 | `APPLE_API_KEY` | no | App Store Connect API key — `AuthKey_*.p8` path, pasted PEM, or base64 string (notarization) | `.env` | **Secret** |
-| `APPLE_API_KEY_ID` | no | App Store Connect API key id (notarization) | `.env` | **Variable** |
-| `APPLE_API_ISSUER` | no | App Store Connect issuer id (notarization) | `.env` | **Variable** |
-| `APPLE_TEAM_ID` | no | Apple Developer Team ID (notarization) | `.env` | **Variable** |
+| `APPLE_API_KEY_ID` | no | App Store Connect API key id (notarization) | `.env` | **Variable or Secret** |
+| `APPLE_API_ISSUER` | no | App Store Connect issuer id (notarization) | `.env` | **Variable or Secret** |
+| `APPLE_TEAM_ID` | no | Apple Developer Team ID (notarization) | `.env` | **Variable or Secret** |
 | `R2_ACCOUNT_ID` | no | Cloudflare account id (R2 upload) | `.env` | **Variable** |
 | `R2_BUCKET` | no | R2 bucket name (publish uploads here; also gates the R2 step) | `.env` | **Variable** |
 | `R2_PUBLIC_BASE_URL` | no | Public URL the R2 files are served from; also triggers `latest*.yml` (update manifest) generation | `.env` | **Variable** |
@@ -51,8 +51,10 @@ rest are optional and used only for signed/published release builds.
 | `OH_MY_GITHUB_CDP_PORT` | no | Dev-only Chrome DevTools Protocol port (see README) | env | — |
 | `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` | no | Dev network proxy (see README) | env | — |
 
-> **Variable vs Secret:** non-sensitive values go in repo/Org **Variables** (`vars.*`),
-> credentials go in **Secrets** (`secrets.*`). `GITHUB_TOKEN` is provided automatically.
+> **Variable vs Secret:** non-sensitive values usually go in repo/Org **Variables** (`vars.*`),
+> credentials go in **Secrets** (`secrets.*`). The publish workflow also accepts the Apple
+> notarization identifiers from **Secrets** for teams that keep the whole Apple credential set
+> together. `GITHUB_TOKEN` is provided automatically.
 
 ## CI/CD
 
