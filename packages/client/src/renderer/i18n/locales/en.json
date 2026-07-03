@@ -168,7 +168,18 @@
     },
     "tabs": {
       "appearance": "Appearance",
-      "keyboard": "Keyboard"
+      "keyboard": "Keyboard",
+      "about": "About"
+    },
+    "about": {
+      "checkForUpdate": "Check for Update",
+      "copyright": "© {year} Oh My GitHub. All rights reserved.",
+      "currentVersion": "Current Version: {version}",
+      "downloadUpdate": "Download Update",
+      "feedback": "Feedback",
+      "latestVersion": "Latest Version: {version}",
+      "madeBy": "Made with ❤️ by {author}",
+      "telegram": "Telegram"
     },
     "appearance": {
       "codeFontFamily": "Code font",

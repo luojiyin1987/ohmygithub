@@ -16,6 +16,7 @@ import { registerPullsIpc } from './pulls'
 import { registerReleasesIpc } from './releases'
 import { registerRepositoriesIpc } from './repositories'
 import { registerSearchIpc } from './search'
+import { registerUpdatesIpc } from './updates'
 
 configureDevRemoteDebugging()
 
@@ -127,6 +128,7 @@ void app.whenReady().then(() => {
   registerReleasesIpc()
   registerRepositoriesIpc()
   registerSearchIpc()
+  registerUpdatesIpc()
   registerWindowIpc()
   initializeAuth()
   initializeConfig()

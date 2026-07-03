@@ -214,6 +214,10 @@ const api = {
   links: {
     openGitHubUrl: (url: string) => ipcRenderer.invoke('links:open-github-url', url)
   },
+  updates: {
+    getInfo: () => ipcRenderer.invoke('app:get-info'),
+    checkForUpdate: () => ipcRenderer.invoke('updates:check')
+  },
   windowControls: {
     getState: () => ipcRenderer.invoke('window:get-state'),
     onFullscreenChange: (listener: (state: unknown) => void) => {

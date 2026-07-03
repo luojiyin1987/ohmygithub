@@ -1769,6 +1769,15 @@ interface Window {
     links: {
       openGitHubUrl: (url: string) => Promise<void>
     }
+    updates: {
+      getInfo: () => Promise<{ version: string; platform: string }>
+      checkForUpdate: () => Promise<{
+        currentVersion: string
+        latestVersion: string | null
+        hasUpdate: boolean
+        configured: boolean
+      }>
+    }
     windowControls: {
       getState: () => Promise<WindowControlsState>
       onFullscreenChange: (listener: (state: WindowControlsState) => void) => () => void

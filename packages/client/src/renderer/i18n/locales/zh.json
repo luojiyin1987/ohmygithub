@@ -168,7 +168,18 @@
     },
     "tabs": {
       "appearance": "外观",
-      "keyboard": "键盘"
+      "keyboard": "键盘",
+      "about": "关于"
+    },
+    "about": {
+      "checkForUpdate": "检查更新",
+      "copyright": "© {year} Oh My GitHub。保留所有权利。",
+      "currentVersion": "当前版本：{version}",
+      "downloadUpdate": "下载更新",
+      "feedback": "反馈",
+      "latestVersion": "最新版本：{version}",
+      "madeBy": "由 {author} 用 ❤️ 倾情打造",
+      "telegram": "Telegram"
     },
     "appearance": {
       "codeFontFamily": "代码字体",

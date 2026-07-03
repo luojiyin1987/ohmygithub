@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Keyboard, Palette } from 'lucide-vue-next'
+import { Info, Keyboard, Palette } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import {
   Dialog,
@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@oh-my-github/ui'
 import type { SettingsTabId } from '@/pages/settings/settings-tabs'
+import AboutSettings from './about-settings/index.vue'
 import AppearanceSettings from './appearance-settings/index.vue'
 import KeyboardSettingsPage from './keyboard/keyboard-settings-page.vue'
 
@@ -32,6 +33,11 @@ const tabs = [
     id: 'keyboard',
     icon: Keyboard,
     labelKey: 'settings.tabs.keyboard',
+  },
+  {
+    id: 'about',
+    icon: Info,
+    labelKey: 'settings.tabs.about',
   },
 ] satisfies Array<{
   id: SettingsTabId
@@ -92,7 +98,10 @@ function handleOpenChange(isOpen: boolean): void {
       </aside>
 
       <section class="min-h-0 overflow-auto p-6 pr-12">
-        <header class="mb-6">
+        <header
+          v-if="activeTab !== 'about'"
+          class="mb-6"
+        >
           <h2 class="select-none truncate text-heading font-semibold text-foreground">
             {{ activeTabTitle }}
           </h2>
@@ -100,6 +109,7 @@ function handleOpenChange(isOpen: boolean): void {
 
         <AppearanceSettings v-if="activeTab === 'appearance'" />
         <KeyboardSettingsPage v-else-if="activeTab === 'keyboard'" />
+        <AboutSettings v-else-if="activeTab === 'about'" />
       </section>
     </DialogContent>
   </Dialog>
