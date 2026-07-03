@@ -2022,5 +2022,10 @@
     "description": "检查拼写、粘贴 GitHub URL，或改为搜索 GitHub 结果。",
     "eyebrow": "未找到",
     "title": "找不到 \"{input}\""
+  },
+  "app": {
+    "eyebrow": "GitHub App",
+    "description": "暂不支持展示 App 详情，这是一个占位页面。",
+    "viewOnGitHub": "在 GitHub 上查看"
   }
 }

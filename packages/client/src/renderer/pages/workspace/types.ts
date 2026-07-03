@@ -26,6 +26,7 @@ export type WorkspaceTabType =
   | 'reviews'
   | 'activity'
   | 'account'
+  | 'app'
   | 'repo'
   | 'pull-request-list'
   | 'issue-list'
@@ -61,6 +62,7 @@ export interface WorkspaceTab {
   jobId?: number
   commitSha?: string
   accountSection?: AccountTabId
+  appSlug?: string
   repositorySection?: RepositoryTabId
   pullRequestCategory?: GitHubPullRequestCategory
   issueCategory?: GitHubIssueCategory
@@ -89,6 +91,7 @@ export interface WorkspaceBookmark {
   jobId?: number
   commitSha?: string
   accountSection?: AccountTabId
+  appSlug?: string
   repositorySection?: RepositoryTabId
   pullRequestCategory?: GitHubPullRequestCategory
   issueCategory?: GitHubIssueCategory

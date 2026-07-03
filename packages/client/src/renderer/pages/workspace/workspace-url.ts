@@ -4,7 +4,7 @@ import type { AccountTabId, RepositoryTabId, WorkspaceTab, WorkspaceTabType } fr
 export const DEFAULT_WORKSPACE_URL = '/inbox'
 
 const INTERNAL_TYPES = new Set<WorkspaceTabType>(['inbox', 'reviews', 'activity'])
-const INTERNAL_PATHS = new Set(['pull-requests', 'issues', 'search', 'not-found'])
+const INTERNAL_PATHS = new Set(['pull-requests', 'issues', 'search', 'not-found', 'apps'])
 const DEFAULT_ACCOUNT_SECTION: AccountTabId = 'overview'
 const DEFAULT_REPOSITORY_SECTION: RepositoryTabId = 'overview'
 const PULL_REQUEST_CATEGORIES = new Set<GitHubPullRequestCategory>([
@@ -23,6 +23,7 @@ const VALID_TYPES = new Set<WorkspaceTabType>([
   'reviews',
   'activity',
   'account',
+  'app',
   'repo',
   'pull-request-list',
   'issue-list',
@@ -147,6 +148,10 @@ export function createAccountWorkspaceUrl(
   return createAccountUrlFromPath(path, accountSectionToQuery(section))
 }
 
+export function createAppWorkspaceUrl(slug: string): string {
+  return `/apps/${encodeURIComponent(sanitizeSegment(slug))}`
+}
+
 export function isReservedInternalPath(path: string): boolean {
   const [firstSegment] = normalizeWorkspacePath(path).split('/').filter(Boolean)
   return INTERNAL_PATHS.has(firstSegment) || INTERNAL_TYPES.has(firstSegment as WorkspaceTabType)
@@ -191,6 +196,18 @@ function parseWorkspaceUrl(url: string): Omit<WorkspaceTab, 'title'> {
     return {
       url: `/${firstSegment}`,
       type: firstSegment as WorkspaceTabType,
+    }
+  }
+
+  if (firstSegment === 'apps') {
+    const appSlug = sanitizeSegment(segments[1])
+
+    if (appSlug) {
+      return {
+        url: createAppWorkspaceUrl(appSlug),
+        type: 'app',
+        appSlug,
+      }
     }
   }
 
@@ -304,6 +321,7 @@ function titleForWorkspaceTab(tab: Omit<WorkspaceTab, 'title'>): string {
   if (tab.type === 'search-result') return tab.searchQuery ? `Search: ${tab.searchQuery}` : 'Search'
   if (tab.type === 'not-found') return tab.notFoundInput ? `Not Found: ${tab.notFoundInput}` : 'Not Found'
   if (tab.type === 'repo') return `${tab.owner}/${tab.repo}`
+  if (tab.type === 'app') return tab.appSlug ?? 'App'
   return tab.owner ?? 'Account'
 }
 
@@ -419,9 +437,14 @@ function sanitizeSearchMode(value: string | undefined): GitHubWorkspaceSearchMod
 function sanitizeRepositorySection(value: string | undefined): RepositoryTabId {
   if (value === 'files') return 'files'
   if (value === 'commits') return 'commits'
+  if (value === 'branches') return 'branches'
   if (value === 'pull-requests' || value === 'pullRequests') return 'pullRequests'
   if (value === 'issues') return 'issues'
   if (value === 'actions') return 'actions'
+  if (value === 'releases') return 'releases'
+  if (value === 'contributors') return 'contributors'
+  if (value === 'packages') return 'packages'
+  if (value === 'deployments') return 'deployments'
   if (value === 'settings') return 'settings'
   return DEFAULT_REPOSITORY_SECTION
 }

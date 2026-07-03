@@ -2,6 +2,7 @@ import type { WorkspaceTab, WorkspaceTabView } from './types'
 import {
   Bell,
   Book,
+  Bot,
   CircleDot,
   GitCommitHorizontal,
   GitPullRequest,
@@ -234,6 +235,20 @@ export function getWorkspaceTabView(tab: WorkspaceTab): WorkspaceTabView {
       stats: [
         { id: 'repository', labelKey: 'workspace.panel.stats.repository', value: `${tab.owner ?? ''}/${tab.repo ?? ''}` },
         { id: 'commit', labelKey: 'workspace.panel.stats.commit', value: tab.commitSha?.slice(0, 7) ?? '' },
+        { id: 'status', labelKey: 'workspace.panel.stats.status', valueKey: 'workspace.panel.values.placeholder' },
+      ],
+    })
+  }
+
+  if (tab.type === 'app') {
+    return createResourceView(tab, {
+      icon: Bot,
+      eyebrowKey: 'app.eyebrow',
+      headingKey: 'workspace.panel.headings.account',
+      descriptionKey: 'app.description',
+      stats: [
+        { id: 'app', labelKey: 'workspace.panel.stats.account', value: tab.appSlug ?? '' },
+        { id: 'type', labelKey: 'workspace.panel.stats.type', valueKey: 'app.eyebrow' },
         { id: 'status', labelKey: 'workspace.panel.stats.status', valueKey: 'workspace.panel.values.placeholder' },
       ],
     })

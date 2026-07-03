@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import type { WorkspaceMessageParams, WorkspaceTab } from '../types'
+import type { WorkspaceMessageParams, WorkspaceTab } from '@/pages/workspace/types'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Badge } from '@oh-my-github/ui'
-import AccountPage from '../../account/account-page.vue'
-import ActionRunPage from '../../action-run/action-run-page.vue'
-import CommitPage from '../../commit/commit-page.vue'
-import IssueListPage from '../../issue-list/issue-list-page.vue'
-import IssuePage from '../../issue/issue-page.vue'
-import PullRequestListPage from '../../pull-request-list/pull-request-list-page.vue'
-import PullRequestPage from '../../pull-request/pull-request-page.vue'
-import RepositoryPage from '../../repository/repository-page.vue'
-import SearchResultPage from '../../search-result/search-result-page.vue'
-import NotFoundPage from '../../not-found/not-found-page.vue'
-import InboxPage from '../../inbox/inbox-page.vue'
-import { getWorkspaceTabView } from '../tab-presentation'
+import AccountPage from '@/pages/account/account-page.vue'
+import AppPage from '@/pages/app/app-page.vue'
+import ActionRunPage from '@/pages/action-run/action-run-page.vue'
+import CommitPage from '@/pages/commit/commit-page.vue'
+import IssueListPage from '@/pages/issue-list/issue-list-page.vue'
+import IssuePage from '@/pages/issue/issue-page.vue'
+import PullRequestListPage from '@/pages/pull-request-list/pull-request-list-page.vue'
+import PullRequestPage from '@/pages/pull-request/pull-request-page.vue'
+import RepositoryPage from '@/pages/repository/repository-page.vue'
+import SearchResultPage from '@/pages/search-result/search-result-page.vue'
+import NotFoundPage from '@/pages/not-found/not-found-page.vue'
+import InboxPage from '@/pages/inbox/inbox-page.vue'
+import { getWorkspaceTabView } from '@/pages/workspace/tab-presentation'
 
 const props = defineProps<{
   isActive: boolean
@@ -41,6 +42,11 @@ function translate(key: string, params?: WorkspaceMessageParams): string {
     :tab="tab"
     :viewer="viewer"
     @replace-active-url="emit('replaceActiveUrl', $event)"
+  />
+
+  <AppPage
+    v-else-if="tab.type === 'app'"
+    :tab="tab"
   />
 
   <RepositoryPage

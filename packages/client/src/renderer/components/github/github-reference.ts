@@ -70,6 +70,9 @@ export function parseGitHubWorkspaceUrl(value: string): string | null {
     if (segments[0] === 'orgs' && segments[1] && segments.length === 2) {
       return createAccountWorkspaceUrl(segments[1])
     }
+    if (segments[0] === 'apps' && segments[1]) {
+      return createAppWorkspaceUrl(segments[1])
+    }
 
     const [owner, repo, type, rawNumber] = segments
     if (!owner) return null
@@ -124,6 +127,14 @@ export function createGitHubAvatarUrl(login: string, size = 40): string {
 
 export function createAccountWorkspaceUrl(login: string): string {
   return `/${encodeURIComponent(login)}`
+}
+
+export function appSlugFromLogin(login: string): string {
+  return login.replace(/\[bot\]$/i, '')
+}
+
+export function createAppWorkspaceUrl(slugOrLogin: string): string {
+  return `/apps/${encodeURIComponent(appSlugFromLogin(slugOrLogin))}`
 }
 
 export function createRepositoryWorkspaceUrl(

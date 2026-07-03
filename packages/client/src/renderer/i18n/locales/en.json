@@ -2022,5 +2022,10 @@
     "description": "Check the spelling, paste a GitHub URL, or search GitHub results.",
     "eyebrow": "Not Found",
     "title": "Could not find \"{input}\""
+  },
+  "app": {
+    "eyebrow": "GitHub App",
+    "description": "App details are not supported yet. This is a placeholder page.",
+    "viewOnGitHub": "View on GitHub"
   }
 }
