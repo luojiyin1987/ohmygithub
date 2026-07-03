@@ -817,7 +817,7 @@
 }
 
 :root {
-  --font-sans: "Inter Variable", "Inter", "MiSans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Noto Sans SC", sans-serif;
+  --font-sans: "MiSans", "Inter Variable", "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Noto Sans SC", sans-serif;
   --radius: 0.625rem;
   --scheme-hue: 72;
   /* Near-neutral WARM surfaces (hue 63, faint chroma — a gentle warm lean so the

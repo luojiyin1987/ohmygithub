@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @import "@oh-my-github/ui/style.css";
 
+/* Default bundled code font (Maple Mono). Overridden per-user via --font-mono
+   from the settings store; --font-sans default lives in @oh-my-github/ui. */
+:root {
+  --font-mono: "Maple Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Cascadia Code", "Source Code Pro", monospace;
+}
+
 html,
 body,
 #app {
