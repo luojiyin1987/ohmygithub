@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { AlertTriangle, Folder } from 'lucide-vue-next'
 import {
@@ -9,10 +9,10 @@ import {
   EmptyTitle,
   Skeleton,
 } from '@oh-my-github/ui'
-import { useRepositoryFilesQuery } from '../../../../composables/github/use-repositories'
-import { useRightPanel } from '../../../../composables/use-right-panel'
-import { FileTree } from '../../../../components'
-import GitHubBranchSelect from '../../../../components/github/github-branch-select.vue'
+import { useRepositoryFilesQuery } from '@/composables/github/use-repositories'
+import { useRightPanel } from '@/composables/use-right-panel'
+import { FileTree } from '@/components'
+import GitHubBranchSelect from '@/components/github/github-branch-select.vue'
 
 const props = defineProps<{
   defaultBranch: string | null
@@ -26,9 +26,16 @@ const selectedPath = ref<string | null>(null)
 const selectedRef = ref<string | null>(props.defaultBranch)
 const previewRequestId = ref(0)
 const {
+  clearRightPanel,
+  closeRightPanel,
   openRightPanel,
   setRightPanelContent,
 } = useRightPanel()
+
+onUnmounted(() => {
+  closeRightPanel()
+  clearRightPanel()
+})
 
 const hasRepositoryIdentity = computed(() => Boolean(props.owner && props.repo))
 const effectiveRef = computed(() => selectedRef.value ?? props.defaultBranch)

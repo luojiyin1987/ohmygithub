@@ -4,7 +4,7 @@ import type {
   WorkspaceBookmarkFolder,
   WorkspaceMessageParams,
   WorkspaceTab,
-} from '../types'
+} from '@/pages/workspace/types'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
@@ -34,8 +34,8 @@ import {
   TabsTrigger,
   useSidebar,
 } from '@oh-my-github/ui'
-import { useRightPanel } from '../../../composables/use-right-panel'
-import { getWorkspaceTabView } from '../tab-presentation'
+import { useRightPanel } from '@/composables/use-right-panel'
+import { getWorkspaceTabView } from '@/pages/workspace/tab-presentation'
 import WorkspacePanel from './workspace-panel.vue'
 import WorkspaceRightPanel from './workspace-right-panel.vue'
 
@@ -72,7 +72,7 @@ const {
   toggleRightPanel,
 } = useRightPanel()
 const RIGHT_PANEL_WIDTH_STORAGE_KEY = 'oh-my-github:workspace-right-panel-width:v1'
-const DEFAULT_RIGHT_PANEL_WIDTH = 416
+const DEFAULT_RIGHT_PANEL_WIDTH = 560
 const MIN_RIGHT_PANEL_WIDTH = 320
 const MAX_RIGHT_PANEL_WIDTH = 768
 const isMac = navigator.platform.toLowerCase().includes('mac')
@@ -259,8 +259,9 @@ function stopScrollbarDrag(): void {
 }
 
 function readStoredRightPanelWidth(): number {
-  const stored = Number(localStorage.getItem(RIGHT_PANEL_WIDTH_STORAGE_KEY))
-  return clampRightPanelWidth(Number.isFinite(stored) ? stored : DEFAULT_RIGHT_PANEL_WIDTH)
+  const stored = localStorage.getItem(RIGHT_PANEL_WIDTH_STORAGE_KEY)
+  const width = stored === null ? DEFAULT_RIGHT_PANEL_WIDTH : Number(stored)
+  return clampRightPanelWidth(Number.isFinite(width) && width > 0 ? width : DEFAULT_RIGHT_PANEL_WIDTH)
 }
 
 function clampRightPanelWidth(width: number): number {
