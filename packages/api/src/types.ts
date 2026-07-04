@@ -392,6 +392,74 @@ export interface GitHubRepositoryOverview {
   warnings: string[]
 }
 
+export type GitHubSquashMergeCommitTitle = 'PR_TITLE' | 'COMMIT_OR_PR_TITLE'
+export type GitHubSquashMergeCommitMessage = 'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK'
+export type GitHubMergeCommitTitle = 'PR_TITLE' | 'MERGE_MESSAGE'
+export type GitHubMergeCommitMessage = 'PR_BODY' | 'PR_TITLE' | 'BLANK'
+
+export interface GitHubRepositoryGeneralSettings {
+  repositoryNodeId: string
+  name: string
+  description: string | null
+  homepage: string | null
+  visibility: 'public' | 'private'
+  isArchived: boolean
+  isTemplate: boolean
+  webCommitSignoffRequired: boolean
+  defaultBranch: string | null
+  topics: string[]
+  hasIssues: boolean
+  hasWiki: boolean
+  hasProjects: boolean
+  hasDiscussions: boolean
+  hasSponsorships: boolean | null
+  allowMergeCommit: boolean
+  allowSquashMerge: boolean
+  allowRebaseMerge: boolean
+  allowAutoMerge: boolean
+  deleteBranchOnMerge: boolean
+  allowUpdateBranch: boolean
+  squashMergeCommitTitle: GitHubSquashMergeCommitTitle | null
+  squashMergeCommitMessage: GitHubSquashMergeCommitMessage | null
+  mergeCommitTitle: GitHubMergeCommitTitle | null
+  mergeCommitMessage: GitHubMergeCommitMessage | null
+  immutableReleases: boolean | null
+}
+
+export interface UpdateRepositoryGeneralSettingsInput {
+  name?: string
+  description?: string
+  homepage?: string
+  visibility?: 'public' | 'private'
+  archived?: boolean
+  isTemplate?: boolean
+  webCommitSignoffRequired?: boolean
+  defaultBranch?: string
+  hasIssues?: boolean
+  hasWiki?: boolean
+  hasProjects?: boolean
+  allowMergeCommit?: boolean
+  allowSquashMerge?: boolean
+  allowRebaseMerge?: boolean
+  allowAutoMerge?: boolean
+  deleteBranchOnMerge?: boolean
+  allowUpdateBranch?: boolean
+  squashMergeCommitTitle?: GitHubSquashMergeCommitTitle
+  squashMergeCommitMessage?: GitHubSquashMergeCommitMessage
+  mergeCommitTitle?: GitHubMergeCommitTitle
+  mergeCommitMessage?: GitHubMergeCommitMessage
+}
+
+export interface TransferRepositoryOptions extends RepositoryOptions {
+  newOwner: string
+  newName?: string
+}
+
+export interface SetRepositoryFeatureNodeOptions {
+  repositoryNodeId: string
+  enabled: boolean
+}
+
 export interface GitHubRepositoryContributorSummary {
   id: number
   login: string

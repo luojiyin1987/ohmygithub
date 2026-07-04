@@ -44,7 +44,8 @@ export const defaultGitHubOAuthScopes = [
   'admin:public_key',
   'admin:gpg_key',
   'admin:ssh_signing_key',
-  'codespace:secrets'
+  'codespace:secrets',
+  'delete_repo'
 ] as const
 
 interface AuthApiOptions {
