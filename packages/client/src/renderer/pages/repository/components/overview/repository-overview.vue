@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RepositoryOverviewInfoItem } from '@/pages/repository/components/types'
+import type { RepositoryOverviewInfoItem, RepositorySectionId } from '@/pages/repository/components/types'
 import OverviewDocumentsCard from './overview-documents-card.vue'
 import OverviewSummaryCard from './overview-summary-card.vue'
 
@@ -20,6 +20,7 @@ defineProps<{
 const emit = defineEmits<{
   'update:activeDocumentKind': [value: GitHubRepositoryDocumentKind]
   viewAllContributors: []
+  selectSection: [section: RepositorySectionId]
 }>()
 </script>
 
@@ -33,6 +34,7 @@ const emit = defineEmits<{
     :overview-info-items="overviewInfoItems"
     :owner="owner"
     :repo="repo"
+    @select-section="emit('selectSection', $event)"
     @view-all-contributors="emit('viewAllContributors')"
   />
 

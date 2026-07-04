@@ -1753,6 +1753,78 @@
             "reauthorize": "Re-authorize"
           }
         }
+      },
+      "access": {
+        "navigation": "Access settings",
+        "error": "The access change failed.",
+        "loadError": "Failed to load access settings.",
+        "tabs": {
+          "collaborators": "Collaborators",
+          "teams": "Teams",
+          "moderation": "Moderation"
+        },
+        "roles": {
+          "pull": "Read",
+          "triage": "Triage",
+          "push": "Write",
+          "maintain": "Maintain",
+          "admin": "Admin"
+        },
+        "invitationPermissions": {
+          "read": "Read",
+          "triage": "Triage",
+          "write": "Write",
+          "maintain": "Maintain",
+          "admin": "Admin"
+        },
+        "collaborators": {
+          "add": "Add",
+          "addPlaceholder": "GitHub username",
+          "added": "{username} now has access.",
+          "invited": "Invitation sent to {username}.",
+          "remove": "Remove collaborator",
+          "pending": "Pending",
+          "cancelInvitation": "Cancel invitation",
+          "unknownInvitee": "(email invitation)",
+          "empty": "No direct collaborators yet."
+        },
+        "teams": {
+          "add": "Add team",
+          "addPlaceholder": "Team slug",
+          "remove": "Remove team",
+          "empty": "No teams have access to this repository."
+        },
+        "moderation": {
+          "title": "Interaction limits",
+          "description": "Temporarily restrict which users can comment, open issues, or create pull requests.",
+          "inheritedLimit": "An interaction limit is already active at the {origin} level.",
+          "save": "Save",
+          "groups": {
+            "no_limit": {
+              "label": "No limits",
+              "description": "Everyone can interact according to their repository access."
+            },
+            "existing_users": {
+              "label": "Limit to existing users",
+              "description": "Users with accounts newer than 24 hours cannot interact."
+            },
+            "contributors_only": {
+              "label": "Limit to prior contributors",
+              "description": "Only users who previously contributed can interact."
+            },
+            "collaborators_only": {
+              "label": "Limit to repository collaborators",
+              "description": "Only collaborators can interact."
+            }
+          },
+          "expiry": {
+            "one_day": "1 day",
+            "three_days": "3 days",
+            "one_week": "1 week",
+            "one_month": "1 month",
+            "six_months": "6 months"
+          }
+        }
       }
     }
   },

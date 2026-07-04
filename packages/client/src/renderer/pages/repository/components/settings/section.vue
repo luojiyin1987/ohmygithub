@@ -5,16 +5,19 @@ import { ExternalLink } from 'lucide-vue-next'
 import type { RepositorySettingsSectionId } from '../types'
 import { repositorySettingsLinks } from './settings-links'
 import GeneralSection from './general/general-section.vue'
+import AccessSection from './access/access-section.vue'
 
 const props = defineProps<{
   category: RepositorySettingsSectionId
   owner: string
   repo: string
+  settingsSub?: string
 }>()
 
 const emit = defineEmits<{
   renamed: [newName: string]
   deleted: []
+  'update:settingsSub': [sub: string]
 }>()
 
 const { t } = useI18n()
@@ -34,6 +37,14 @@ function openLink(path: string): void {
     :repo="repo"
     @deleted="emit('deleted')"
     @renamed="emit('renamed', $event)"
+  />
+
+  <AccessSection
+    v-else-if="category === 'settingsAccess'"
+    :owner="owner"
+    :repo="repo"
+    :settings-sub="settingsSub"
+    @update:settings-sub="emit('update:settingsSub', $event)"
   />
 
   <section

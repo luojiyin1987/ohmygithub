@@ -28,12 +28,18 @@ import {
 } from '@/composables/github/use-accounts'
 import { useToast } from '@/composables/use-toast'
 
-const props = defineProps<{
-  followersCount: number
-  followingCount: number
-  isOrganization: boolean
-  login: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    followersCount: number
+    followingCount: number
+    isOrganization: boolean
+    login: string
+    initialTab?: 'followers' | 'following'
+  }>(),
+  {
+    initialTab: 'followers',
+  },
+)
 
 const emit = defineEmits<{
   selectAccount: [login: string]
@@ -48,7 +54,12 @@ const { t } = useI18n()
 const toast = useToast()
 const { invalidateAccountProfile } = useAccountListInvalidation()
 
-const activeTab = ref<FollowTabId>('followers')
+function resolveInitialTab(): FollowTabId {
+  if (props.initialTab === 'following' && props.isOrganization) return 'followers'
+  return props.initialTab
+}
+
+const activeTab = ref<FollowTabId>(resolveInitialTab())
 const page = ref(1)
 const searchInput = ref('')
 const search = ref('')
@@ -113,11 +124,18 @@ const tabs = computed<TabSwitcherItem[]>(() => {
 watch(
   () => props.login,
   () => {
-    activeTab.value = 'followers'
+    activeTab.value = resolveInitialTab()
     page.value = 1
     searchInput.value = ''
     search.value = ''
     followOverrides.value = {}
+  },
+)
+
+watch(
+  () => props.initialTab,
+  () => {
+    activeTab.value = resolveInitialTab()
   },
 )
 

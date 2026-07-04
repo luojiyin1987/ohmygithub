@@ -14,6 +14,7 @@ export interface RepositoryOverviewInfoItem {
   label: string
   value: string
   href?: string
+  section?: RepositorySectionId
 }
 
 export const REPOSITORY_SETTINGS_SECTION_IDS = [

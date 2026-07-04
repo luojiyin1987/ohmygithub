@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { RepositoryOverviewInfoItem } from '@/pages/repository/components/types'
+import type { RepositoryOverviewInfoItem, RepositorySectionId } from '@/pages/repository/components/types'
 import { chunkOverviewInfoItems } from './overview-info-columns'
 
 const props = defineProps<{
   items: RepositoryOverviewInfoItem[]
+}>()
+
+const emit = defineEmits<{
+  selectSection: [section: RepositorySectionId]
 }>()
 
 const columns = computed(() => chunkOverviewInfoItems(props.items))
@@ -38,6 +42,14 @@ const columns = computed(() => chunkOverviewInfoItems(props.items))
         >
           {{ item.value }}
         </a>
+        <button
+          v-else-if="item.section"
+          type="button"
+          class="ml-auto min-w-0 truncate text-right text-body font-medium text-primary underline-offset-4 hover:underline"
+          @click="emit('selectSection', item.section)"
+        >
+          {{ item.value }}
+        </button>
         <span
           v-else
           class="ml-auto min-w-0 truncate text-right text-body font-medium text-foreground"

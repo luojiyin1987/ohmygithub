@@ -1753,6 +1753,78 @@
             "reauthorize": "重新授权"
           }
         }
+      },
+      "access": {
+        "navigation": "访问权限设置",
+        "error": "访问权限变更失败。",
+        "loadError": "加载访问权限设置失败。",
+        "tabs": {
+          "collaborators": "协作者",
+          "teams": "团队",
+          "moderation": "互动管理"
+        },
+        "roles": {
+          "pull": "只读",
+          "triage": "分诊",
+          "push": "写入",
+          "maintain": "维护",
+          "admin": "管理员"
+        },
+        "invitationPermissions": {
+          "read": "只读",
+          "triage": "分诊",
+          "write": "写入",
+          "maintain": "维护",
+          "admin": "管理员"
+        },
+        "collaborators": {
+          "add": "添加",
+          "addPlaceholder": "GitHub 用户名",
+          "added": "{username} 已获得访问权限。",
+          "invited": "已向 {username} 发送邀请。",
+          "remove": "移除协作者",
+          "pending": "待接受",
+          "cancelInvitation": "取消邀请",
+          "unknownInvitee": "(邮箱邀请)",
+          "empty": "还没有直接协作者。"
+        },
+        "teams": {
+          "add": "添加团队",
+          "addPlaceholder": "团队 slug",
+          "remove": "移除团队",
+          "empty": "还没有团队拥有此仓库的访问权限。"
+        },
+        "moderation": {
+          "title": "互动限制",
+          "description": "临时限制哪些用户可以评论、创建 Issue 或发起拉取请求。",
+          "inheritedLimit": "更高层级({origin})已启用互动限制。",
+          "save": "保存",
+          "groups": {
+            "no_limit": {
+              "label": "不限制",
+              "description": "所有用户按其仓库权限正常互动。"
+            },
+            "existing_users": {
+              "label": "仅限已有账号用户",
+              "description": "注册不满 24 小时的账号无法互动。"
+            },
+            "contributors_only": {
+              "label": "仅限曾经的贡献者",
+              "description": "只有先前贡献过的用户可以互动。"
+            },
+            "collaborators_only": {
+              "label": "仅限仓库协作者",
+              "description": "只有协作者可以互动。"
+            }
+          },
+          "expiry": {
+            "one_day": "1 天",
+            "three_days": "3 天",
+            "one_week": "1 周",
+            "one_month": "1 个月",
+            "six_months": "6 个月"
+          }
+        }
       }
     }
   },

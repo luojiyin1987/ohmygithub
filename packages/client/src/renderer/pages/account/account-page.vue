@@ -64,6 +64,8 @@ interface AccountHeaderMetaItem {
   icon: Component
   value: string
   href?: string | null
+  section?: AccountTabId
+  followTab?: 'followers' | 'following'
 }
 
 const PER_PAGE = 12
@@ -83,6 +85,7 @@ const router = useRouter()
 const login = computed(() => props.tab.owner ?? props.tab.title)
 const hasLogin = computed(() => login.value.trim().length > 0)
 const activeSection = ref<AccountTabId>(props.tab.accountSection ?? 'overview')
+const followersInitialTab = ref<'followers' | 'following'>('followers')
 const selectedContributionYear = ref<number | null>(null)
 const repositoryPage = ref(1)
 const starsPage = ref(1)
@@ -171,6 +174,8 @@ const metadataItems = computed<AccountHeaderMetaItem[]>(() => {
       id: 'followers',
       icon: Users,
       value: t('account.profile.followersValue', { count: formatNumber(currentProfile.followers) }),
+      section: 'followers',
+      followTab: 'followers',
     },
     {
       id: 'following',
@@ -178,11 +183,14 @@ const metadataItems = computed<AccountHeaderMetaItem[]>(() => {
       value: isOrganizationProfile.value
         ? ''
         : t('account.profile.followingValue', { count: formatNumber(currentProfile.following) }),
+      section: 'followers',
+      followTab: 'following',
     },
     {
       id: 'publicRepos',
       icon: BookOpen,
       value: t('account.profile.publicReposValue', { count: formatNumber(currentProfile.publicRepos) }),
+      section: 'repositories',
     },
     {
       id: 'publicGists',
@@ -341,6 +349,7 @@ onBeforeUnmount(() => {
 
 function setActiveSection(section: string): void {
   const nextSection = section as AccountTabId
+  followersInitialTab.value = 'followers'
   activeSection.value = nextSection
 
   if (!hasLogin.value) return
@@ -349,6 +358,14 @@ function setActiveSection(section: string): void {
   if (nextUrl === props.tab.url) return
 
   emit('replaceActiveUrl', nextUrl)
+}
+
+function onMetaItemClick(item: AccountHeaderMetaItem): void {
+  if (!item.section) return
+  setActiveSection(item.section)
+  if (item.section === 'followers') {
+    followersInitialTab.value = item.followTab ?? 'followers'
+  }
 }
 
 function retry(): void {
@@ -563,6 +580,14 @@ function normalizeExternalUrl(value: string | null): string | null {
               >
                 {{ item.value }}
               </a>
+              <button
+                v-else-if="item.section"
+                type="button"
+                class="min-w-0 truncate font-medium text-foreground underline-offset-4 hover:underline focus-visible:underline"
+                @click="onMetaItemClick(item)"
+              >
+                {{ item.value }}
+              </button>
               <span
                 v-else
                 class="min-w-0 truncate font-medium text-foreground"
@@ -637,6 +662,7 @@ function normalizeExternalUrl(value: string | null): string | null {
               v-else-if="activeSection === 'followers'"
               :followers-count="profile.followers"
               :following-count="profile.following"
+              :initial-tab="followersInitialTab"
               :is-organization="isOrganizationProfile"
               :login="login"
               @select-account="selectAccount"

@@ -18,18 +18,21 @@ import {
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-  Input,
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
   Label,
-  NativeSelect,
-  NativeSelectOption,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Skeleton,
   Spinner,
 } from '@oh-my-github/ui'
 import AppPagination from '@/components/navigation/app-pagination.vue'
 import TabSwitcher, { type TabSwitcherItem } from '@/components/navigation/tab-switcher.vue'
+import UserSearchInput from '@/components/github/user-search-input.vue'
 import {
   cancelOrganizationInvitation,
   inviteOrganizationMember,
@@ -326,15 +329,53 @@ function resolveErrorMessage(error: unknown): string | undefined {
         @update:active-id="activeTab = $event as PeopleTabId"
       />
 
-      <Button
-        v-if="canAdminister"
-        size="sm"
-        type="button"
-        @click="openInvite"
-      >
-        <UserPlus class="size-3.5" />
-        {{ t('account.people.actions.invite') }}
-      </Button>
+      <div class="flex min-w-0 flex-wrap items-center gap-2">
+        <template v-if="activeTab === 'members'">
+          <Select v-model="roleFilter">
+            <SelectTrigger
+              :aria-label="t('account.people.roleFilter.label')"
+              class="w-32"
+              size="sm"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                {{ t('account.people.roleFilter.all') }}
+              </SelectItem>
+              <SelectItem value="admin">
+                {{ t('account.people.role.admin') }}
+              </SelectItem>
+              <SelectItem value="member">
+                {{ t('account.people.role.member') }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <InputGroup
+            class="w-56"
+            size="sm"
+          >
+            <InputGroupAddon>
+              <Search class="size-3.5 text-muted-foreground" />
+            </InputGroupAddon>
+            <InputGroupInput
+              v-model="searchInput"
+              :placeholder="t('account.people.searchPlaceholder')"
+              type="search"
+            />
+          </InputGroup>
+        </template>
+
+        <Button
+          v-if="canAdminister"
+          size="sm"
+          type="button"
+          @click="openInvite"
+        >
+          <UserPlus class="size-3.5" />
+          {{ t('account.people.actions.invite') }}
+        </Button>
+      </div>
     </div>
 
     <div
@@ -345,37 +386,6 @@ function resolveErrorMessage(error: unknown): string | undefined {
     </div>
 
     <template v-if="activeTab === 'members'">
-      <div class="flex min-w-0 flex-wrap items-center justify-end gap-2">
-        <NativeSelect
-          v-model="roleFilter"
-          :aria-label="t('account.people.roleFilter.label')"
-          size="sm"
-        >
-          <NativeSelectOption value="all">
-            {{ t('account.people.roleFilter.all') }}
-          </NativeSelectOption>
-          <NativeSelectOption value="admin">
-            {{ t('account.people.role.admin') }}
-          </NativeSelectOption>
-          <NativeSelectOption value="member">
-            {{ t('account.people.role.member') }}
-          </NativeSelectOption>
-        </NativeSelect>
-        <InputGroup
-          class="w-full sm:max-w-xs"
-          size="sm"
-        >
-          <InputGroupAddon>
-            <Search class="size-3.5 text-muted-foreground" />
-          </InputGroupAddon>
-          <InputGroupInput
-            v-model="searchInput"
-            :placeholder="t('account.people.searchPlaceholder')"
-            type="search"
-          />
-        </InputGroup>
-      </div>
-
       <div
         v-if="isLoading && !people"
         class="grid gap-2"
@@ -502,20 +512,27 @@ function resolveErrorMessage(error: unknown): string | undefined {
                 </Button>
 
                 <template v-if="canAdminister">
-                  <NativeSelect
-                    :aria-label="t('account.people.roleSelectLabel', { login: member.login })"
+                  <Select
                     :disabled="busyLogin !== null"
                     :model-value="member.role"
-                    size="sm"
                     @update:model-value="changeRole(member, String($event))"
                   >
-                    <NativeSelectOption value="member">
-                      {{ t('account.people.role.member') }}
-                    </NativeSelectOption>
-                    <NativeSelectOption value="admin">
-                      {{ t('account.people.role.admin') }}
-                    </NativeSelectOption>
-                  </NativeSelect>
+                    <SelectTrigger
+                      :aria-label="t('account.people.roleSelectLabel', { login: member.login })"
+                      class="w-28"
+                      size="sm"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="member">
+                        {{ t('account.people.role.member') }}
+                      </SelectItem>
+                      <SelectItem value="admin">
+                        {{ t('account.people.role.admin') }}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Button
                     :aria-label="t('account.people.actions.remove', { login: member.login })"
                     :disabled="busyLogin !== null"
@@ -693,28 +710,31 @@ function resolveErrorMessage(error: unknown): string | undefined {
         <div class="grid gap-3">
           <div class="grid gap-1.5">
             <Label for="invite-identifier">{{ t('account.people.invite.identifierLabel') }}</Label>
-            <Input
-              id="invite-identifier"
+            <UserSearchInput
               v-model="inviteIdentifier"
+              input-id="invite-identifier"
               :placeholder="t('account.people.invite.identifierPlaceholder')"
-              type="text"
-              @keydown.enter.prevent="submitInvite"
             />
           </div>
           <div class="grid gap-1.5">
             <Label for="invite-role">{{ t('account.people.invite.roleLabel') }}</Label>
-            <NativeSelect
-              id="invite-role"
-              v-model="inviteRole"
-              size="sm"
-            >
-              <NativeSelectOption value="member">
-                {{ t('account.people.role.member') }}
-              </NativeSelectOption>
-              <NativeSelectOption value="admin">
-                {{ t('account.people.role.admin') }}
-              </NativeSelectOption>
-            </NativeSelect>
+            <Select v-model="inviteRole">
+              <SelectTrigger
+                id="invite-role"
+                class="w-full"
+                size="sm"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="member">
+                  {{ t('account.people.role.member') }}
+                </SelectItem>
+                <SelectItem value="admin">
+                  {{ t('account.people.role.admin') }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <DialogFooter>

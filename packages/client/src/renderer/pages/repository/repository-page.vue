@@ -155,24 +155,28 @@ const overviewInfoItems = computed<RepositoryOverviewInfoItem[]>(() => {
       icon: Star,
       label: t('repository.summary.stars'),
       value: formatNumber(starCount.value ?? currentOverview.counts.stars),
+      section: 'engagement',
     },
     {
       id: 'watchers',
       icon: Eye,
       label: t('repository.summary.watchers'),
       value: formatNumber(currentOverview.counts.watchers),
+      section: 'engagement',
     },
     {
       id: 'forks',
       icon: GitFork,
       label: t('repository.summary.forks'),
       value: formatNumber(currentOverview.counts.forks),
+      section: 'engagement',
     },
     {
       id: 'issues',
       icon: CircleDot,
       label: t('repository.summary.openIssues'),
       value: formatNumber(currentOverview.counts.openIssues),
+      section: 'issues',
     },
   ]
 
@@ -218,6 +222,7 @@ const overviewInfoItems = computed<RepositoryOverviewInfoItem[]>(() => {
       icon: GitPullRequest,
       label: t('repository.summary.openPullRequests'),
       value: formatNumber(currentOverview.counts.openPullRequests),
+      section: 'pullRequests',
     })
   }
 
@@ -227,6 +232,7 @@ const overviewInfoItems = computed<RepositoryOverviewInfoItem[]>(() => {
       icon: Tags,
       label: t('repository.summary.releases'),
       value: formatNumber(currentOverview.counts.releases),
+      section: 'releases',
     })
   }
 
@@ -236,6 +242,7 @@ const overviewInfoItems = computed<RepositoryOverviewInfoItem[]>(() => {
       icon: Package,
       label: t('repository.summary.packages'),
       value: formatNumber(currentOverview.counts.packages),
+      section: 'packages',
     })
   }
 
@@ -245,6 +252,7 @@ const overviewInfoItems = computed<RepositoryOverviewInfoItem[]>(() => {
       icon: GitBranch,
       label: t('repository.summary.branches'),
       value: formatNumber(currentOverview.counts.branches),
+      section: 'branches',
     })
   }
 
@@ -254,6 +262,7 @@ const overviewInfoItems = computed<RepositoryOverviewInfoItem[]>(() => {
       icon: Tags,
       label: t('repository.summary.tags'),
       value: formatNumber(currentOverview.counts.tags),
+      section: 'branches',
     })
   }
 
@@ -392,6 +401,15 @@ async function setSubscription(nextSubscription: GitHubRepositorySubscription): 
   }
 }
 
+function handleSettingsSubChange(sub: string): void {
+  if (!hasRepositoryIdentity.value || !isRepositorySettingsSection(activeSection.value)) return
+
+  const nextUrl = createRepositoryWorkspaceUrl(owner.value, repository.value, activeSection.value, sub)
+  if (nextUrl === props.tab.url) return
+
+  emit('replaceActiveUrl', nextUrl)
+}
+
 function handleRepositoryRenamed(newName: string): void {
   emit('replaceActiveUrl', createRepositoryWorkspaceUrl(owner.value, newName, 'settingsGeneral'))
 }
@@ -497,6 +515,7 @@ watch(
           :overview-description="overviewDescription"
           :overview-info-items="overviewInfoItems"
           :repo="repository"
+          @select-section="setActiveSection($event)"
           @view-all-contributors="setActiveSection('contributors')"
         />
 
@@ -581,8 +600,10 @@ watch(
           :category="activeSection"
           :owner="owner"
           :repo="repository"
+          :settings-sub="tab.repositorySettingsSub"
           @deleted="handleRepositoryDeleted"
           @renamed="handleRepositoryRenamed"
+          @update:settings-sub="handleSettingsSubChange"
         />
 
         <Empty

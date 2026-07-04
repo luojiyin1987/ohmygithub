@@ -7,12 +7,6 @@ export interface RepositorySettingsLink {
 }
 
 export const repositorySettingsLinks: Partial<Record<RepositorySettingsSectionId, readonly RepositorySettingsLink[]>> = {
-  settingsAccess: [
-    { id: 'collaborators', labelKey: 'repository.settings.links.collaborators', path: '/access' },
-    { id: 'interactionLimits', labelKey: 'repository.settings.links.interactionLimits', path: '/interaction_limits' },
-    { id: 'reviewLimits', labelKey: 'repository.settings.links.reviewLimits', path: '/review_limits' },
-    { id: 'reportedContent', labelKey: 'repository.settings.links.reportedContent', path: '/reported_content' },
-  ],
   settingsAutomation: [
     { id: 'branches', labelKey: 'repository.settings.links.branches', path: '/branches' },
     { id: 'rules', labelKey: 'repository.settings.links.rules', path: '/rules' },

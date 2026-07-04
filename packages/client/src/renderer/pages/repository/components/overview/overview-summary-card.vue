@@ -4,7 +4,7 @@ import { AlertTriangle, ExternalLink, Globe } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { Skeleton } from '@oh-my-github/ui'
 import { useRepositoryContributorsQuery } from '@/composables/github/use-repositories'
-import type { RepositoryOverviewInfoItem } from '@/pages/repository/components/types'
+import type { RepositoryOverviewInfoItem, RepositorySectionId } from '@/pages/repository/components/types'
 import OverviewContributors from './overview-contributors.vue'
 import OverviewInfoGrid from './overview-info-grid.vue'
 import OverviewLanguages from './overview-languages.vue'
@@ -23,6 +23,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   viewAllContributors: []
+  selectSection: [section: RepositorySectionId]
 }>()
 
 const { t } = useI18n()
@@ -149,7 +150,10 @@ const showContributors = computed(() => isContributorsLoading.value || contribut
 
         <div class="h-px bg-border" />
 
-        <OverviewInfoGrid :items="overviewInfoItems" />
+        <OverviewInfoGrid
+          :items="overviewInfoItems"
+          @select-section="emit('selectSection', $event)"
+        />
 
         <template v-if="showLanguages || showContributors">
           <div class="h-px bg-border" />
