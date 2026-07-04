@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CommitActionRun } from '@/composables/github/use-actions'
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Button,
@@ -27,7 +27,11 @@ const emit = defineEmits<{
   navigate: [url: string]
 }>()
 
+const LIVE_POLL_INTERVAL_MS = 5000
+
 const { t, te } = useI18n()
+
+let pollingTimer: ReturnType<typeof setInterval> | null = null
 
 const hasIdentity = computed(() => Boolean(props.owner && props.repo && props.sha))
 const runsQuery = useCommitActionRunsQuery(
@@ -37,6 +41,17 @@ const runsQuery = useCommitActionRunsQuery(
   () => props.open && hasIdentity.value,
 )
 const items = computed(() => runsQuery.data.value ?? [])
+const hasLiveRuns = computed(() => items.value.some((item) => item.run.status !== 'completed'))
+
+watch(
+  () => [props.open, hasIdentity.value, hasLiveRuns.value, props.owner, props.repo, props.sha] as const,
+  restartPolling,
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  stopPolling()
+})
 const showLoading = computed(() => runsQuery.isLoading.value && items.value.length === 0)
 const showEmpty = computed(() =>
   hasIdentity.value
@@ -47,6 +62,23 @@ const showEmpty = computed(() =>
 
 function refetch(): void {
   void runsQuery.refetch()
+}
+
+function restartPolling(): void {
+  stopPolling()
+
+  if (!props.open || !hasIdentity.value || !hasLiveRuns.value) return
+
+  pollingTimer = setInterval(() => {
+    void runsQuery.refetch()
+  }, LIVE_POLL_INTERVAL_MS)
+}
+
+function stopPolling(): void {
+  if (!pollingTimer) return
+
+  clearInterval(pollingTimer)
+  pollingTimer = null
 }
 
 function openJob(run: GitHubActionRun, job: GitHubActionJob): void {

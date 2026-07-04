@@ -5,7 +5,7 @@ import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { Badge, Button, Empty, EmptyDescription, EmptyHeader, EmptyTitle, ScrollArea, Skeleton } from '@oh-my-github/ui'
-import { Inbox as InboxIcon } from 'lucide-vue-next'
+import { Inbox as InboxIcon, Mail, Mails } from 'lucide-vue-next'
 import {
   markAllNotificationsRead,
   markNotificationDone,
@@ -32,6 +32,12 @@ const { error: toastError } = useToast()
 
 const showAll = ref(false)
 const reasonFilter = ref<ReasonFilterKey | null>(null)
+
+const activeView = computed(() => (showAll.value ? 'all' : 'unread'))
+const viewTabs = computed(() => [
+  { id: 'unread' as const, icon: Mail, label: t('workspace.inbox.filters.unread') },
+  { id: 'all' as const, icon: Mails, label: t('workspace.inbox.filters.all') },
+])
 
 const readIds = reactive(new Set<string>())
 const removedIds = reactive(new Set<string>())
@@ -140,31 +146,29 @@ async function markAllRead(): Promise<void> {
           >
             {{ t('workspace.inbox.actions.markAllRead') }}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            @click="refresh"
-          >
-            {{ t('workspace.inbox.actions.refresh') }}
-          </Button>
         </div>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <Button
-          :variant="showAll ? 'ghost' : 'secondary'"
-          size="sm"
-          @click="setShowAll(false)"
-        >
-          {{ t('workspace.inbox.filters.unread') }}
-        </Button>
-        <Button
-          :variant="showAll ? 'secondary' : 'ghost'"
-          size="sm"
-          @click="setShowAll(true)"
-        >
-          {{ t('workspace.inbox.filters.all') }}
-        </Button>
+        <nav class="flex min-w-0 flex-wrap items-center gap-1">
+          <button
+            v-for="tab in viewTabs"
+            :key="tab.id"
+            type="button"
+            class="inline-flex h-8 select-none items-center gap-1.5 border-b px-2 text-body font-medium outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring/30"
+            :class="activeView === tab.id
+              ? 'border-foreground text-foreground'
+              : 'border-transparent text-muted-foreground hover:text-foreground'"
+            :aria-current="activeView === tab.id ? 'page' : undefined"
+            @click="setShowAll(tab.id === 'all')"
+          >
+            <component
+              :is="tab.icon"
+              class="size-3.5"
+            />
+            <span>{{ tab.label }}</span>
+          </button>
+        </nav>
 
         <span class="mx-1 h-4 w-px bg-border" />
 

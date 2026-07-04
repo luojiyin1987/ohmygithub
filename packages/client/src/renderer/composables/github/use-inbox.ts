@@ -13,6 +13,13 @@ function requireInboxBridge() {
 export function useInboxNotificationsQuery(all: MaybeRefOrGetter<boolean>) {
   return useQuery<GitHubNotification[]>({
     key: () => ['github', 'notifications', toValue(all)],
+    // Smart refresh: keep the inbox fresh automatically instead of via a manual
+    // button — refetch when the tab mounts, the window regains focus, or the
+    // network reconnects, but only once the cached data is older than staleTime.
+    staleTime: 1000 * 30,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
     query: async () => requireInboxBridge().listNotifications({ all: toValue(all) }),
   })
 }

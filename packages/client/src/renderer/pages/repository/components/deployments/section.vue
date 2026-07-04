@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import {
@@ -18,12 +18,14 @@ const props = defineProps<{
 
 const ALL_ENVIRONMENTS_VALUE = 'all'
 const PER_PAGE = 20
+const LIVE_POLL_INTERVAL_MS = 5000
 
 const router = useRouter()
 const { t } = useI18n()
 
 const environmentValue = ref(ALL_ENVIRONMENTS_VALUE)
 const page = ref(1)
+let pollingTimer: ReturnType<typeof setInterval> | null = null
 
 const hasRepositoryIdentity = computed(() => Boolean(props.owner && props.repo))
 const selectedEnvironment = computed(() =>
@@ -56,6 +58,7 @@ const syntheticTotalCount = computed(() =>
   (page.value - 1) * PER_PAGE + runs.value.length + (hasNextPage.value ? PER_PAGE : 0)
 )
 const selectDisabled = computed(() => !hasRepositoryIdentity.value || isEnvironmentsLoading.value)
+const hasLiveRuns = computed(() => runs.value.some((run) => run.status !== 'completed'))
 
 watch(
   () => [props.owner, props.repo, environmentValue.value] as const,
@@ -63,6 +66,16 @@ watch(
     page.value = 1
   },
 )
+
+watch(
+  () => [props.isActive, hasLiveRuns.value, props.owner, props.repo, environmentValue.value, page.value] as const,
+  restartPolling,
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  stopPolling()
+})
 
 function openRun(run: GitHubActionRun): void {
   if (!props.owner || !props.repo) return
@@ -72,6 +85,23 @@ function openRun(run: GitHubActionRun): void {
 
 function refetchDeploymentRuns(): void {
   void deploymentRunsQuery.refetch()
+}
+
+function restartPolling(): void {
+  stopPolling()
+
+  if (!props.isActive || !hasLiveRuns.value || !hasRepositoryIdentity.value) return
+
+  pollingTimer = setInterval(() => {
+    void deploymentRunsQuery.refetch()
+  }, LIVE_POLL_INTERVAL_MS)
+}
+
+function stopPolling(): void {
+  if (!pollingTimer) return
+
+  clearInterval(pollingTimer)
+  pollingTimer = null
 }
 </script>
 
