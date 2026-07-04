@@ -482,6 +482,27 @@ export function registerRepositorySettingsIpc(): void {
         name: String(name ?? '').trim(),
       })
   )
+  ipcMain.handle('repository-settings:integrations-autolinks', async (_event, owner: string, repo: string) =>
+    (await createAuthenticatedGitHubApi()).repositorySettingsIntegrations.listAutolinks(normalizeRepository(owner, repo))
+  )
+  ipcMain.handle(
+    'repository-settings:integrations-create-autolink',
+    async (_event, owner: string, repo: string, keyPrefix: string, urlTemplate: string, isAlphanumeric: boolean) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsIntegrations.createAutolink({
+        ...normalizeRepository(owner, repo),
+        keyPrefix: String(keyPrefix ?? '').trim(),
+        urlTemplate: String(urlTemplate ?? '').trim(),
+        isAlphanumeric: Boolean(isAlphanumeric),
+      })
+  )
+  ipcMain.handle(
+    'repository-settings:integrations-delete-autolink',
+    async (_event, owner: string, repo: string, autolinkId: number) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsIntegrations.deleteAutolink({
+        ...normalizeRepository(owner, repo),
+        autolinkId: Number(autolinkId),
+      })
+  )
 }
 
 async function createAuthenticatedGitHubApi() {

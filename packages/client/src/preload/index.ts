@@ -349,6 +349,14 @@ const api = {
         ipcRenderer.invoke('repository-settings:security-update-variable', owner, repo, name, value),
       deleteVariable: (owner: string, repo: string, name: string) =>
         ipcRenderer.invoke('repository-settings:security-delete-variable', owner, repo, name)
+    },
+    integrations: {
+      listAutolinks: (owner: string, repo: string) =>
+        ipcRenderer.invoke('repository-settings:integrations-autolinks', owner, repo),
+      createAutolink: (owner: string, repo: string, keyPrefix: string, urlTemplate: string, isAlphanumeric: boolean) =>
+        ipcRenderer.invoke('repository-settings:integrations-create-autolink', owner, repo, keyPrefix, urlTemplate, isAlphanumeric),
+      deleteAutolink: (owner: string, repo: string, autolinkId: number) =>
+        ipcRenderer.invoke('repository-settings:integrations-delete-autolink', owner, repo, autolinkId)
     }
   },
   search: {

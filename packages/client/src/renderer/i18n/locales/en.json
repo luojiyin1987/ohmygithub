@@ -1621,7 +1621,6 @@
       "placeholder": "Not connected"
     },
     "settings": {
-      "externalHint": "These settings aren't available in-app yet. Each entry opens the matching GitHub settings page in your browser.",
       "links": {
         "general": "General",
         "collaborators": "Collaborators and teams",
@@ -2014,6 +2013,18 @@
           "removeVariable": "Delete variable",
           "variablesEmpty": "No variables."
         }
+      },
+      "integrations": {
+        "navigation": "Integrations settings",
+        "error": "The change failed.",
+        "hint": "Autolink references turn shorthand like TICKET-123 into links in issues, pull requests, and commits.",
+        "prefixPlaceholder": "TICKET-",
+        "templatePlaceholder": "https://example.com/TICKET?query=<num>",
+        "templateInvalid": "The URL template must contain <num>.",
+        "alphanumeric": "Alphanumeric identifiers",
+        "add": "Add autolink",
+        "remove": "Delete autolink",
+        "empty": "No autolink references."
       }
     }
   },

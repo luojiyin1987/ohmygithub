@@ -816,6 +816,13 @@ type GitHubRepositoryVariable = {
   value: string
 }
 
+type GitHubRepositoryAutolink = {
+  id: number
+  keyPrefix: string
+  urlTemplate: string
+  isAlphanumeric: boolean
+}
+
 type GitHubContributorStatsAuthor = {
   id: number
   login: string
@@ -2502,6 +2509,17 @@ interface Window {
         createVariable: (owner: string, repo: string, name: string, value: string) => Promise<void>
         updateVariable: (owner: string, repo: string, name: string, value: string) => Promise<void>
         deleteVariable: (owner: string, repo: string, name: string) => Promise<void>
+      }
+      integrations: {
+        listAutolinks: (owner: string, repo: string) => Promise<GitHubRepositoryAutolink[]>
+        createAutolink: (
+          owner: string,
+          repo: string,
+          keyPrefix: string,
+          urlTemplate: string,
+          isAlphanumeric: boolean
+        ) => Promise<void>
+        deleteAutolink: (owner: string, repo: string, autolinkId: number) => Promise<void>
       }
     }
     search: {

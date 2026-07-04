@@ -1621,7 +1621,6 @@
       "placeholder": "未接入"
     },
     "settings": {
-      "externalHint": "以下设置暂未内置,点击条目将在浏览器中打开 GitHub 对应设置页。",
       "links": {
         "general": "常规",
         "collaborators": "协作者与团队",
@@ -2014,6 +2013,18 @@
           "removeVariable": "删除变量",
           "variablesEmpty": "没有变量。"
         }
+      },
+      "integrations": {
+        "navigation": "集成设置",
+        "error": "变更失败。",
+        "hint": "自动链接引用会把 TICKET-123 这类缩写在 Issue、拉取请求与提交中渲染成链接。",
+        "prefixPlaceholder": "TICKET-",
+        "templatePlaceholder": "https://example.com/TICKET?query=<num>",
+        "templateInvalid": "URL 模板必须包含 <num>。",
+        "alphanumeric": "允许字母数字标识",
+        "add": "添加自动链接",
+        "remove": "删除自动链接",
+        "empty": "没有自动链接引用。"
       }
     }
   },

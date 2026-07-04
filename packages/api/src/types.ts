@@ -644,6 +644,13 @@ export interface GitHubRepositoryVariable {
   value: string
 }
 
+export interface GitHubRepositoryAutolink {
+  id: number
+  keyPrefix: string
+  urlTemplate: string
+  isAlphanumeric: boolean
+}
+
 export interface GitHubRepositoryContributorSummary {
   id: number
   login: string

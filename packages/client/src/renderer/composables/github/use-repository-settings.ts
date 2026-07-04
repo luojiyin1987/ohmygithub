@@ -202,6 +202,27 @@ export function useRepositoryVariablesQuery(
   })
 }
 
+function integrationsBridge() {
+  const bridge = window.ohMyGithub?.repositorySettings?.integrations
+  if (!bridge) throw new Error('GitHub repository settings bridge is unavailable')
+  return bridge
+}
+
+export function useAutolinksQuery(
+  owner: MaybeRefOrGetter<string>,
+  repo: MaybeRefOrGetter<string>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubRepositoryAutolink[]>({
+    key: () => ['github', 'repository', 'settings', 'integrations', 'autolinks', toValue(owner), toValue(repo)],
+    enabled: () => Boolean(toValue(owner)) && Boolean(toValue(repo)) && toValue(enabled),
+    staleTime: 1000 * 30,
+    gcTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+    query: async () => integrationsBridge().listAutolinks(toValue(owner), toValue(repo)),
+  })
+}
+
 export function useRepositorySettingsInvalidation() {
   const queryCache = useQueryCache()
 
@@ -234,6 +255,11 @@ export function useRepositorySettingsInvalidation() {
     invalidateSecrets(scope: GitHubRepositorySecretScope, owner: string, repo: string): void {
       void queryCache.invalidateQueries({
         key: ['github', 'repository', 'settings', 'security', 'secrets', scope, owner, repo],
+      })
+    },
+    invalidateAutolinks(owner: string, repo: string): void {
+      void queryCache.invalidateQueries({
+        key: ['github', 'repository', 'settings', 'integrations', 'autolinks', owner, repo],
       })
     },
     invalidateRepositoryOverview(owner: string, repo: string): void {
@@ -561,4 +587,18 @@ export function updateRepositoryVariable(owner: string, repo: string, name: stri
 
 export function deleteRepositoryVariable(owner: string, repo: string, name: string): Promise<void> {
   return securityBridge().deleteVariable(owner, repo, name)
+}
+
+export function createAutolink(
+  owner: string,
+  repo: string,
+  keyPrefix: string,
+  urlTemplate: string,
+  isAlphanumeric: boolean,
+): Promise<void> {
+  return integrationsBridge().createAutolink(owner, repo, keyPrefix, urlTemplate, isAlphanumeric)
+}
+
+export function deleteAutolink(owner: string, repo: string, autolinkId: number): Promise<void> {
+  return integrationsBridge().deleteAutolink(owner, repo, autolinkId)
 }
