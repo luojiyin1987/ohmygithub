@@ -317,6 +317,38 @@ const api = {
         ipcRenderer.invoke('repository-settings:automation-custom-properties', owner, repo),
       updateCustomProperties: (owner: string, repo: string, values: unknown[]) =>
         ipcRenderer.invoke('repository-settings:automation-update-custom-properties', owner, repo, values)
+    },
+    security: {
+      getOverview: (owner: string, repo: string) =>
+        ipcRenderer.invoke('repository-settings:security-overview', owner, repo),
+      updateAnalysis: (owner: string, repo: string, input: unknown) =>
+        ipcRenderer.invoke('repository-settings:security-update-analysis', owner, repo, input),
+      setVulnerabilityAlerts: (owner: string, repo: string, enabled: boolean) =>
+        ipcRenderer.invoke('repository-settings:security-set-vulnerability-alerts', owner, repo, enabled),
+      setAutomatedSecurityFixes: (owner: string, repo: string, enabled: boolean) =>
+        ipcRenderer.invoke('repository-settings:security-set-automated-fixes', owner, repo, enabled),
+      setPrivateVulnerabilityReporting: (owner: string, repo: string, enabled: boolean) =>
+        ipcRenderer.invoke('repository-settings:security-set-private-reporting', owner, repo, enabled),
+      listDeployKeys: (owner: string, repo: string) =>
+        ipcRenderer.invoke('repository-settings:security-deploy-keys', owner, repo),
+      addDeployKey: (owner: string, repo: string, title: string, key: string, readOnly: boolean) =>
+        ipcRenderer.invoke('repository-settings:security-add-deploy-key', owner, repo, title, key, readOnly),
+      deleteDeployKey: (owner: string, repo: string, keyId: number) =>
+        ipcRenderer.invoke('repository-settings:security-delete-deploy-key', owner, repo, keyId),
+      listSecrets: (owner: string, repo: string, scope: string) =>
+        ipcRenderer.invoke('repository-settings:security-secrets', owner, repo, scope),
+      upsertSecret: (owner: string, repo: string, scope: string, name: string, value: string) =>
+        ipcRenderer.invoke('repository-settings:security-upsert-secret', owner, repo, scope, name, value),
+      deleteSecret: (owner: string, repo: string, scope: string, name: string) =>
+        ipcRenderer.invoke('repository-settings:security-delete-secret', owner, repo, scope, name),
+      listVariables: (owner: string, repo: string) =>
+        ipcRenderer.invoke('repository-settings:security-variables', owner, repo),
+      createVariable: (owner: string, repo: string, name: string, value: string) =>
+        ipcRenderer.invoke('repository-settings:security-create-variable', owner, repo, name, value),
+      updateVariable: (owner: string, repo: string, name: string, value: string) =>
+        ipcRenderer.invoke('repository-settings:security-update-variable', owner, repo, name, value),
+      deleteVariable: (owner: string, repo: string, name: string) =>
+        ipcRenderer.invoke('repository-settings:security-delete-variable', owner, repo, name)
     }
   },
   search: {

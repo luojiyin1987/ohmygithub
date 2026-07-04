@@ -4,8 +4,10 @@ import {
   type GitHubInteractionLimitGroup,
   type GitHubRepositoryCollaboratorRole,
   type GitHubRepositoryCustomPropertyValue,
+  type GitHubRepositorySecretScope,
   type GitHubRulesetEnforcement,
   type UpdateRepositoryGeneralSettingsInput,
+  type UpdateSecurityAndAnalysisInput,
   type UpsertEnvironmentInput,
   type UpsertRepositoryWebhookInput,
 } from '@oh-my-github/api'
@@ -366,6 +368,118 @@ export function registerRepositorySettingsIpc(): void {
       (await createAuthenticatedGitHubApi()).repositorySettingsAutomation.updateCustomPropertyValues({
         ...normalizeRepository(owner, repo),
         values: Array.isArray(values) ? values : [],
+      })
+  )
+  ipcMain.handle('repository-settings:security-overview', async (_event, owner: string, repo: string) =>
+    (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.getSecurityOverview(normalizeRepository(owner, repo))
+  )
+  ipcMain.handle(
+    'repository-settings:security-update-analysis',
+    async (_event, owner: string, repo: string, input: UpdateSecurityAndAnalysisInput) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.updateSecurityAndAnalysis({
+        ...normalizeRepository(owner, repo),
+        input,
+      })
+  )
+  ipcMain.handle(
+    'repository-settings:security-set-vulnerability-alerts',
+    async (_event, owner: string, repo: string, enabled: boolean) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.setVulnerabilityAlerts({
+        ...normalizeRepository(owner, repo),
+        enabled: Boolean(enabled),
+      })
+  )
+  ipcMain.handle(
+    'repository-settings:security-set-automated-fixes',
+    async (_event, owner: string, repo: string, enabled: boolean) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.setAutomatedSecurityFixes({
+        ...normalizeRepository(owner, repo),
+        enabled: Boolean(enabled),
+      })
+  )
+  ipcMain.handle(
+    'repository-settings:security-set-private-reporting',
+    async (_event, owner: string, repo: string, enabled: boolean) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.setPrivateVulnerabilityReporting({
+        ...normalizeRepository(owner, repo),
+        enabled: Boolean(enabled),
+      })
+  )
+  ipcMain.handle('repository-settings:security-deploy-keys', async (_event, owner: string, repo: string) =>
+    (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.listDeployKeys(normalizeRepository(owner, repo))
+  )
+  ipcMain.handle(
+    'repository-settings:security-add-deploy-key',
+    async (_event, owner: string, repo: string, title: string, key: string, readOnly: boolean) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.addDeployKey({
+        ...normalizeRepository(owner, repo),
+        title: String(title ?? '').trim(),
+        key: String(key ?? '').trim(),
+        readOnly: Boolean(readOnly),
+      })
+  )
+  ipcMain.handle(
+    'repository-settings:security-delete-deploy-key',
+    async (_event, owner: string, repo: string, keyId: number) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.deleteDeployKey({
+        ...normalizeRepository(owner, repo),
+        keyId: Number(keyId),
+      })
+  )
+  ipcMain.handle(
+    'repository-settings:security-secrets',
+    async (_event, owner: string, repo: string, scope: GitHubRepositorySecretScope) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.listSecrets({
+        ...normalizeRepository(owner, repo),
+        scope,
+      })
+  )
+  ipcMain.handle(
+    'repository-settings:security-upsert-secret',
+    async (_event, owner: string, repo: string, scope: GitHubRepositorySecretScope, name: string, value: string) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.upsertSecret({
+        ...normalizeRepository(owner, repo),
+        scope,
+        name: String(name ?? '').trim(),
+        value: String(value ?? ''),
+      })
+  )
+  ipcMain.handle(
+    'repository-settings:security-delete-secret',
+    async (_event, owner: string, repo: string, scope: GitHubRepositorySecretScope, name: string) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.deleteSecret({
+        ...normalizeRepository(owner, repo),
+        scope,
+        name: String(name ?? '').trim(),
+      })
+  )
+  ipcMain.handle('repository-settings:security-variables', async (_event, owner: string, repo: string) =>
+    (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.listVariables(normalizeRepository(owner, repo))
+  )
+  ipcMain.handle(
+    'repository-settings:security-create-variable',
+    async (_event, owner: string, repo: string, name: string, value: string) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.createVariable({
+        ...normalizeRepository(owner, repo),
+        name: String(name ?? '').trim(),
+        value: String(value ?? ''),
+      })
+  )
+  ipcMain.handle(
+    'repository-settings:security-update-variable',
+    async (_event, owner: string, repo: string, name: string, value: string) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.updateVariable({
+        ...normalizeRepository(owner, repo),
+        name: String(name ?? '').trim(),
+        value: String(value ?? ''),
+      })
+  )
+  ipcMain.handle(
+    'repository-settings:security-delete-variable',
+    async (_event, owner: string, repo: string, name: string) =>
+      (await createAuthenticatedGitHubApi()).repositorySettingsSecurity.deleteVariable({
+        ...normalizeRepository(owner, repo),
+        name: String(name ?? '').trim(),
       })
   )
 }

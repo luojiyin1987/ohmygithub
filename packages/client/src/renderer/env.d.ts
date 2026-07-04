@@ -779,6 +779,43 @@ type UpdateRepositoryPagesInput = {
   sourcePath?: '/' | '/docs'
 }
 
+type GitHubSecurityFeatureStatus = 'enabled' | 'disabled' | 'unavailable'
+
+type GitHubRepositorySecurityOverview = {
+  advancedSecurity: GitHubSecurityFeatureStatus
+  secretScanning: GitHubSecurityFeatureStatus
+  secretScanningPushProtection: GitHubSecurityFeatureStatus
+  vulnerabilityAlerts: boolean | null
+  automatedSecurityFixes: boolean | null
+  privateVulnerabilityReporting: boolean | null
+}
+
+type UpdateSecurityAndAnalysisInput = {
+  advancedSecurity?: 'enabled' | 'disabled'
+  secretScanning?: 'enabled' | 'disabled'
+  secretScanningPushProtection?: 'enabled' | 'disabled'
+}
+
+type GitHubDeployKey = {
+  id: number
+  title: string
+  key: string
+  readOnly: boolean
+  createdAt: string | null
+}
+
+type GitHubRepositorySecretScope = 'actions' | 'codespaces' | 'dependabot'
+
+type GitHubRepositorySecret = {
+  name: string
+  updatedAt: string | null
+}
+
+type GitHubRepositoryVariable = {
+  name: string
+  value: string
+}
+
 type GitHubContributorStatsAuthor = {
   id: number
   login: string
@@ -2427,6 +2464,44 @@ interface Window {
           repo: string,
           values: GitHubRepositoryCustomPropertyValue[]
         ) => Promise<void>
+      }
+      security: {
+        getOverview: (owner: string, repo: string) => Promise<GitHubRepositorySecurityOverview>
+        updateAnalysis: (owner: string, repo: string, input: UpdateSecurityAndAnalysisInput) => Promise<void>
+        setVulnerabilityAlerts: (owner: string, repo: string, enabled: boolean) => Promise<void>
+        setAutomatedSecurityFixes: (owner: string, repo: string, enabled: boolean) => Promise<void>
+        setPrivateVulnerabilityReporting: (owner: string, repo: string, enabled: boolean) => Promise<void>
+        listDeployKeys: (owner: string, repo: string) => Promise<GitHubDeployKey[]>
+        addDeployKey: (
+          owner: string,
+          repo: string,
+          title: string,
+          key: string,
+          readOnly: boolean
+        ) => Promise<void>
+        deleteDeployKey: (owner: string, repo: string, keyId: number) => Promise<void>
+        listSecrets: (
+          owner: string,
+          repo: string,
+          scope: GitHubRepositorySecretScope
+        ) => Promise<GitHubRepositorySecret[]>
+        upsertSecret: (
+          owner: string,
+          repo: string,
+          scope: GitHubRepositorySecretScope,
+          name: string,
+          value: string
+        ) => Promise<void>
+        deleteSecret: (
+          owner: string,
+          repo: string,
+          scope: GitHubRepositorySecretScope,
+          name: string
+        ) => Promise<void>
+        listVariables: (owner: string, repo: string) => Promise<GitHubRepositoryVariable[]>
+        createVariable: (owner: string, repo: string, name: string, value: string) => Promise<void>
+        updateVariable: (owner: string, repo: string, name: string, value: string) => Promise<void>
+        deleteVariable: (owner: string, repo: string, name: string) => Promise<void>
       }
     }
     search: {
