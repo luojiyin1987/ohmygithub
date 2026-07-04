@@ -1,5 +1,6 @@
 import { AccountsApi } from './modules/accounts'
 import { ActionsApi } from './modules/actions'
+import { ActivityApi } from './modules/activity'
 import { AuthApi } from './modules/auth'
 import { DeploymentsApi } from './modules/deployments'
 import { InboxApi } from './modules/inbox'
@@ -64,6 +65,7 @@ export interface GitHubApi extends GitHubClient {
   readonly octokit: GitHubOctokit
   readonly accounts: AccountsApi
   readonly actions: ActionsApi
+  readonly activity: ActivityApi
   readonly auth: AuthApi
   readonly deployments: DeploymentsApi
   readonly inbox: InboxApi
@@ -81,6 +83,7 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
   const octokit = createOctokit(options)
   const accounts = new AccountsApi(octokit)
   const actions = new ActionsApi(octokit)
+  const activity = new ActivityApi(octokit)
   const auth = new AuthApi({ octokit, proxyUrl: options.proxyUrl })
   const deployments = new DeploymentsApi(octokit)
   const inbox = new InboxApi(octokit)
@@ -97,6 +100,7 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
     octokit,
     accounts,
     actions,
+    activity,
     auth,
     deployments,
     inbox,
