@@ -11,6 +11,8 @@ import {
 import type {
   GitHubAccountFollowList,
   GitHubCiState,
+  GitHubRepositoryForkItem,
+  GitHubRepositoryForkList,
   GitHubCommitDetail,
   GitHubContributorStatsWeek,
   GitHubRepositoryContributorStats,
@@ -251,6 +253,19 @@ interface GraphTagListResponse {
 interface GitRefResponse {
   ref?: string
   object?: { sha?: string } | null
+}
+
+interface ForkRepositoryResponse {
+  id?: number
+  name?: string
+  full_name?: string
+  description?: string | null
+  stargazers_count?: number
+  pushed_at?: string | null
+  owner?: {
+    login?: string
+    avatar_url?: string | null
+  } | null
 }
 
 interface RepositoryGraphCounts {
@@ -819,6 +834,25 @@ export class RepositoriesApi {
 
   async listWatchers(options: RepositoryOptions): Promise<GitHubAccountFollowList> {
     return this.listEngagementUsers('GET /repos/{owner}/{repo}/subscribers', options)
+  }
+
+  async listForks(options: RepositoryOptions): Promise<GitHubRepositoryForkList> {
+    const window = await fetchListWindow<ForkRepositoryResponse>(async (page, perPage) => {
+      const response = await this.octokit.request('GET /repos/{owner}/{repo}/forks', {
+        owner: options.owner,
+        repo: options.repo,
+        sort: 'newest',
+        page,
+        per_page: perPage,
+      })
+      return { items: response.data as ForkRepositoryResponse[], link: String(response.headers.link ?? '') }
+    }, { order: 'descending' })
+
+    return {
+      items: window.items.flatMap(mapForkItem),
+      totalCount: window.totalCount,
+      truncated: window.truncated,
+    }
   }
 
   // Stargazers and subscribers are plain ascending REST user lists; window the
@@ -1471,6 +1505,23 @@ function sortRepositoryFileNodes(nodes: GitHubRepositoryFileNode[]): GitHubRepos
       if (a.type !== b.type) return a.type === 'tree' ? -1 : 1
       return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
     })
+}
+
+function mapForkItem(fork: ForkRepositoryResponse): GitHubRepositoryForkItem[] {
+  const owner = fork.owner?.login?.trim()
+  const name = fork.name?.trim()
+  if (!owner || !name) return []
+
+  return [{
+    id: fork.id ?? 0,
+    owner,
+    ownerAvatarUrl: fork.owner?.avatar_url ?? `https://github.com/${encodeURIComponent(owner)}.png?size=96`,
+    name,
+    fullName: fork.full_name ?? `${owner}/${name}`,
+    description: fork.description ?? null,
+    stars: fork.stargazers_count ?? 0,
+    pushedAt: fork.pushed_at ?? null,
+  }]
 }
 
 function mapRepositoryFilePreview(

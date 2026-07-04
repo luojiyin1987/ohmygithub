@@ -330,6 +330,23 @@ export interface GitHubRepositoryCustomProperty {
   value: string
 }
 
+export interface GitHubRepositoryForkItem {
+  id: number
+  owner: string
+  ownerAvatarUrl: string
+  name: string
+  fullName: string
+  description: string | null
+  stars: number
+  pushedAt: string | null
+}
+
+export interface GitHubRepositoryForkList {
+  items: GitHubRepositoryForkItem[]
+  totalCount: number
+  truncated: boolean
+}
+
 export interface GitHubRepositoryOverviewCounts {
   commits: number | null
   stars: number

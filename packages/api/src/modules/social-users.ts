@@ -37,6 +37,12 @@ export interface ListWindowResult<T> {
 export interface ListWindowOptions {
   perPage?: number
   maxPages?: number
+  /**
+   * Order the REST endpoint returns rows in. 'ascending' (oldest-first, e.g.
+   * followers/stargazers) keeps the newest tail and reverses it; 'descending'
+   * (newest-first, e.g. forks?sort=newest) keeps the head as-is.
+   */
+  order?: 'ascending' | 'descending'
 }
 
 export function parseLastPage(link: string): number {
@@ -56,15 +62,23 @@ export async function fetchListWindow<T>(
   const first = await fetchPage(1, perPage)
   const lastPage = parseLastPage(first.link)
   const truncated = lastPage > maxPages
-  // When truncated, keep the newest maxPages pages (the tail).
-  const windowStart = truncated ? lastPage - maxPages + 1 : 2
-  const extraPageNumbers: number[] = []
-  for (let pageNumber = windowStart; pageNumber <= lastPage; pageNumber += 1) {
-    extraPageNumbers.push(pageNumber)
+
+  if (options.order === 'descending') {
+    const windowEnd = Math.min(lastPage, maxPages)
+    const extraPages = await fetchPageRange(fetchPage, 2, windowEnd, perPage)
+    const lastPageItems = extraPages.length > 0 ? extraPages[extraPages.length - 1] : first.items
+
+    return {
+      items: [...first.items, ...extraPages.flat()],
+      // When truncated the true last page is never fetched; the count is a floor.
+      totalCount: truncated ? (lastPage - 1) * perPage : (lastPage - 1) * perPage + lastPageItems.length,
+      truncated,
+    }
   }
-  const extraPages = await Promise.all(
-    extraPageNumbers.map(async (pageNumber) => (await fetchPage(pageNumber, perPage)).items),
-  )
+
+  // When truncated, keep the newest maxPages pages (the tail) and reverse.
+  const windowStart = truncated ? lastPage - maxPages + 1 : 2
+  const extraPages = await fetchPageRange(fetchPage, windowStart, lastPage, perPage)
   const ascending = truncated ? extraPages.flat() : [...first.items, ...extraPages.flat()]
   const lastPageItems = extraPages.length > 0 ? extraPages[extraPages.length - 1] : first.items
 
@@ -73,6 +87,20 @@ export async function fetchListWindow<T>(
     totalCount: (lastPage - 1) * perPage + lastPageItems.length,
     truncated,
   }
+}
+
+async function fetchPageRange<T>(
+  fetchPage: (page: number, perPage: number) => Promise<ListWindowPage<T>>,
+  start: number,
+  end: number,
+  perPage: number,
+): Promise<T[][]> {
+  const pageNumbers: number[] = []
+  for (let pageNumber = start; pageNumber <= end; pageNumber += 1) {
+    pageNumbers.push(pageNumber)
+  }
+
+  return Promise.all(pageNumbers.map(async (pageNumber) => (await fetchPage(pageNumber, perPage)).items))
 }
 
 // One aliased repositoryOwner lookup per row adds name/bio and the viewer's
