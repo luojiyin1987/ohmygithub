@@ -277,6 +277,18 @@ export interface GitHubForkedRepository {
   ready: boolean
 }
 
+export interface GitHubCreatedRepository {
+  owner: string
+  name: string
+  nameWithOwner: string
+  url: string
+}
+
+export interface GitHubLicenseTemplate {
+  key: string
+  name: string
+}
+
 export type GitHubRepositoryVisibility = 'public' | 'private' | 'internal'
 
 export type GitHubRepositoryDocumentKind =
@@ -1387,6 +1399,9 @@ export interface GitHubClient {
   setRepositoryStarred(options: SetRepositoryStarredOptions): Promise<void>
   setRepositorySubscription(options: SetRepositorySubscriptionOptions): Promise<void>
   forkRepository(options: ForkRepositoryOptions): Promise<GitHubForkedRepository>
+  createRepository(options: CreateRepositoryOptions): Promise<GitHubCreatedRepository>
+  listGitignoreTemplates(): Promise<string[]>
+  listLicenses(): Promise<GitHubLicenseTemplate[]>
   listRepositoryWorkflows(options: RepositoryOptions): Promise<GitHubActionWorkflow[]>
   listRepositoryWorkflowRuns(options: ListRepositoryWorkflowRunsOptions): Promise<GitHubActionRunPage>
   getWorkflowRun(options: GetWorkflowRunOptions): Promise<GitHubActionRun>
@@ -1963,6 +1978,16 @@ export interface SetRepositoryStarredOptions extends RepositoryOptions {
 
 export interface SetRepositorySubscriptionOptions extends RepositoryOptions {
   subscription: GitHubRepositorySubscription
+}
+
+export interface CreateRepositoryOptions {
+  organization?: string | null
+  name: string
+  description?: string | null
+  visibility: 'public' | 'private'
+  autoInit?: boolean
+  gitignoreTemplate?: string | null
+  licenseTemplate?: string | null
 }
 
 export interface ForkRepositoryOptions extends RepositoryOptions {

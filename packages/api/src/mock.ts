@@ -109,8 +109,11 @@ import type {
   SetRepositoryStarredOptions,
   SetRepositorySubscriptionOptions,
   UpdateReleaseOptions,
+  CreateRepositoryOptions,
   ForkRepositoryOptions,
+  GitHubCreatedRepository,
   GitHubForkedRepository,
+  GitHubLicenseTemplate,
   GitHubActor,
   GitHubIssueMilestone,
   GitHubLabel
@@ -1521,6 +1524,29 @@ export class MockGitHubClient implements GitHubClient {
       url: `https://github.com/${owner}/${name}`,
       ready: true,
     }
+  }
+
+  async createRepository(options: CreateRepositoryOptions): Promise<GitHubCreatedRepository> {
+    const owner = options.organization?.trim() || 'octocat'
+    const name = options.name.trim()
+
+    return {
+      owner,
+      name,
+      nameWithOwner: `${owner}/${name}`,
+      url: `https://github.com/${owner}/${name}`,
+    }
+  }
+
+  async listGitignoreTemplates(): Promise<string[]> {
+    return ['Node', 'Python', 'Go']
+  }
+
+  async listLicenses(): Promise<GitHubLicenseTemplate[]> {
+    return [
+      { key: 'mit', name: 'MIT License' },
+      { key: 'apache-2.0', name: 'Apache License 2.0' },
+    ]
   }
 
   async listRepositoryWorkflows(options: RepositoryOptions): Promise<GitHubActionWorkflow[]> {

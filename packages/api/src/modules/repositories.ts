@@ -31,11 +31,14 @@ import type {
   CreateRepositoryTagOptions,
   DeleteRepositoryBranchOptions,
   DeleteRepositoryTagOptions,
+  CreateRepositoryOptions,
   ForkRepositoryOptions,
   GitHubBranchListItem,
   GitHubBranchPage,
   GitHubCreatedRef,
+  GitHubCreatedRepository,
   GitHubForkedRepository,
+  GitHubLicenseTemplate,
   GitHubTagListItem,
   GitHubTagPage,
   ListRepositoryBranchesDetailedOptions,
@@ -946,6 +949,46 @@ export class RepositoriesApi {
       url: fork.html_url ?? `https://github.com/${forkOwner}/${forkName}`,
       ready,
     }
+  }
+
+  async create(options: CreateRepositoryOptions): Promise<GitHubCreatedRepository> {
+    const organization = options.organization?.trim() || null
+    const name = options.name.trim()
+    const description = options.description?.trim() || null
+    const payload = {
+      name,
+      ...(description ? { description } : {}),
+      private: options.visibility === 'private',
+      auto_init: options.autoInit ?? false,
+      ...(options.gitignoreTemplate ? { gitignore_template: options.gitignoreTemplate } : {}),
+      ...(options.licenseTemplate ? { license_template: options.licenseTemplate } : {}),
+    }
+    const response = organization
+      ? await this.octokit.request('POST /orgs/{org}/repos', { org: organization, ...payload })
+      : await this.octokit.request('POST /user/repos', payload)
+    const repository = response.data as RepositoryResponse
+    const owner = repository.owner?.login ?? organization ?? ''
+    const createdName = repository.name ?? name
+
+    return {
+      owner,
+      name: createdName,
+      nameWithOwner: repository.full_name ?? `${owner}/${createdName}`,
+      url: repository.html_url ?? `https://github.com/${owner}/${createdName}`,
+    }
+  }
+
+  async listGitignoreTemplates(): Promise<string[]> {
+    const response = await this.octokit.request('GET /gitignore/templates')
+
+    return response.data as string[]
+  }
+
+  async listLicenses(): Promise<GitHubLicenseTemplate[]> {
+    const response = await this.octokit.request('GET /licenses')
+    const licenses = response.data as Array<{ key: string, name: string }>
+
+    return licenses.map((license) => ({ key: license.key, name: license.name }))
   }
 
   private async getRepository(options: RepositoryOptions): Promise<RepositoryResponse> {

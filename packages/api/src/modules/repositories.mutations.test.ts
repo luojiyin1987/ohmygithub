@@ -143,6 +143,82 @@ describe('RepositoriesApi fork', () => {
   })
 })
 
+describe('RepositoriesApi create', () => {
+  it('creates a personal repository via POST /user/repos', async () => {
+    const { api, request } = createApi()
+
+    const created = await api.create({
+      name: 'hello-world',
+      description: 'My first repo',
+      visibility: 'private',
+      autoInit: true,
+      gitignoreTemplate: 'Node',
+      licenseTemplate: 'mit',
+    })
+
+    expect(request).toHaveBeenCalledWith('POST /user/repos', {
+      name: 'hello-world',
+      description: 'My first repo',
+      private: true,
+      auto_init: true,
+      gitignore_template: 'Node',
+      license_template: 'mit',
+    })
+    expect(created).toEqual({
+      owner: 'octocat',
+      name: 'hello-world',
+      nameWithOwner: 'octocat/hello-world',
+      url: 'https://github.com/octocat/hello-world',
+    })
+  })
+
+  it('creates an organization repository via POST /orgs/{org}/repos', async () => {
+    const { api, request } = createApi()
+
+    const created = await api.create({
+      organization: 'octo-org',
+      name: 'hello-world',
+      visibility: 'public',
+    })
+
+    expect(request).toHaveBeenCalledWith('POST /orgs/{org}/repos', {
+      org: 'octo-org',
+      name: 'hello-world',
+      private: false,
+      auto_init: false,
+    })
+    expect(created.nameWithOwner).toBe('octo-org/hello-world')
+  })
+
+  it('omits empty optional fields', async () => {
+    const { api, request } = createApi()
+
+    await api.create({ name: 'bare', description: '  ', visibility: 'public' })
+
+    expect(request).toHaveBeenCalledWith('POST /user/repos', {
+      name: 'bare',
+      private: false,
+      auto_init: false,
+    })
+  })
+})
+
+describe('RepositoriesApi templates', () => {
+  it('lists gitignore templates', async () => {
+    const { api } = createApi()
+
+    await expect(api.listGitignoreTemplates()).resolves.toEqual(['Node', 'Python'])
+  })
+
+  it('lists licenses as key/name pairs', async () => {
+    const { api } = createApi()
+
+    await expect(api.listLicenses()).resolves.toEqual([
+      { key: 'mit', name: 'MIT License' },
+    ])
+  })
+})
+
 function createApi(options: {
   subscription?: { subscribed: boolean, ignored: boolean }
   forkNotFoundAttempts?: number
@@ -174,6 +250,41 @@ function createApi(options: {
           html_url: `https://github.com/${owner}/${name}`,
         },
       }
+    }
+
+    if (route === 'POST /user/repos') {
+      const name = params?.name as string
+
+      return {
+        data: {
+          name,
+          full_name: `octocat/${name}`,
+          owner: { login: 'octocat' },
+          html_url: `https://github.com/octocat/${name}`,
+        },
+      }
+    }
+
+    if (route === 'POST /orgs/{org}/repos') {
+      const org = params?.org as string
+      const name = params?.name as string
+
+      return {
+        data: {
+          name,
+          full_name: `${org}/${name}`,
+          owner: { login: org },
+          html_url: `https://github.com/${org}/${name}`,
+        },
+      }
+    }
+
+    if (route === 'GET /gitignore/templates') {
+      return { data: ['Node', 'Python'] }
+    }
+
+    if (route === 'GET /licenses') {
+      return { data: [{ key: 'mit', name: 'MIT License', spdx_id: 'MIT' }] }
     }
 
     if (route === 'GET /repos/{owner}/{repo}') {
