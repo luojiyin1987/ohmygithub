@@ -9,7 +9,7 @@ import type {
 import type { BookmarkMutationResult, CreateBookmarkFolderResult } from '@/pages/workspace/composables/use-workspace-bookmarks'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Book, Building2, ChevronDown, ChevronRight, ExternalLink, Folder, Inbox, Plus, Search } from 'lucide-vue-next'
+import { Activity, Book, Building2, ChevronDown, ChevronRight, ExternalLink, Folder, Inbox, Plus, Search } from 'lucide-vue-next'
 import {
   Button,
   Dialog,
@@ -76,6 +76,7 @@ const props = defineProps<{
 
 type WorkspaceSidebarSectionId = 'bookmarks' | 'pull-requests' | 'issues' | 'organizations'
 const INBOX_ITEM_ID = 'workspace-sidebar:inbox'
+const ACTIVITY_ITEM_ID = 'workspace-sidebar:activity'
 const NEW_ITEM_ID = 'workspace-sidebar:new'
 const NEW_ORGANIZATION_URL = 'https://github.com/account/organizations/new'
 const PINNED_ORGANIZATIONS_STORAGE_KEY = 'oh-my-github:workspace-pinned-organizations:v1'
@@ -271,6 +272,10 @@ function isInboxActive(): boolean {
   return activeItemId.value ? activeItemId.value === INBOX_ITEM_ID : props.activeUrl === '/inbox'
 }
 
+function isActivityActive(): boolean {
+  return activeItemId.value ? activeItemId.value === ACTIVITY_ITEM_ID : props.activeUrl === '/activity'
+}
+
 function isNewActive(): boolean {
   return activeItemId.value ? activeItemId.value === NEW_ITEM_ID : props.activeUrl === '/new-repository'
 }
@@ -290,6 +295,8 @@ function syncActiveItem(): void {
 
   const nextItemId = props.activeUrl === '/inbox'
     ? INBOX_ITEM_ID
+    : props.activeUrl === '/activity'
+    ? ACTIVITY_ITEM_ID
     : props.activeUrl === '/new-repository'
     ? NEW_ITEM_ID
     : findFirstItemIdByUrl([
@@ -510,6 +517,19 @@ function persistPinnedOrganizationLogins(logins: string[]): void {
           >
             <Inbox />
             <span>{{ t('workspace.sidebar.items.inbox') }}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            class="before:hidden"
+            size="sm"
+            :is-active="isActivityActive()"
+            :tooltip="t('workspace.sidebar.items.activity')"
+            type="button"
+            @click="selectSidebarItem('/activity', ACTIVITY_ITEM_ID)"
+          >
+            <Activity />
+            <span>{{ t('workspace.sidebar.items.activity') }}</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>

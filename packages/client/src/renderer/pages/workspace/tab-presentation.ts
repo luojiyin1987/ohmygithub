@@ -1,6 +1,6 @@
 import type { WorkspaceTab, WorkspaceTabView } from './types'
 import {
-  Bell,
+  Activity,
   Book,
   Bot,
   CircleDot,
@@ -80,7 +80,7 @@ export function getWorkspaceTabView(tab: WorkspaceTab): WorkspaceTabView {
   if (tab.type === 'activity') {
     return {
       tab,
-      icon: Bell,
+      icon: Activity,
       titleKey: 'workspace.tabs.items.activity',
       title: tab.title,
       eyebrowKey: 'workspace.panel.eyebrows.activity',
