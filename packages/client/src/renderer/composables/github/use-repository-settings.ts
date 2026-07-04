@@ -135,6 +135,73 @@ export function useCustomPropertiesQuery(
   return useAutomationQuery('custom-properties', owner, repo, enabled, (o, r) => automationBridge().getCustomProperties(o, r))
 }
 
+function securityBridge() {
+  const bridge = window.ohMyGithub?.repositorySettings?.security
+  if (!bridge) throw new Error('GitHub repository settings bridge is unavailable')
+  return bridge
+}
+
+export function useSecurityOverviewQuery(
+  owner: MaybeRefOrGetter<string>,
+  repo: MaybeRefOrGetter<string>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubRepositorySecurityOverview>({
+    key: () => ['github', 'repository', 'settings', 'security', 'overview', toValue(owner), toValue(repo)],
+    enabled: () => Boolean(toValue(owner)) && Boolean(toValue(repo)) && toValue(enabled),
+    staleTime: 1000 * 30,
+    gcTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+    query: async () => securityBridge().getOverview(toValue(owner), toValue(repo)),
+  })
+}
+
+export function useDeployKeysQuery(
+  owner: MaybeRefOrGetter<string>,
+  repo: MaybeRefOrGetter<string>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubDeployKey[]>({
+    key: () => ['github', 'repository', 'settings', 'security', 'deploy-keys', toValue(owner), toValue(repo)],
+    enabled: () => Boolean(toValue(owner)) && Boolean(toValue(repo)) && toValue(enabled),
+    staleTime: 1000 * 30,
+    gcTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+    query: async () => securityBridge().listDeployKeys(toValue(owner), toValue(repo)),
+  })
+}
+
+export function useRepositorySecretsQuery(
+  owner: MaybeRefOrGetter<string>,
+  repo: MaybeRefOrGetter<string>,
+  scope: MaybeRefOrGetter<GitHubRepositorySecretScope>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubRepositorySecret[]>({
+    key: () => ['github', 'repository', 'settings', 'security', 'secrets', toValue(scope), toValue(owner), toValue(repo)],
+    enabled: () => Boolean(toValue(owner)) && Boolean(toValue(repo)) && toValue(enabled),
+    staleTime: 1000 * 30,
+    gcTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+    query: async () => securityBridge().listSecrets(toValue(owner), toValue(repo), toValue(scope)),
+  })
+}
+
+export function useRepositoryVariablesQuery(
+  owner: MaybeRefOrGetter<string>,
+  repo: MaybeRefOrGetter<string>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubRepositoryVariable[]>({
+    key: () => ['github', 'repository', 'settings', 'security', 'variables', toValue(owner), toValue(repo)],
+    enabled: () => Boolean(toValue(owner)) && Boolean(toValue(repo)) && toValue(enabled),
+    staleTime: 1000 * 30,
+    gcTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+    query: async () => securityBridge().listVariables(toValue(owner), toValue(repo)),
+  })
+}
+
 export function useRepositorySettingsInvalidation() {
   const queryCache = useQueryCache()
 
@@ -157,6 +224,16 @@ export function useRepositorySettingsInvalidation() {
     invalidateAutomation(segment: string, owner: string, repo: string): void {
       void queryCache.invalidateQueries({
         key: ['github', 'repository', 'settings', 'automation', segment, owner, repo],
+      })
+    },
+    invalidateSecurity(segment: string, owner: string, repo: string): void {
+      void queryCache.invalidateQueries({
+        key: ['github', 'repository', 'settings', 'security', segment, owner, repo],
+      })
+    },
+    invalidateSecrets(scope: GitHubRepositorySecretScope, owner: string, repo: string): void {
+      void queryCache.invalidateQueries({
+        key: ['github', 'repository', 'settings', 'security', 'secrets', scope, owner, repo],
       })
     },
     invalidateRepositoryOverview(owner: string, repo: string): void {
@@ -419,4 +496,69 @@ export function updateRepositoryCustomProperties(
   values: GitHubRepositoryCustomPropertyValue[],
 ): Promise<void> {
   return automationBridge().updateCustomProperties(owner, repo, values)
+}
+
+export function updateSecurityAnalysis(
+  owner: string,
+  repo: string,
+  input: UpdateSecurityAndAnalysisInput,
+): Promise<void> {
+  return securityBridge().updateAnalysis(owner, repo, input)
+}
+
+export function setVulnerabilityAlerts(owner: string, repo: string, enabled: boolean): Promise<void> {
+  return securityBridge().setVulnerabilityAlerts(owner, repo, enabled)
+}
+
+export function setAutomatedSecurityFixes(owner: string, repo: string, enabled: boolean): Promise<void> {
+  return securityBridge().setAutomatedSecurityFixes(owner, repo, enabled)
+}
+
+export function setPrivateVulnerabilityReporting(owner: string, repo: string, enabled: boolean): Promise<void> {
+  return securityBridge().setPrivateVulnerabilityReporting(owner, repo, enabled)
+}
+
+export function addDeployKey(
+  owner: string,
+  repo: string,
+  title: string,
+  key: string,
+  readOnly: boolean,
+): Promise<void> {
+  return securityBridge().addDeployKey(owner, repo, title, key, readOnly)
+}
+
+export function deleteDeployKey(owner: string, repo: string, keyId: number): Promise<void> {
+  return securityBridge().deleteDeployKey(owner, repo, keyId)
+}
+
+export function upsertRepositorySecret(
+  owner: string,
+  repo: string,
+  scope: GitHubRepositorySecretScope,
+  name: string,
+  value: string,
+): Promise<void> {
+  return securityBridge().upsertSecret(owner, repo, scope, name, value)
+}
+
+export function deleteRepositorySecret(
+  owner: string,
+  repo: string,
+  scope: GitHubRepositorySecretScope,
+  name: string,
+): Promise<void> {
+  return securityBridge().deleteSecret(owner, repo, scope, name)
+}
+
+export function createRepositoryVariable(owner: string, repo: string, name: string, value: string): Promise<void> {
+  return securityBridge().createVariable(owner, repo, name, value)
+}
+
+export function updateRepositoryVariable(owner: string, repo: string, name: string, value: string): Promise<void> {
+  return securityBridge().updateVariable(owner, repo, name, value)
+}
+
+export function deleteRepositoryVariable(owner: string, repo: string, name: string): Promise<void> {
+  return securityBridge().deleteVariable(owner, repo, name)
 }
