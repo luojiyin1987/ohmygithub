@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { ExternalLink } from 'lucide-vue-next'
 import type { RepositorySettingsSectionId } from '../types'
 import { repositorySettingsLinks } from './settings-links'
+import GeneralSection from './general/general-section.vue'
 
 const props = defineProps<{
   category: RepositorySettingsSectionId
@@ -11,9 +12,14 @@ const props = defineProps<{
   repo: string
 }>()
 
+const emit = defineEmits<{
+  renamed: [newName: string]
+  deleted: []
+}>()
+
 const { t } = useI18n()
 
-const links = computed(() => repositorySettingsLinks[props.category])
+const links = computed(() => repositorySettingsLinks[props.category] ?? [])
 
 function openLink(path: string): void {
   const url = `https://github.com/${encodeURIComponent(props.owner)}/${encodeURIComponent(props.repo)}/settings${path}`
@@ -22,7 +28,18 @@ function openLink(path: string): void {
 </script>
 
 <template>
-  <section class="grid gap-3">
+  <GeneralSection
+    v-if="category === 'settingsGeneral'"
+    :owner="owner"
+    :repo="repo"
+    @deleted="emit('deleted')"
+    @renamed="emit('renamed', $event)"
+  />
+
+  <section
+    v-else
+    class="grid gap-3"
+  >
     <p class="text-body text-muted-foreground">
       {{ t('repository.settings.externalHint') }}
     </p>

@@ -392,6 +392,15 @@ async function setSubscription(nextSubscription: GitHubRepositorySubscription): 
   }
 }
 
+function handleRepositoryRenamed(newName: string): void {
+  emit('replaceActiveUrl', createRepositoryWorkspaceUrl(owner.value, newName, 'settingsGeneral'))
+}
+
+function handleRepositoryDeleted(): void {
+  invalidateOwnedRepositories(owner.value)
+  void router.push(`/${encodeURIComponent(owner.value)}`)
+}
+
 function openForkDialog(): void {
   if (!hasRepositoryIdentity.value) return
   isForkDialogOpen.value = true
@@ -572,6 +581,8 @@ watch(
           :category="activeSection"
           :owner="owner"
           :repo="repository"
+          @deleted="handleRepositoryDeleted"
+          @renamed="handleRepositoryRenamed"
         />
 
         <Empty

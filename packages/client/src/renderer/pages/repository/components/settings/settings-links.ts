@@ -6,10 +6,7 @@ export interface RepositorySettingsLink {
   path: string
 }
 
-export const repositorySettingsLinks: Record<RepositorySettingsSectionId, readonly RepositorySettingsLink[]> = {
-  settingsGeneral: [
-    { id: 'general', labelKey: 'repository.settings.links.general', path: '' },
-  ],
+export const repositorySettingsLinks: Partial<Record<RepositorySettingsSectionId, readonly RepositorySettingsLink[]>> = {
   settingsAccess: [
     { id: 'collaborators', labelKey: 'repository.settings.links.collaborators', path: '/access' },
     { id: 'interactionLimits', labelKey: 'repository.settings.links.interactionLimits', path: '/interaction_limits' },
