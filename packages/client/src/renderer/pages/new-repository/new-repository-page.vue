@@ -8,16 +8,11 @@ import {
   Label,
   RadioGroup,
   RadioGroupItem,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Spinner,
 } from '@oh-my-github/ui'
+import OwnerSelect from '@/components/github/owner-select.vue'
 import SearchableSelect from '@/components/navigation/searchable-select.vue'
 import type { SearchableSelectOption } from '@/components/navigation/searchable-select.vue'
-import { useOrganizationsQuery } from '@/composables/github/use-organizations'
 import { useAccountListInvalidation } from '@/composables/github/use-accounts'
 import {
   createRepository,
@@ -42,12 +37,10 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const toast = useToast()
 const { invalidateOwnedRepositories } = useAccountListInvalidation()
-const organizationsQuery = useOrganizationsQuery()
 const gitignoreTemplatesQuery = useGitignoreTemplatesQuery()
 const licenseTemplatesQuery = useLicenseTemplatesQuery()
 
 const viewerLogin = computed(() => props.viewer?.login ?? '')
-const organizations = computed(() => organizationsQuery.data.value ?? [])
 const gitignoreTemplates = computed(() => gitignoreTemplatesQuery.data.value ?? [])
 const licenseTemplates = computed(() => licenseTemplatesQuery.data.value ?? [])
 const templatesFailed = computed(() =>
@@ -140,29 +133,11 @@ async function submit(): Promise<void> {
       <div class="grid grid-cols-[minmax(0,220px)_minmax(0,1fr)] items-end gap-3">
         <div class="grid gap-2">
           <Label for="new-repository-owner">{{ t('newRepository.fields.owner') }}</Label>
-          <Select v-model="form.owner">
-            <SelectTrigger
-              id="new-repository-owner"
-              class="w-full"
-            >
-              <SelectValue :placeholder="viewerLogin" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-if="viewerLogin"
-                :value="viewerLogin"
-              >
-                {{ viewerLogin }}
-              </SelectItem>
-              <SelectItem
-                v-for="organization in organizations"
-                :key="organization.login"
-                :value="organization.login"
-              >
-                {{ organization.login }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <OwnerSelect
+            id="new-repository-owner"
+            v-model="form.owner"
+            :viewer="viewer"
+          />
         </div>
         <div class="grid gap-2">
           <Label for="new-repository-name">{{ t('newRepository.fields.name') }}</Label>

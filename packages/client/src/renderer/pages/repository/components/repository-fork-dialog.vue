@@ -13,12 +13,9 @@ import {
   DialogTitle,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
   Spinner,
 } from '@oh-my-github/ui'
+import OwnerSelect from '@/components/github/owner-select.vue'
 
 const props = defineProps<{
   open: boolean
@@ -33,8 +30,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const viewerLogin = ref<string | null>(null)
-const organizations = ref<GitHubOrganization[]>([])
+const viewer = ref<AuthViewer | null>(null)
 const isLoadingOwners = ref(false)
 const selectedOwner = ref('')
 const forkName = ref('')
@@ -42,17 +38,7 @@ const defaultBranchOnly = ref(true)
 const isSubmitting = ref(false)
 const errorMessage = ref<string | null>(null)
 
-const ownerOptions = computed(() => {
-  const options = viewerLogin.value ? [viewerLogin.value] : []
-
-  for (const organization of organizations.value) {
-    if (!options.includes(organization.login)) {
-      options.push(organization.login)
-    }
-  }
-
-  return options
-})
+const viewerLogin = computed(() => viewer.value?.login ?? null)
 const canSubmit = computed(() =>
   Boolean(selectedOwner.value && forkName.value.trim()) && !isSubmitting.value && !isLoadingOwners.value
 )
@@ -76,17 +62,13 @@ async function prepare(): Promise<void> {
   isLoadingOwners.value = true
 
   try {
-    const [auth, viewerOrganizations] = await Promise.all([
-      window.ohMyGithub.auth.get(),
-      window.ohMyGithub.accounts.listOrganizations().catch(() => [] as GitHubOrganization[]),
-    ])
+    const auth = await window.ohMyGithub.auth.get()
 
-    viewerLogin.value = auth.auth?.viewer.login ?? null
-    organizations.value = viewerOrganizations
+    viewer.value = auth.auth?.viewer ?? null
   } catch {
-    organizations.value = []
+    viewer.value = null
   } finally {
-    selectedOwner.value = viewerLogin.value ?? ownerOptions.value[0] ?? ''
+    selectedOwner.value = viewerLogin.value ?? ''
     isLoadingOwners.value = false
   }
 }
@@ -144,29 +126,13 @@ function extractErrorMessage(error: unknown): string | null {
       >
         <div class="grid gap-1.5">
           <Label for="repository-fork-owner">{{ t('repository.fork.ownerLabel') }}</Label>
-          <Select
+          <OwnerSelect
+            id="repository-fork-owner"
+            v-model="selectedOwner"
             :disabled="isLoadingOwners || isSubmitting"
-            :model-value="selectedOwner"
-            @update:model-value="(value) => value && (selectedOwner = value as string)"
-          >
-            <SelectTrigger
-              id="repository-fork-owner"
-              class="w-full"
-            >
-              <span class="truncate">
-                {{ selectedOwner || t('repository.fork.ownerPlaceholder') }}
-              </span>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="ownerOption in ownerOptions"
-                :key="ownerOption"
-                :value="ownerOption"
-              >
-                {{ ownerOption }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+            :placeholder="t('repository.fork.ownerPlaceholder')"
+            :viewer="viewer"
+          />
         </div>
 
         <div class="grid gap-1.5">
