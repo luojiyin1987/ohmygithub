@@ -15,6 +15,7 @@ import RepositoryPage from '@/pages/repository/repository-page.vue'
 import SearchResultPage from '@/pages/search-result/search-result-page.vue'
 import NotFoundPage from '@/pages/not-found/not-found-page.vue'
 import InboxPage from '@/pages/inbox/inbox-page.vue'
+import ActivityPage from '@/pages/activity/activity-page.vue'
 import NewRepositoryPage from '@/pages/new-repository/new-repository-page.vue'
 import { getWorkspaceTabView } from '@/pages/workspace/tab-presentation'
 
@@ -102,6 +103,11 @@ function translate(key: string, params?: WorkspaceMessageParams): string {
 
   <InboxPage
     v-else-if="tab.type === 'inbox'"
+    :tab="tab"
+  />
+
+  <ActivityPage
+    v-else-if="tab.type === 'activity'"
     :tab="tab"
   />
 
