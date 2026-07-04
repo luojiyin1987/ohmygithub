@@ -11,12 +11,14 @@ import {
   Clock3,
   ExternalLink,
   FileText,
+  Heart,
   LinkIcon,
   Mail,
   MapPin,
   Star,
   UserRound,
   Users,
+  UsersRound,
 } from 'lucide-vue-next'
 import {
   Avatar,
@@ -33,6 +35,7 @@ import {
 import {
   setAccountFollowed,
   useAccountContributionsQuery,
+  useAccountListInvalidation,
   useAccountOverviewQuery,
   useAccountRepositoriesQuery,
   useAccountStarredRepositoriesQuery,
@@ -43,6 +46,9 @@ import GitHubOrganizationAvatar from '@/components/github/github-organization-av
 import { createAccountWorkspaceUrl, createRepositoryWorkspaceUrl } from '@/pages/workspace/workspace-url'
 import AccountOverviewSection from './components/account-overview-section.vue'
 import AccountRepositoryGrid from './components/account-repository-grid.vue'
+import AccountFollowersSection from './components/account-followers-section.vue'
+import AccountSponsorsSection from './components/account-sponsors-section.vue'
+import AccountPeopleSection from './components/account-people-section.vue'
 
 const props = defineProps<{
   tab: WorkspaceTab
@@ -66,9 +72,13 @@ const accountSections: Array<{ id: AccountTabId; icon: Component }> = [
   { id: 'overview', icon: BookOpen },
   { id: 'repositories', icon: FileText },
   { id: 'stars', icon: Star },
+  { id: 'people', icon: UsersRound },
+  { id: 'followers', icon: Users },
+  { id: 'sponsors', icon: Heart },
 ]
 
 const { t } = useI18n()
+const { invalidateAccountProfile } = useAccountListInvalidation()
 const router = useRouter()
 const login = computed(() => props.tab.owner ?? props.tab.title)
 const hasLogin = computed(() => login.value.trim().length > 0)
@@ -139,7 +149,10 @@ const starsQuery = useAccountStarredRepositoriesQuery(
 const repositoryResult = computed(() => repositoriesQuery.data.value ?? null)
 const starsResult = computed(() => starsQuery.data.value ?? null)
 const visibleAccountSections = computed(() =>
-  accountSections.filter((section) => !(isOrganizationProfile.value && section.id === 'stars'))
+  accountSections.filter((section) => {
+    if (isOrganizationProfile.value) return section.id !== 'stars'
+    return section.id !== 'people'
+  })
 )
 const sidebarItems = computed(() =>
   visibleAccountSections.value.map((section) => ({
@@ -238,9 +251,12 @@ watch(
 )
 
 watch(
-  [isOrganizationProfile, activeSection],
-  ([isOrganization, section]) => {
-    if (isOrganization && section === 'stars') {
+  [profile, activeSection],
+  ([currentProfile, section]) => {
+    if (!currentProfile) return
+
+    const isOrganization = currentProfile.type === 'Organization'
+    if ((isOrganization && section === 'stars') || (!isOrganization && section === 'people')) {
       setActiveSection('overview')
     }
   },
@@ -367,6 +383,7 @@ async function toggleFollow(): Promise<void> {
 
   try {
     await setAccountFollowed(currentProfile.login, nextFollowing)
+    invalidateAccountProfile(currentProfile.login)
   } catch {
     viewerState.value = previousState
     void viewerStateQuery.refetch()
@@ -377,6 +394,10 @@ async function toggleFollow(): Promise<void> {
 
 function selectRepository(repository: GitHubAccountRepository): void {
   void router.push(createRepositoryWorkspaceUrl(repository.owner, repository.name))
+}
+
+function selectAccount(accountLogin: string): void {
+  void router.push(createAccountWorkspaceUrl(accountLogin))
 }
 
 function formatNumber(value: number): string {
@@ -612,8 +633,31 @@ function normalizeExternalUrl(value: string | null): string | null {
               @update:search="repositorySearchInput = $event"
             />
 
+            <AccountFollowersSection
+              v-else-if="activeSection === 'followers'"
+              :followers-count="profile.followers"
+              :following-count="profile.following"
+              :is-organization="isOrganizationProfile"
+              :login="login"
+              @select-account="selectAccount"
+            />
+
+            <AccountSponsorsSection
+              v-else-if="activeSection === 'sponsors'"
+              :is-viewer-account="isViewerAccount"
+              :login="login"
+              @select-account="selectAccount"
+            />
+
+            <AccountPeopleSection
+              v-else-if="activeSection === 'people' && isOrganizationProfile"
+              :login="login"
+              :viewer-login="viewer?.login ?? null"
+              @select-account="selectAccount"
+            />
+
             <AccountRepositoryGrid
-              v-else-if="!isOrganizationProfile"
+              v-else-if="activeSection === 'stars' && !isOrganizationProfile"
               :disabled="!hasLogin"
               :has-error="Boolean(starsQuery.error.value)"
               :is-loading="starsQuery.isLoading.value"

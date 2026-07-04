@@ -1,6 +1,6 @@
 import type { MaybeRefOrGetter } from 'vue'
 import { toValue } from 'vue'
-import { useQuery } from '@pinia/colada'
+import { useQuery, useQueryCache } from '@pinia/colada'
 
 export function useAccountProfileQuery(
   login: MaybeRefOrGetter<string>,
@@ -146,6 +146,102 @@ export function useAccountStarredRepositoriesQuery(
   })
 }
 
+export function useAccountFollowersQuery(
+  login: MaybeRefOrGetter<string>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubAccountFollowList>({
+    key: () => ['github', 'account-followers', toValue(login)],
+    enabled: () => Boolean(toValue(login)) && toValue(enabled),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    query: async () => {
+      if (!window.ohMyGithub?.accounts) {
+        throw new Error('GitHub accounts bridge is unavailable')
+      }
+
+      return window.ohMyGithub.accounts.listFollowers(toValue(login))
+    },
+  })
+}
+
+export function useAccountFollowingQuery(
+  login: MaybeRefOrGetter<string>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubAccountFollowList>({
+    key: () => ['github', 'account-following', toValue(login)],
+    enabled: () => Boolean(toValue(login)) && toValue(enabled),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    query: async () => {
+      if (!window.ohMyGithub?.accounts) {
+        throw new Error('GitHub accounts bridge is unavailable')
+      }
+
+      return window.ohMyGithub.accounts.listFollowing(toValue(login))
+    },
+  })
+}
+
+export function useAccountSponsorsSummaryQuery(
+  login: MaybeRefOrGetter<string>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubAccountSponsorsSummary>({
+    key: () => ['github', 'account-sponsors-summary', toValue(login)],
+    enabled: () => Boolean(toValue(login)) && toValue(enabled),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    query: async () => {
+      if (!window.ohMyGithub?.accounts) {
+        throw new Error('GitHub accounts bridge is unavailable')
+      }
+
+      return window.ohMyGithub.accounts.getSponsorsSummary(toValue(login))
+    },
+  })
+}
+
+export function useAccountSponsorshipsQuery(
+  login: MaybeRefOrGetter<string>,
+  role: MaybeRefOrGetter<GitHubSponsorshipRole>,
+  page: MaybeRefOrGetter<number>,
+  perPage: MaybeRefOrGetter<number>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<GitHubAccountSponsorshipPage>({
+    key: () => ['github', 'account-sponsorships', toValue(login), toValue(role), toValue(page), toValue(perPage)],
+    enabled: () => Boolean(toValue(login)) && toValue(enabled),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    query: async () => {
+      if (!window.ohMyGithub?.accounts) {
+        throw new Error('GitHub accounts bridge is unavailable')
+      }
+
+      return window.ohMyGithub.accounts.listSponsorships({
+        login: toValue(login),
+        role: toValue(role),
+        page: toValue(page),
+        perPage: toValue(perPage),
+      })
+    },
+  })
+}
+
 export function useAccountViewerStateQuery(
   login: MaybeRefOrGetter<string>,
   enabled: MaybeRefOrGetter<boolean>,
@@ -174,4 +270,35 @@ export async function setAccountFollowed(login: string, followed: boolean): Prom
   }
 
   await window.ohMyGithub.accounts.setFollowed({ login, followed })
+}
+
+// Star/fork/follow mutate data shown in account lists that live on a different
+// (usually unmounted) route and set refetchOnMount:false, so they freeze. Force
+// refetchActive:'all'. See usePullRequestListInvalidation for the same shape.
+export function useAccountListInvalidation() {
+  const queryCache = useQueryCache()
+
+  return {
+    // Starring a repo changes the viewer's "Stars" list (keyed by viewer login);
+    // invalidate the whole prefix rather than guess the login.
+    invalidateStarredRepositories(): void {
+      void queryCache.invalidateQueries({ key: ['github', 'account-starred-repositories'] }, 'all')
+    },
+    // A new fork lands under `owner` (viewer account or org); only one list matches.
+    invalidateOwnedRepositories(owner: string): void {
+      void queryCache.invalidateQueries({ key: ['github', 'account-repositories', owner] }, 'all')
+      void queryCache.invalidateQueries({ key: ['github', 'organization-repositories', owner] }, 'all')
+    },
+    // Following someone changes their follower/following counts on the profile.
+    invalidateAccountProfile(login: string): void {
+      void queryCache.invalidateQueries({ key: ['github', 'account-profile', login] }, 'all')
+      void queryCache.invalidateQueries({ key: ['github', 'account-overview', login] }, 'all')
+    },
+    // Follow/unfollow changes the viewer's following list and any follower
+    // list that includes the viewer; invalidate both prefixes.
+    invalidateFollowLists(): void {
+      void queryCache.invalidateQueries({ key: ['github', 'account-followers'] }, 'all')
+      void queryCache.invalidateQueries({ key: ['github', 'account-following'] }, 'all')
+    },
+  }
 }

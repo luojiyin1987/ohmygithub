@@ -121,6 +121,89 @@ export interface GitHubAccountViewerState {
   missingScopes: string[]
 }
 
+export interface GitHubAccountFollowUser {
+  id: number
+  login: string
+  name: string | null
+  avatarUrl: string
+  bio: string | null
+  type: GitHubAccountProfileType
+  isViewer: boolean
+  viewerIsFollowing: boolean
+  viewerCanFollow: boolean
+  isFollowingViewer: boolean
+}
+
+export interface GitHubAccountFollowList {
+  items: GitHubAccountFollowUser[]
+  totalCount: number
+  truncated: boolean
+}
+
+export type GitHubSponsorshipRole = 'maintainer' | 'sponsor'
+
+export interface GitHubSponsorshipTier {
+  name: string
+  monthlyPriceInDollars: number
+  isOneTime: boolean
+}
+
+export interface GitHubAccountSponsorship {
+  login: string | null
+  name: string | null
+  avatarUrl: string | null
+  bio: string | null
+  type: GitHubAccountProfileType
+  isPrivate: boolean
+  isOneTimePayment: boolean
+  createdAt: string | null
+  tier: GitHubSponsorshipTier | null
+}
+
+export interface GitHubAccountSponsorshipPage {
+  items: GitHubAccountSponsorship[]
+  totalCount: number
+  page: number
+  perPage: number
+  hasNextPage: boolean
+}
+
+export interface GitHubAccountSponsorsSummary {
+  hasSponsorsListing: boolean
+  sponsorsCount: number
+  sponsoringCount: number
+}
+
+export type GitHubOrganizationMemberRole = 'member' | 'admin'
+
+export interface GitHubOrganizationMember {
+  id: number
+  login: string
+  name: string | null
+  avatarUrl: string
+  role: GitHubOrganizationMemberRole
+  hasTwoFactorEnabled: boolean | null
+  isPublic: boolean
+}
+
+export interface GitHubOrganizationPeople {
+  members: GitHubOrganizationMember[]
+  totalCount: number
+  truncated: boolean
+  viewerCanAdminister: boolean
+}
+
+export type GitHubOrganizationInvitationRole = 'direct_member' | 'admin' | 'billing_manager' | (string & {})
+
+export interface GitHubOrganizationInvitation {
+  id: number
+  login: string | null
+  email: string | null
+  role: GitHubOrganizationInvitationRole
+  createdAt: string | null
+  inviterLogin: string | null
+}
+
 export interface GitHubRepository {
   id: number
   name: string
@@ -1551,6 +1634,41 @@ export interface AccountContributionsOptions {
 export interface SetAccountFollowedOptions {
   login: string
   followed: boolean
+}
+
+export interface ListAccountSponsorshipsOptions {
+  login: string
+  role: GitHubSponsorshipRole
+  page?: number
+  perPage?: number
+}
+
+export interface InviteOrganizationMemberOptions {
+  org: string
+  identifier: string
+  role: GitHubOrganizationMemberRole
+}
+
+export interface SetOrganizationMemberRoleOptions {
+  org: string
+  login: string
+  role: GitHubOrganizationMemberRole
+}
+
+export interface OrganizationMemberOptions {
+  org: string
+  login: string
+}
+
+export interface CancelOrganizationInvitationOptions {
+  org: string
+  invitationId: number
+}
+
+export interface SetOrganizationMembershipVisibilityOptions {
+  org: string
+  login: string
+  publicized: boolean
 }
 
 export interface RepositoryOptions {

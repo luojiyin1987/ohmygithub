@@ -11,6 +11,7 @@ import { registerDeploymentsIpc } from './deployments'
 import { registerInboxIpc } from './inbox'
 import { registerIssuesIpc } from './issues'
 import { registerLinksIpc } from './links'
+import { registerOrganizationPeopleIpc } from './organization-people'
 import { registerPackagesIpc } from './packages'
 import { registerPullsIpc } from './pulls'
 import { registerReleasesIpc } from './releases'
@@ -133,6 +134,7 @@ void app.whenReady().then(() => {
   registerInboxIpc()
   registerIssuesIpc()
   registerLinksIpc()
+  registerOrganizationPeopleIpc()
   registerPackagesIpc()
   registerPullsIpc()
   registerReleasesIpc()

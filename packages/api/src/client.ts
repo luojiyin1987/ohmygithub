@@ -4,6 +4,7 @@ import { AuthApi } from './modules/auth'
 import { DeploymentsApi } from './modules/deployments'
 import { InboxApi } from './modules/inbox'
 import { IssuesApi } from './modules/issues'
+import { OrganizationPeopleApi } from './modules/organization-people'
 import { PackagesApi } from './modules/packages'
 import { PullsApi } from './modules/pulls'
 import { ReleasesApi } from './modules/releases'
@@ -67,6 +68,7 @@ export interface GitHubApi extends GitHubClient {
   readonly deployments: DeploymentsApi
   readonly inbox: InboxApi
   readonly issues: IssuesApi
+  readonly organizationPeople: OrganizationPeopleApi
   readonly packages: PackagesApi
   readonly pulls: PullsApi
   readonly releases: ReleasesApi
@@ -83,6 +85,7 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
   const deployments = new DeploymentsApi(octokit)
   const inbox = new InboxApi(octokit)
   const issues = new IssuesApi(octokit)
+  const organizationPeople = new OrganizationPeopleApi(octokit)
   const packages = new PackagesApi(octokit)
   const pulls = new PullsApi(octokit)
   const releases = new ReleasesApi(octokit)
@@ -98,6 +101,7 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
     deployments,
     inbox,
     issues,
+    organizationPeople,
     packages,
     pulls,
     releases,

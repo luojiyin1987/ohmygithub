@@ -583,12 +583,122 @@
       "title": "Could not load account"
     },
     "eyebrow": "Account",
+    "followers": {
+      "empty": {
+        "followers": {
+          "title": "No followers yet",
+          "description": "People who follow this account will show up here."
+        },
+        "following": {
+          "title": "Not following anyone",
+          "description": "Accounts this user follows will show up here."
+        }
+      },
+      "error": {
+        "title": "Couldn't load this list",
+        "description": "Something went wrong while loading followers. Try again."
+      },
+      "followsYou": "Follows you",
+      "pagination": {
+        "summary": "Page {page} of {pageCount} · {totalCount} accounts"
+      },
+      "searchEmpty": {
+        "title": "No matches",
+        "description": "No accounts match the current search."
+      },
+      "searchPlaceholder": "Find a person…",
+      "tabs": {
+        "followers": "Followers",
+        "following": "Following"
+      },
+      "tabsLabel": "Followers and following",
+      "toasts": {
+        "errorTitle": "Follow action failed"
+      },
+      "truncated": "Showing the most recent 1,000 accounts. Use search to narrow the list."
+    },
     "overview": {
       "pinned": "Pinned repositories",
       "readme": "Profile README"
     },
     "pagination": {
       "summary": "Page {page} of {pageCount} · {totalCount} repositories"
+    },
+    "people": {
+      "tabs": {
+        "members": "Members",
+        "invitations": "Invitations"
+      },
+      "tabsLabel": "Organization people",
+      "searchPlaceholder": "Find a member…",
+      "roleFilter": {
+        "label": "Filter by role",
+        "all": "All roles"
+      },
+      "role": {
+        "admin": "Owner",
+        "member": "Member",
+        "billingManager": "Billing manager"
+      },
+      "twoFactorDisabled": "Two-factor authentication disabled",
+      "visibility": {
+        "public": "Public",
+        "private": "Private",
+        "makePublic": "Make public",
+        "makePrivate": "Make private"
+      },
+      "roleSelectLabel": "Change role for {login}",
+      "actions": {
+        "invite": "Invite member",
+        "remove": "Remove {login}"
+      },
+      "truncated": "Showing the first 1,000 members. Use search to narrow the list.",
+      "missingAdminScope": "Managing members requires GitHub OAuth scope: {scopes}. Re-authorize the account to enable it.",
+      "empty": {
+        "members": {
+          "title": "No members found",
+          "description": "No organization members match the current filters."
+        },
+        "invitations": {
+          "title": "No pending invitations",
+          "description": "Invitations you send will show up here until they're accepted."
+        }
+      },
+      "error": {
+        "title": "Couldn't load organization people",
+        "description": "Something went wrong while loading this list. Try again."
+      },
+      "invite": {
+        "title": "Invite a member",
+        "description": "Invite by GitHub username or email address. Invitations expire after 7 days.",
+        "identifierLabel": "Username or email",
+        "identifierPlaceholder": "octocat or name{'@'}example.com",
+        "roleLabel": "Role",
+        "submit": "Send invitation",
+        "cancel": "Cancel",
+        "success": "Invitation sent to {identifier}"
+      },
+      "remove": {
+        "title": "Remove {login} from the organization?",
+        "description": "{login} will lose access to all repositories and teams in {org}, and invitations they sent will be canceled. Membership data is kept for 3 months in case they are reinstated.",
+        "cancel": "Cancel",
+        "confirm": "Remove member"
+      },
+      "invitations": {
+        "meta": "Invited by {inviter} on {date}",
+        "cancel": "Cancel invitation",
+        "canceled": "Invitation canceled"
+      },
+      "toasts": {
+        "errorTitle": "Organization update failed",
+        "roleUpdated": "Role updated for {login}",
+        "removed": "{login} removed from the organization",
+        "visibilityPublic": "Your membership is now public",
+        "visibilityPrivate": "Your membership is now private"
+      },
+      "pagination": {
+        "summary": "Page {page} of {pageCount} · {totalCount} members"
+      }
     },
     "profile": {
       "blog": "Website",
@@ -627,10 +737,44 @@
     "sections": {
       "overview": "Overview",
       "repositories": "Repositories",
-      "stars": "Stars"
+      "stars": "Stars",
+      "followers": "Followers",
+      "sponsors": "Sponsors",
+      "people": "People"
     },
     "sidebar": {
       "navigation": "Account navigation"
+    },
+    "sponsors": {
+      "tabs": {
+        "sponsors": "Sponsors",
+        "sponsoring": "Sponsoring"
+      },
+      "tabsLabel": "Sponsors and sponsoring",
+      "privateSponsor": "Private sponsor",
+      "privateBadge": "Private",
+      "oneTime": "One-time",
+      "notEnrolled": {
+        "title": "Not enrolled in GitHub Sponsors",
+        "description": "This account hasn't set up a GitHub Sponsors listing."
+      },
+      "empty": {
+        "sponsors": {
+          "title": "No sponsors yet",
+          "description": "Public sponsors of this account will show up here."
+        },
+        "sponsoring": {
+          "title": "Not sponsoring anyone",
+          "description": "Accounts this user sponsors will show up here."
+        }
+      },
+      "error": {
+        "title": "Couldn't load sponsorships",
+        "description": "Something went wrong while loading sponsorships. Try again."
+      },
+      "pagination": {
+        "summary": "Page {page} of {pageCount} · {totalCount} accounts"
+      }
     },
     "stars": {
       "empty": {

@@ -13,6 +13,10 @@ export function registerAccountsIpc(): void {
   )
   ipcMain.handle('accounts:get-viewer-state', (_event, login: string) => getAccountViewerState(login))
   ipcMain.handle('accounts:set-followed', (_event, options: unknown) => setAccountFollowed(options))
+  ipcMain.handle('accounts:list-followers', (_event, login: string) => listAccountFollowers(login))
+  ipcMain.handle('accounts:list-following', (_event, login: string) => listAccountFollowing(login))
+  ipcMain.handle('accounts:get-sponsors-summary', (_event, login: string) => getAccountSponsorsSummary(login))
+  ipcMain.handle('accounts:list-sponsorships', (_event, options: unknown) => listAccountSponsorships(options))
   ipcMain.handle('accounts:list-organizations', () => listViewerOrganizations())
   ipcMain.handle('accounts:list-organization-repositories', (_event, owner: string) =>
     listOrganizationRepositories(owner)
@@ -86,6 +90,41 @@ async function setAccountFollowed(options: unknown) {
   const api = await createAuthenticatedGitHubApi()
 
   return api.accounts.setFollowed(normalizedOptions)
+}
+
+async function listAccountFollowers(login: string) {
+  const normalizedLogin = normalizeLogin(login)
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.accounts.listFollowers(normalizedLogin)
+}
+
+async function listAccountFollowing(login: string) {
+  const normalizedLogin = normalizeLogin(login)
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.accounts.listFollowing(normalizedLogin)
+}
+
+async function getAccountSponsorsSummary(login: string) {
+  const normalizedLogin = normalizeLogin(login)
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.accounts.getSponsorsSummary(normalizedLogin)
+}
+
+async function listAccountSponsorships(options: unknown) {
+  const input = options as Partial<{ login: string; role: string; page: number; perPage: number }>
+  const login = normalizeLogin(String(input?.login ?? ''))
+  const role = input.role === 'sponsor' ? 'sponsor' : 'maintainer'
+  const api = await createAuthenticatedGitHubApi()
+
+  return api.accounts.listSponsorships({
+    login,
+    role,
+    page: normalizePositiveInteger(input.page, 1),
+    perPage: normalizePositiveInteger(input.perPage, 20),
+  })
 }
 
 async function listViewerOrganizations() {

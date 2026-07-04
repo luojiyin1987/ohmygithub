@@ -1,18 +1,25 @@
 import { RequestError, type GitHubOctokit } from '../transport'
+import { rewriteImagesToCamo } from './markdown-camo'
 import type {
   AccountContributionsOptions,
   GitHubAccountContributionYear,
+  GitHubAccountFollowList,
+  GitHubAccountFollowUser,
   GitHubAccountOverview,
   GitHubAccountProfile,
   GitHubAccountRepository,
   GitHubAccountRepositoryPage,
   GitHubAccountSocialAccount,
+  GitHubAccountSponsorsSummary,
+  GitHubAccountSponsorship,
+  GitHubAccountSponsorshipPage,
   GitHubAccountViewerState,
   GitHubOrganization,
   GitHubRepository,
   GitHubRepositoryDocument,
   GitHubRepositoryVisibility,
   ListAccountRepositoriesOptions,
+  ListAccountSponsorshipsOptions,
   SetAccountFollowedOptions,
 } from '../types'
 
@@ -280,6 +287,145 @@ const organizationOverviewQuery = `
   }
 `
 
+interface FollowUserResponse {
+  id?: number
+  login?: string
+  avatar_url?: string | null
+  type?: string | null
+}
+
+const FOLLOWS_FETCH_PAGE_SIZE = 100
+const FOLLOWS_MAX_PAGES = 10
+const FOLLOWS_ENRICH_CHUNK_SIZE = 100
+
+interface GraphFollowEnrichmentNode {
+  __typename?: string
+  name?: string | null
+  bio?: string | null
+  description?: string | null
+  viewerIsFollowing?: boolean
+  viewerCanFollow?: boolean
+  isFollowingViewer?: boolean
+  isViewer?: boolean
+}
+
+interface GraphSponsorEntityNode {
+  __typename?: string
+  login?: string | null
+  name?: string | null
+  avatarUrl?: string | null
+  bio?: string | null
+  description?: string | null
+}
+
+interface GraphSponsorshipNode {
+  privacyLevel?: string | null
+  isOneTimePayment?: boolean
+  createdAt?: string | null
+  tier?: {
+    name?: string | null
+    monthlyPriceInDollars?: number | null
+    isOneTime?: boolean
+  } | null
+  sponsorEntity?: GraphSponsorEntityNode | null
+  sponsorable?: GraphSponsorEntityNode | null
+}
+
+interface GraphSponsorshipsResponse {
+  repositoryOwner: {
+    sponsorships?: {
+      totalCount?: number
+      pageInfo?: {
+        hasNextPage?: boolean
+      } | null
+      nodes?: Array<GraphSponsorshipNode | null>
+    } | null
+  } | null
+}
+
+interface GraphSponsorsSummaryResponse {
+  repositoryOwner: {
+    hasSponsorsListing?: boolean
+    sponsors?: {
+      totalCount?: number
+    } | null
+    sponsoring?: {
+      totalCount?: number
+    } | null
+  } | null
+}
+
+const accountSponsorsSummaryQuery = `
+  query AccountSponsorsSummary($login: String!) {
+    repositoryOwner(login: $login) {
+      ... on Sponsorable {
+        hasSponsorsListing
+        sponsors: sponsorshipsAsMaintainer(first: 1, activeOnly: true) {
+          totalCount
+        }
+        sponsoring: sponsorshipsAsSponsor(first: 1, activeOnly: true) {
+          totalCount
+        }
+      }
+    }
+  }
+`
+
+// The sponsorships connections encode cursors as base64 of the 1-based item
+// offset (same as repository refs), so page numbers map straight to `after`
+// cursors and arbitrary page jumps work like offset pagination.
+const accountSponsorshipsQueries: Record<'maintainer' | 'sponsor', string> = {
+  maintainer: buildSponsorshipsQuery('sponsorshipsAsMaintainer', 'sponsorEntity'),
+  sponsor: buildSponsorshipsQuery('sponsorshipsAsSponsor', 'sponsorable'),
+}
+
+function buildSponsorshipsQuery(field: string, entityField: string): string {
+  return `
+    query AccountSponsorships($login: String!, $first: Int!, $after: String) {
+      repositoryOwner(login: $login) {
+        ... on Sponsorable {
+          sponsorships: ${field}(
+            first: $first
+            after: $after
+            activeOnly: true
+            orderBy: { field: CREATED_AT, direction: DESC }
+          ) {
+            totalCount
+            pageInfo {
+              hasNextPage
+            }
+            nodes {
+              privacyLevel
+              isOneTimePayment
+              createdAt
+              tier {
+                name
+                monthlyPriceInDollars
+                isOneTime
+              }
+              ${entityField} {
+                __typename
+                ... on User {
+                  login
+                  name
+                  avatarUrl
+                  bio
+                }
+                ... on Organization {
+                  login
+                  name
+                  avatarUrl
+                  description
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `
+}
+
 const accountContributionsQuery = `
   query AccountContributions($login: String!, $from: DateTime!, $to: DateTime!) {
     user(login: $login) {
@@ -519,6 +665,135 @@ export class AccountsApi {
     }
   }
 
+  async listFollowers(login: string): Promise<GitHubAccountFollowList> {
+    return this.listFollowAccounts('GET /users/{username}/followers', login)
+  }
+
+  async listFollowing(login: string): Promise<GitHubAccountFollowList> {
+    return this.listFollowAccounts('GET /users/{username}/following', login)
+  }
+
+  async getSponsorsSummary(login: string): Promise<GitHubAccountSponsorsSummary> {
+    const response = await this.octokit.graphql<GraphSponsorsSummaryResponse>(
+      accountSponsorsSummaryQuery,
+      { login },
+    )
+    const owner = response.repositoryOwner
+
+    return {
+      hasSponsorsListing: Boolean(owner?.hasSponsorsListing),
+      sponsorsCount: owner?.sponsors?.totalCount ?? 0,
+      sponsoringCount: owner?.sponsoring?.totalCount ?? 0,
+    }
+  }
+
+  async listSponsorships(options: ListAccountSponsorshipsOptions): Promise<GitHubAccountSponsorshipPage> {
+    const page = normalizePage(options.page)
+    const perPage = normalizePerPage(options.perPage)
+    const response = await this.octokit.graphql<GraphSponsorshipsResponse>(
+      accountSponsorshipsQueries[options.role],
+      {
+        login: options.login,
+        first: perPage,
+        after: offsetPageCursor(page, perPage),
+      },
+    )
+    const connection = response.repositoryOwner?.sponsorships
+
+    return {
+      items: (connection?.nodes ?? []).flatMap(mapSponsorship),
+      totalCount: connection?.totalCount ?? 0,
+      page,
+      perPage,
+      hasNextPage: Boolean(connection?.pageInfo?.hasNextPage),
+    }
+  }
+
+  // REST returns follow relationships oldest-first with no ordering options, so
+  // the whole (capped) list is fetched from the tail and reversed to render
+  // newest-first; search and paging then happen client-side.
+  private async listFollowAccounts(
+    route: 'GET /users/{username}/followers' | 'GET /users/{username}/following',
+    login: string,
+  ): Promise<GitHubAccountFollowList> {
+    const firstResponse = await this.octokit.request(route, {
+      username: login,
+      page: 1,
+      per_page: FOLLOWS_FETCH_PAGE_SIZE,
+    })
+    const firstPageUsers = firstResponse.data as FollowUserResponse[]
+    const lastPage = parseLastPage(String(firstResponse.headers.link ?? ''))
+    const truncated = lastPage > FOLLOWS_MAX_PAGES
+    // When truncated, keep the newest FOLLOWS_MAX_PAGES pages (the tail).
+    const windowStart = truncated ? lastPage - FOLLOWS_MAX_PAGES + 1 : 2
+    const extraPageNumbers: number[] = []
+    for (let pageNumber = windowStart; pageNumber <= lastPage; pageNumber += 1) {
+      extraPageNumbers.push(pageNumber)
+    }
+    const extraPages = await Promise.all(
+      extraPageNumbers.map(async (pageNumber) => {
+        const response = await this.octokit.request(route, {
+          username: login,
+          page: pageNumber,
+          per_page: FOLLOWS_FETCH_PAGE_SIZE,
+        })
+        return response.data as FollowUserResponse[]
+      }),
+    )
+    const ascending = truncated ? extraPages.flat() : [...firstPageUsers, ...extraPages.flat()]
+    const users = [...ascending].reverse()
+    const lastPageUsers = extraPages.length > 0 ? extraPages[extraPages.length - 1] : firstPageUsers
+    const totalCount = (lastPage - 1) * FOLLOWS_FETCH_PAGE_SIZE + lastPageUsers.length
+    const enrichments = await this.enrichFollowAccounts(users).catch(() => new Map<string, GraphFollowEnrichmentNode>())
+
+    return {
+      items: users.flatMap((user) => mapFollowUser(user, enrichments.get(user.login?.toLowerCase() ?? ''))),
+      totalCount,
+      truncated,
+    }
+  }
+
+  // One aliased repositoryOwner lookup per row adds name/bio and the viewer's
+  // follow relationship to the plain REST list, batched 100 logins per query.
+  private async enrichFollowAccounts(users: FollowUserResponse[]): Promise<Map<string, GraphFollowEnrichmentNode>> {
+    const logins = users
+      .map((user) => user.login ?? '')
+      .filter((login) => /^[a-zA-Z0-9-]+$/.test(login))
+    const enrichments = new Map<string, GraphFollowEnrichmentNode>()
+
+    for (let offset = 0; offset < logins.length; offset += FOLLOWS_ENRICH_CHUNK_SIZE) {
+      const chunk = logins.slice(offset, offset + FOLLOWS_ENRICH_CHUNK_SIZE)
+      const selections = chunk.map((login, index) => `
+        o${index}: repositoryOwner(login: "${login}") {
+          __typename
+          ... on User {
+            name
+            bio
+            viewerIsFollowing
+            viewerCanFollow
+            isFollowingViewer
+            isViewer
+          }
+          ... on Organization {
+            name
+            description
+            viewerIsFollowing
+          }
+        }
+      `)
+      const response = await this.octokit.graphql<Record<string, GraphFollowEnrichmentNode | null>>(
+        `query FollowEnrichment {${selections.join('\n')}}`,
+      )
+
+      chunk.forEach((login, index) => {
+        const node = response[`o${index}`]
+        if (node) enrichments.set(login.toLowerCase(), node)
+      })
+    }
+
+    return enrichments
+  }
+
   async getViewerState(login: string): Promise<GitHubAccountViewerState> {
     return {
       isFollowing: await this.isFollowing(login),
@@ -619,12 +894,18 @@ export class AccountsApi {
 
   private async getProfileReadme(login: string): Promise<GitHubRepositoryDocument | null> {
     try {
-      const response = await this.octokit.request('GET /repos/{owner}/{repo}/readme', {
-        owner: login,
-        repo: login,
-      })
+      const [response, renderedHtml] = await Promise.all([
+        this.octokit.request('GET /repos/{owner}/{repo}/readme', {
+          owner: login,
+          repo: login,
+        }),
+        this.getRenderedHtml('GET /repos/{owner}/{repo}/readme', {
+          owner: login,
+          repo: login,
+        }),
+      ])
 
-      return mapReadmeDocument(response.data as RepositoryContentFile)
+      return withCamoImages(mapReadmeDocument(response.data as RepositoryContentFile), renderedHtml)
     } catch (error) {
       if (isNotFoundError(error)) return null
       throw error
@@ -633,19 +914,42 @@ export class AccountsApi {
 
   private async getOrganizationProfileReadme(login: string): Promise<GitHubRepositoryDocument | null> {
     try {
-      const response = await this.octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
-        owner: login,
-        repo: '.github',
-        path: 'profile/README.md',
-      })
+      const [response, renderedHtml] = await Promise.all([
+        this.octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+          owner: login,
+          repo: '.github',
+          path: 'profile/README.md',
+        }),
+        this.getRenderedHtml('GET /repos/{owner}/{repo}/contents/{path}', {
+          owner: login,
+          repo: '.github',
+          path: 'profile/README.md',
+        }),
+      ])
       const file = response.data as RepositoryContentFile | RepositoryContentFile[]
 
       if (Array.isArray(file)) return null
 
-      return mapReadmeDocument(file)
+      return withCamoImages(mapReadmeDocument(file), renderedHtml)
     } catch (error) {
       if (isNotFoundError(error)) return null
       throw error
+    }
+  }
+
+  private async getRenderedHtml(
+    route: 'GET /repos/{owner}/{repo}/readme' | 'GET /repos/{owner}/{repo}/contents/{path}',
+    params: { owner: string; repo: string; path?: string },
+  ): Promise<string | null> {
+    try {
+      const response = await this.octokit.request(route, {
+        ...params,
+        mediaType: { format: 'html' },
+      })
+
+      return typeof response.data === 'string' ? response.data : null
+    } catch {
+      return null
     }
   }
 
@@ -693,6 +997,64 @@ function mapUserProfile(user: UserProfileResponse, fallbackLogin: string): GitHu
     hireable: user.hireable ?? null,
     type: user.type ?? 'User',
   }
+}
+
+function mapFollowUser(
+  user: FollowUserResponse,
+  enrichment: GraphFollowEnrichmentNode | undefined,
+): GitHubAccountFollowUser[] {
+  const login = user.login?.trim()
+  if (!login) return []
+
+  const isOrganization = (enrichment?.__typename ?? user.type) === 'Organization'
+
+  return [{
+    id: user.id ?? 0,
+    login,
+    name: enrichment?.name ?? null,
+    avatarUrl: user.avatar_url ?? `https://github.com/${encodeURIComponent(login)}.png?size=96`,
+    bio: (isOrganization ? enrichment?.description : enrichment?.bio) ?? null,
+    type: user.type ?? (isOrganization ? 'Organization' : 'User'),
+    isViewer: Boolean(enrichment?.isViewer),
+    viewerIsFollowing: Boolean(enrichment?.viewerIsFollowing),
+    // Organizations expose no viewerCanFollow field; anyone can follow an org.
+    viewerCanFollow: enrichment ? (isOrganization ? true : Boolean(enrichment.viewerCanFollow)) : false,
+    isFollowingViewer: Boolean(enrichment?.isFollowingViewer),
+  }]
+}
+
+function mapSponsorship(node: GraphSponsorshipNode | null | undefined): GitHubAccountSponsorship[] {
+  if (!node) return []
+
+  const entity = node.sponsorEntity ?? node.sponsorable ?? null
+  const isOrganization = entity?.__typename === 'Organization'
+
+  return [{
+    login: entity?.login ?? null,
+    name: entity?.name ?? null,
+    avatarUrl: entity?.avatarUrl ?? null,
+    bio: (isOrganization ? entity?.description : entity?.bio) ?? null,
+    type: isOrganization ? 'Organization' : 'User',
+    isPrivate: node.privacyLevel === 'PRIVATE' || !entity,
+    isOneTimePayment: Boolean(node.isOneTimePayment),
+    createdAt: node.createdAt ?? null,
+    tier: node.tier?.name
+      ? {
+          name: node.tier.name,
+          monthlyPriceInDollars: node.tier.monthlyPriceInDollars ?? 0,
+          isOneTime: Boolean(node.tier.isOneTime),
+        }
+      : null,
+  }]
+}
+
+// The sponsorships connections encode cursors as base64 of the 1-based item
+// offset (e.g. "MQ" = "1"), matching the repository refs connection.
+function offsetPageCursor(page: number, perPage: number): string | undefined {
+  const offset = (page - 1) * perPage
+  if (offset <= 0) return undefined
+
+  return Buffer.from(String(offset), 'utf8').toString('base64').replace(/=+$/, '')
 }
 
 function mapGraphOrganization(node: GraphOrganizationNode | null | undefined): GitHubOrganization[] {
@@ -815,6 +1177,18 @@ function mapRestRepository(repository: RepositoryResponse): GitHubAccountReposit
   }
 }
 
+function withCamoImages(
+  document: GitHubRepositoryDocument | null,
+  renderedHtml: string | null,
+): GitHubRepositoryDocument | null {
+  if (!document || document.format !== 'markdown') return document
+
+  return {
+    ...document,
+    content: rewriteImagesToCamo(document.content, renderedHtml),
+  }
+}
+
 function mapReadmeDocument(file: RepositoryContentFile): GitHubRepositoryDocument | null {
   if (file.type && file.type !== 'file') return null
 
@@ -845,6 +1219,11 @@ function decodeContent(content: string | undefined, encoding: string | undefined
 
 function isMarkdownPath(path: string): boolean {
   return /\.(md|markdown|mdown|mkdn)$/i.test(path)
+}
+
+function parseLastPage(link: string): number {
+  const lastPageMatch = link.match(/[?&]page=(\d+)[^>]*>;\s*rel="last"/)
+  return lastPageMatch ? Number(lastPageMatch[1]) : 1
 }
 
 function parseLinkPagination(link: string, page: number, perPage: number, itemCount: number) {

@@ -15,9 +15,22 @@ const api = {
       ipcRenderer.invoke('accounts:list-starred-repositories', options),
     getViewerState: (login: string) => ipcRenderer.invoke('accounts:get-viewer-state', login),
     setFollowed: (options: unknown) => ipcRenderer.invoke('accounts:set-followed', options),
+    listFollowers: (login: string) => ipcRenderer.invoke('accounts:list-followers', login),
+    listFollowing: (login: string) => ipcRenderer.invoke('accounts:list-following', login),
+    getSponsorsSummary: (login: string) => ipcRenderer.invoke('accounts:get-sponsors-summary', login),
+    listSponsorships: (options: unknown) => ipcRenderer.invoke('accounts:list-sponsorships', options),
     listOrganizations: () => ipcRenderer.invoke('accounts:list-organizations'),
     listOrganizationRepositories: (owner: string) =>
       ipcRenderer.invoke('accounts:list-organization-repositories', owner)
+  },
+  organizationPeople: {
+    getPeople: (org: string) => ipcRenderer.invoke('organization-people:get', org),
+    listInvitations: (org: string) => ipcRenderer.invoke('organization-people:list-invitations', org),
+    inviteMember: (options: unknown) => ipcRenderer.invoke('organization-people:invite', options),
+    setMemberRole: (options: unknown) => ipcRenderer.invoke('organization-people:set-role', options),
+    removeMember: (options: unknown) => ipcRenderer.invoke('organization-people:remove-member', options),
+    cancelInvitation: (options: unknown) => ipcRenderer.invoke('organization-people:cancel-invitation', options),
+    setMembershipVisibility: (options: unknown) => ipcRenderer.invoke('organization-people:set-visibility', options)
   },
   actions: {
     listRepositoryWorkflows: (owner: string, repo: string) =>

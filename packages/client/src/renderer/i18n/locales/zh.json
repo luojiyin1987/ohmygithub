@@ -583,12 +583,122 @@
       "title": "无法加载账号"
     },
     "eyebrow": "账号",
+    "followers": {
+      "empty": {
+        "followers": {
+          "title": "还没有关注者",
+          "description": "关注此账号的人会显示在这里。"
+        },
+        "following": {
+          "title": "没有关注任何人",
+          "description": "该用户关注的账号会显示在这里。"
+        }
+      },
+      "error": {
+        "title": "列表加载失败",
+        "description": "加载关注列表时出错，请重试。"
+      },
+      "followsYou": "关注了你",
+      "pagination": {
+        "summary": "第 {page} / {pageCount} 页 · 共 {totalCount} 个账号"
+      },
+      "searchEmpty": {
+        "title": "没有匹配结果",
+        "description": "没有符合当前搜索的账号。"
+      },
+      "searchPlaceholder": "查找用户…",
+      "tabs": {
+        "followers": "关注者",
+        "following": "正在关注"
+      },
+      "tabsLabel": "关注者与正在关注",
+      "toasts": {
+        "errorTitle": "关注操作失败"
+      },
+      "truncated": "仅显示最近的 1,000 个账号，可使用搜索缩小范围。"
+    },
     "overview": {
       "pinned": "置顶仓库",
       "readme": "个人 README"
     },
     "pagination": {
       "summary": "第 {page} / {pageCount} 页 · 共 {totalCount} 个仓库"
+    },
+    "people": {
+      "tabs": {
+        "members": "成员",
+        "invitations": "邀请"
+      },
+      "tabsLabel": "组织成员",
+      "searchPlaceholder": "查找成员…",
+      "roleFilter": {
+        "label": "按角色筛选",
+        "all": "全部角色"
+      },
+      "role": {
+        "admin": "所有者",
+        "member": "成员",
+        "billingManager": "账单管理员"
+      },
+      "twoFactorDisabled": "未启用两步验证",
+      "visibility": {
+        "public": "公开",
+        "private": "隐藏",
+        "makePublic": "设为公开",
+        "makePrivate": "设为隐藏"
+      },
+      "roleSelectLabel": "修改 {login} 的角色",
+      "actions": {
+        "invite": "邀请成员",
+        "remove": "移除 {login}"
+      },
+      "truncated": "仅显示前 1,000 名成员，可使用搜索缩小范围。",
+      "missingAdminScope": "管理成员需要 GitHub OAuth scope：{scopes}。重新授权账号后即可启用。",
+      "empty": {
+        "members": {
+          "title": "未找到成员",
+          "description": "没有符合当前筛选条件的组织成员。"
+        },
+        "invitations": {
+          "title": "没有待处理的邀请",
+          "description": "发出的邀请在被接受前会显示在这里。"
+        }
+      },
+      "error": {
+        "title": "组织成员加载失败",
+        "description": "加载列表时出错，请重试。"
+      },
+      "invite": {
+        "title": "邀请成员",
+        "description": "通过 GitHub 用户名或邮箱邀请，邀请 7 天后过期。",
+        "identifierLabel": "用户名或邮箱",
+        "identifierPlaceholder": "octocat 或 name{'@'}example.com",
+        "roleLabel": "角色",
+        "submit": "发送邀请",
+        "cancel": "取消",
+        "success": "已向 {identifier} 发送邀请"
+      },
+      "remove": {
+        "title": "将 {login} 移出组织？",
+        "description": "{login} 将失去 {org} 中所有仓库和团队的访问权限，其发出的邀请也会被取消。成员数据会保留 3 个月，以便恢复成员身份。",
+        "cancel": "取消",
+        "confirm": "移除成员"
+      },
+      "invitations": {
+        "meta": "由 {inviter} 于 {date} 邀请",
+        "cancel": "撤销邀请",
+        "canceled": "邀请已撤销"
+      },
+      "toasts": {
+        "errorTitle": "组织操作失败",
+        "roleUpdated": "已更新 {login} 的角色",
+        "removed": "已将 {login} 移出组织",
+        "visibilityPublic": "你的成员身份已设为公开",
+        "visibilityPrivate": "你的成员身份已设为隐藏"
+      },
+      "pagination": {
+        "summary": "第 {page} / {pageCount} 页 · 共 {totalCount} 名成员"
+      }
     },
     "profile": {
       "blog": "网站",
@@ -627,10 +737,44 @@
     "sections": {
       "overview": "概览",
       "repositories": "仓库",
-      "stars": "Stars"
+      "stars": "Stars",
+      "followers": "关注",
+      "sponsors": "赞助",
+      "people": "成员"
     },
     "sidebar": {
       "navigation": "账号导航"
+    },
+    "sponsors": {
+      "tabs": {
+        "sponsors": "赞助者",
+        "sponsoring": "正在赞助"
+      },
+      "tabsLabel": "赞助者与正在赞助",
+      "privateSponsor": "私密赞助者",
+      "privateBadge": "私密",
+      "oneTime": "一次性",
+      "notEnrolled": {
+        "title": "未开通 GitHub Sponsors",
+        "description": "该账号还没有开通 GitHub Sponsors。"
+      },
+      "empty": {
+        "sponsors": {
+          "title": "还没有赞助者",
+          "description": "公开赞助此账号的人会显示在这里。"
+        },
+        "sponsoring": {
+          "title": "没有赞助任何人",
+          "description": "该用户赞助的账号会显示在这里。"
+        }
+      },
+      "error": {
+        "title": "赞助列表加载失败",
+        "description": "加载赞助列表时出错，请重试。"
+      },
+      "pagination": {
+        "summary": "第 {page} / {pageCount} 页 · 共 {totalCount} 个账号"
+      }
     },
     "stars": {
       "empty": {

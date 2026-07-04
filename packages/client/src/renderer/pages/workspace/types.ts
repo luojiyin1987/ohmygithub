@@ -20,6 +20,9 @@ export type AccountTabId =
   | 'overview'
   | 'repositories'
   | 'stars'
+  | 'followers'
+  | 'sponsors'
+  | 'people'
 
 export type WorkspaceTabType =
   | 'inbox'

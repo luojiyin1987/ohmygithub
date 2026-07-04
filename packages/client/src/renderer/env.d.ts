@@ -259,6 +259,125 @@ type SetAccountFollowedOptions = {
   followed: boolean
 }
 
+type GitHubAccountFollowUser = {
+  id: number
+  login: string
+  name: string | null
+  avatarUrl: string
+  bio: string | null
+  type: GitHubAccountProfileType
+  isViewer: boolean
+  viewerIsFollowing: boolean
+  viewerCanFollow: boolean
+  isFollowingViewer: boolean
+}
+
+type GitHubAccountFollowList = {
+  items: GitHubAccountFollowUser[]
+  totalCount: number
+  truncated: boolean
+}
+
+type GitHubSponsorshipRole = 'maintainer' | 'sponsor'
+
+type GitHubSponsorshipTier = {
+  name: string
+  monthlyPriceInDollars: number
+  isOneTime: boolean
+}
+
+type GitHubAccountSponsorship = {
+  login: string | null
+  name: string | null
+  avatarUrl: string | null
+  bio: string | null
+  type: GitHubAccountProfileType
+  isPrivate: boolean
+  isOneTimePayment: boolean
+  createdAt: string | null
+  tier: GitHubSponsorshipTier | null
+}
+
+type GitHubAccountSponsorshipPage = {
+  items: GitHubAccountSponsorship[]
+  totalCount: number
+  page: number
+  perPage: number
+  hasNextPage: boolean
+}
+
+type GitHubAccountSponsorsSummary = {
+  hasSponsorsListing: boolean
+  sponsorsCount: number
+  sponsoringCount: number
+}
+
+type ListAccountSponsorshipsOptions = {
+  login: string
+  role: GitHubSponsorshipRole
+  page?: number
+  perPage?: number
+}
+
+type GitHubOrganizationMemberRole = 'member' | 'admin'
+
+type GitHubOrganizationMember = {
+  id: number
+  login: string
+  name: string | null
+  avatarUrl: string
+  role: GitHubOrganizationMemberRole
+  hasTwoFactorEnabled: boolean | null
+  isPublic: boolean
+}
+
+type GitHubOrganizationPeople = {
+  members: GitHubOrganizationMember[]
+  totalCount: number
+  truncated: boolean
+  viewerCanAdminister: boolean
+  missingAdminScopes: string[]
+}
+
+type GitHubOrganizationInvitationRole = 'direct_member' | 'admin' | 'billing_manager' | (string & {})
+
+type GitHubOrganizationInvitation = {
+  id: number
+  login: string | null
+  email: string | null
+  role: GitHubOrganizationInvitationRole
+  createdAt: string | null
+  inviterLogin: string | null
+}
+
+type InviteOrganizationMemberOptions = {
+  org: string
+  identifier: string
+  role: GitHubOrganizationMemberRole
+}
+
+type SetOrganizationMemberRoleOptions = {
+  org: string
+  login: string
+  role: GitHubOrganizationMemberRole
+}
+
+type OrganizationMemberOptions = {
+  org: string
+  login: string
+}
+
+type CancelOrganizationInvitationOptions = {
+  org: string
+  invitationId: number
+}
+
+type SetOrganizationMembershipVisibilityOptions = {
+  org: string
+  login: string
+  publicized: boolean
+}
+
 type GitHubRepository = {
   id: number
   name: string
@@ -1634,8 +1753,21 @@ interface Window {
       listStarredRepositories: (options: ListAccountRepositoriesOptions) => Promise<GitHubAccountRepositoryPage>
       getViewerState: (login: string) => Promise<GitHubAccountViewerState>
       setFollowed: (options: SetAccountFollowedOptions) => Promise<void>
+      listFollowers: (login: string) => Promise<GitHubAccountFollowList>
+      listFollowing: (login: string) => Promise<GitHubAccountFollowList>
+      getSponsorsSummary: (login: string) => Promise<GitHubAccountSponsorsSummary>
+      listSponsorships: (options: ListAccountSponsorshipsOptions) => Promise<GitHubAccountSponsorshipPage>
       listOrganizations: () => Promise<GitHubOrganization[]>
       listOrganizationRepositories: (owner: string) => Promise<GitHubRepository[]>
+    }
+    organizationPeople: {
+      getPeople: (org: string) => Promise<GitHubOrganizationPeople>
+      listInvitations: (org: string) => Promise<GitHubOrganizationInvitation[]>
+      inviteMember: (options: InviteOrganizationMemberOptions) => Promise<void>
+      setMemberRole: (options: SetOrganizationMemberRoleOptions) => Promise<void>
+      removeMember: (options: OrganizationMemberOptions) => Promise<void>
+      cancelInvitation: (options: CancelOrganizationInvitationOptions) => Promise<void>
+      setMembershipVisibility: (options: SetOrganizationMembershipVisibilityOptions) => Promise<void>
     }
     actions: {
       listRepositoryWorkflows: (owner: string, repo: string) => Promise<GitHubActionWorkflow[]>

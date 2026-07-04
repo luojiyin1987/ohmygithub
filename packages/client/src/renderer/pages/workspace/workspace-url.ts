@@ -452,6 +452,9 @@ function sanitizeRepositorySection(value: string | undefined): RepositoryTabId {
 function sanitizeAccountSection(value: string | undefined): AccountTabId {
   if (value === 'repositories') return 'repositories'
   if (value === 'stars') return 'stars'
+  if (value === 'followers') return 'followers'
+  if (value === 'sponsors') return 'sponsors'
+  if (value === 'people') return 'people'
   return DEFAULT_ACCOUNT_SECTION
 }
 
