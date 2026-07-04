@@ -34,6 +34,9 @@ export function registerActionsIpc(): void {
   ipcMain.handle('actions:rerun-job', (_event, owner: string, repo: string, jobId: number) =>
     rerunWorkflowJob(owner, repo, jobId)
   )
+  ipcMain.handle('actions:dispatch-workflow', (_event, owner: string, repo: string, workflowId: number, ref: string) =>
+    dispatchWorkflow(owner, repo, workflowId, ref)
+  )
 }
 
 async function listRepositoryWorkflows(owner: string, repo: string) {
@@ -115,6 +118,23 @@ async function rerunWorkflowJob(owner: string, repo: string, jobId: number) {
   await api.actions.rerunWorkflowJob({
     ...repository,
     jobId: normalizePositiveInteger(jobId, 1),
+  })
+}
+
+async function dispatchWorkflow(owner: string, repo: string, workflowId: number, ref: string) {
+  const repository = normalizeRepository(owner, repo)
+  const normalizedRef = ref.trim()
+
+  if (!normalizedRef) {
+    throw new Error('Workflow dispatch ref is required')
+  }
+
+  const api = await createAuthenticatedGitHubApi()
+
+  await api.actions.dispatchWorkflow({
+    ...repository,
+    workflowId: normalizePositiveInteger(workflowId, 1),
+    ref: normalizedRef,
   })
 }
 

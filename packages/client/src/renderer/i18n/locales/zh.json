@@ -841,6 +841,17 @@
     },
     "actions": {
       "description": "查看当前仓库所有 workflow 或指定 workflow 的运行记录。",
+      "dispatch": {
+        "branchLabel": "分支",
+        "button": "运行 workflow",
+        "cancel": "取消",
+        "description": "通过 workflow_dispatch 手动触发 {workflow}。",
+        "error": "无法触发这个 workflow。请确认它声明了 workflow_dispatch 事件。",
+        "selectHint": "请先选择一个 workflow。",
+        "submit": "运行 workflow",
+        "success": "已请求运行 {workflow}。",
+        "title": "运行 workflow"
+      },
       "fork": "Fork",
       "star": "Star",
       "starred": "Starred",

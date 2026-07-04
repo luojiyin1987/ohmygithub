@@ -7,6 +7,7 @@ import type {
   DeleteReleaseOptions,
   DeploymentTargetOptions,
   AccountContributionsOptions,
+  DispatchWorkflowOptions,
   GetIssueDetailOptions,
   GetPullRequestDetailOptions,
   GetWorkflowJobLogOptions,
@@ -1594,6 +1595,56 @@ export class MockGitHubClient implements GitHubClient {
 
     markRunRerunning(run)
     markJobRerunning(run, job)
+  }
+
+  async dispatchWorkflow(options: DispatchWorkflowOptions): Promise<void> {
+    const key = repositoryKey(options)
+    const workflow = (workflowsByRepository[key] ?? []).find((item) => item.id === options.workflowId)
+
+    if (!workflow) {
+      throw new Error('Workflow not found')
+    }
+
+    const runs = runsByRepository[key] ?? (runsByRepository[key] = [])
+    const id = runs.reduce((max, run) => Math.max(max, run.id), workflow.id * 100) + 1
+    const now = new Date().toISOString()
+    const run: GitHubActionRun = {
+      id,
+      runNumber: runs.reduce((max, item) => Math.max(max, item.runNumber), 0) + 1,
+      runAttempt: 1,
+      name: workflow.name,
+      displayTitle: workflow.name,
+      workflowId: workflow.id,
+      workflowName: workflow.name,
+      event: 'workflow_dispatch',
+      status: 'queued',
+      conclusion: null,
+      headBranch: options.ref,
+      headSha: mockSha(`${key}:run:${id}`).padEnd(40, '0').slice(0, 40),
+      actor: {
+        login: 'acbox',
+        avatarUrl: 'https://github.com/acbox.png?size=64',
+      },
+      triggeringActor: null,
+      checkSuiteId: id + 5000,
+      createdAt: now,
+      updatedAt: now,
+      runStartedAt: null,
+      completedAt: null,
+      url: `https://api.github.com/repos/${key}/actions/runs/${id}`,
+      htmlUrl: `https://github.com/${key}/actions/runs/${id}`,
+      jobsUrl: `https://api.github.com/repos/${key}/actions/runs/${id}/jobs`,
+      logsUrl: `https://api.github.com/repos/${key}/actions/runs/${id}/logs`,
+    }
+
+    runs.unshift(run)
+
+    const jobs = createMockActionJobs(run)
+    jobsByRun.set(run.id, jobs)
+
+    for (const job of jobs) {
+      logsByJob.set(job.id, createMockActionLog(run, job))
+    }
   }
 
   async listRepositoryEnvironments(options: ListRepositoryEnvironmentsOptions): Promise<GitHubEnvironmentPage> {

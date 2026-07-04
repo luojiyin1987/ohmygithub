@@ -521,6 +521,7 @@ watch(
 
         <ActionsSection
           v-else-if="activeSection === 'actions'"
+          :default-branch="overview?.defaultBranch ?? null"
           :is-active="isActive"
           :owner="owner"
           :repo="repository"

@@ -1,6 +1,7 @@
 import { inflateRawSync } from 'node:zlib'
 import type { GitHubOctokit } from '../transport'
 import type {
+  DispatchWorkflowOptions,
   GetWorkflowJobLogOptions,
   GetWorkflowRunOptions,
   GitHubActionConclusion,
@@ -324,6 +325,15 @@ export class ActionsApi {
       repo: options.repo,
       run_id: options.runId,
       ...debugLoggingParams(options),
+    })
+  }
+
+  async dispatchWorkflow(options: DispatchWorkflowOptions): Promise<void> {
+    await this.octokit.request('POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches', {
+      owner: options.owner,
+      repo: options.repo,
+      workflow_id: options.workflowId,
+      ref: options.ref,
     })
   }
 

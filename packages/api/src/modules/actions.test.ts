@@ -99,6 +99,29 @@ describe('ActionsApi rerun operations', () => {
   })
 })
 
+describe('ActionsApi workflow dispatch', () => {
+  it('dispatches a workflow on the requested ref', async () => {
+    const { api, request } = createApi()
+
+    await api.dispatchWorkflow({
+      owner: 'octo-org',
+      repo: 'hello-world',
+      workflowId: 161335,
+      ref: 'main',
+    })
+
+    expect(request).toHaveBeenCalledWith(
+      'POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches',
+      {
+        owner: 'octo-org',
+        repo: 'hello-world',
+        workflow_id: 161335,
+        ref: 'main',
+      },
+    )
+  })
+})
+
 describe('ActionsApi workflow job logs', () => {
   it('fetches per-step logs from the run attempt archive for completed jobs', async () => {
     const { api, request } = createApi()

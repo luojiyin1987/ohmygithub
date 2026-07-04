@@ -246,6 +246,17 @@ export async function rerunFailedWorkflowRunJobs(
   await window.ohMyGithub.actions.rerunFailedWorkflowRunJobs(owner, repo, runId)
 }
 
+export async function dispatchWorkflow(
+  owner: string,
+  repo: string,
+  workflowId: number,
+  ref: string,
+): Promise<void> {
+  assertActionsBridge()
+
+  await window.ohMyGithub.actions.dispatchWorkflow(owner, repo, workflowId, ref)
+}
+
 export async function rerunWorkflowJob(
   owner: string,
   repo: string,

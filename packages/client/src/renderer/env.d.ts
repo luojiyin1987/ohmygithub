@@ -1786,6 +1786,7 @@ interface Window {
       rerunWorkflowRun: (owner: string, repo: string, runId: number) => Promise<void>
       rerunFailedWorkflowRunJobs: (owner: string, repo: string, runId: number) => Promise<void>
       rerunWorkflowJob: (owner: string, repo: string, jobId: number) => Promise<void>
+      dispatchWorkflow: (owner: string, repo: string, workflowId: number, ref: string) => Promise<void>
     }
     deployments: {
       listEnvironments: (options: ListRepositoryEnvironmentsOptions) => Promise<GitHubEnvironmentPage>

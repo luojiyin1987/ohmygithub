@@ -1395,6 +1395,7 @@ export interface GitHubClient {
   rerunWorkflowRun(options: RerunWorkflowRunOptions): Promise<void>
   rerunFailedWorkflowRunJobs(options: RerunWorkflowRunOptions): Promise<void>
   rerunWorkflowJob(options: RerunWorkflowJobOptions): Promise<void>
+  dispatchWorkflow(options: DispatchWorkflowOptions): Promise<void>
   listRepositoryEnvironments(options: ListRepositoryEnvironmentsOptions): Promise<GitHubEnvironmentPage>
   listRepositoryDeployments(options: ListRepositoryDeploymentsOptions): Promise<GitHubDeploymentPage>
   listDeploymentStatuses(options: ListDeploymentStatusesOptions): Promise<GitHubDeploymentStatus[]>
@@ -1583,6 +1584,11 @@ export interface WorkflowJobLogHint {
 
 export interface RerunWorkflowRunOptions extends GetWorkflowRunOptions {
   enableDebugLogging?: boolean
+}
+
+export interface DispatchWorkflowOptions extends RepositoryOptions {
+  workflowId: number
+  ref: string
 }
 
 export interface RerunWorkflowJobOptions extends GetWorkflowJobLogOptions {

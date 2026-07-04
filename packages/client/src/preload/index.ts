@@ -48,7 +48,9 @@ const api = {
     rerunFailedWorkflowRunJobs: (owner: string, repo: string, runId: number) =>
       ipcRenderer.invoke('actions:rerun-failed-run-jobs', owner, repo, runId),
     rerunWorkflowJob: (owner: string, repo: string, jobId: number) =>
-      ipcRenderer.invoke('actions:rerun-job', owner, repo, jobId)
+      ipcRenderer.invoke('actions:rerun-job', owner, repo, jobId),
+    dispatchWorkflow: (owner: string, repo: string, workflowId: number, ref: string) =>
+      ipcRenderer.invoke('actions:dispatch-workflow', owner, repo, workflowId, ref)
   },
   deployments: {
     listEnvironments: (options: unknown) =>

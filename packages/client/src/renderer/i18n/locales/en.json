@@ -841,6 +841,17 @@
     },
     "actions": {
       "description": "Review workflow runs across all repository workflows or a selected workflow.",
+      "dispatch": {
+        "branchLabel": "Branch",
+        "button": "Run workflow",
+        "cancel": "Cancel",
+        "description": "Manually trigger {workflow} with a workflow_dispatch event.",
+        "error": "Could not trigger the workflow. Make sure it declares the workflow_dispatch event.",
+        "selectHint": "Select a workflow first.",
+        "submit": "Run workflow",
+        "success": "{workflow} run requested.",
+        "title": "Run workflow"
+      },
       "fork": "Fork",
       "star": "Star",
       "starred": "Starred",

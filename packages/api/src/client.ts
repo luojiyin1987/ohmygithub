@@ -148,6 +148,7 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
     rerunWorkflowRun: (options) => actions.rerunWorkflowRun(options),
     rerunFailedWorkflowRunJobs: (options) => actions.rerunFailedWorkflowRunJobs(options),
     rerunWorkflowJob: (options) => actions.rerunWorkflowJob(options),
+    dispatchWorkflow: (options) => actions.dispatchWorkflow(options),
     listRepositoryEnvironments: (options) => deployments.listRepositoryEnvironments(options),
     listRepositoryDeployments: (options) => deployments.listRepositoryDeployments(options),
     listDeploymentStatuses: (options) => deployments.listDeploymentStatuses(options),
