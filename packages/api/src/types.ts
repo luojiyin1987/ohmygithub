@@ -1832,3 +1832,121 @@ export interface ForkRepositoryOptions extends RepositoryOptions {
   name?: string | null
   defaultBranchOnly?: boolean
 }
+
+export interface GitHubUserSettingsProfile {
+  login: string
+  name: string | null
+  email: string | null
+  bio: string | null
+  company: string | null
+  location: string | null
+  blog: string | null
+  twitterUsername: string | null
+  hireable: boolean
+  avatarUrl: string
+  htmlUrl: string
+}
+
+export interface UpdateUserSettingsProfileInput {
+  name?: string
+  email?: string
+  bio?: string
+  company?: string
+  location?: string
+  blog?: string
+  twitterUsername?: string
+  hireable?: boolean
+}
+
+export interface GitHubSocialAccount {
+  provider: string
+  url: string
+}
+
+export interface GitHubUserEmail {
+  email: string
+  primary: boolean
+  verified: boolean
+  visibility: string | null
+}
+
+export interface GitHubSshKey {
+  id: number
+  title: string
+  key: string
+  createdAt: string | null
+}
+
+export interface GitHubGpgKeyEmail {
+  email: string
+  verified: boolean
+}
+
+export interface GitHubGpgKey {
+  id: number
+  keyId: string
+  name: string | null
+  emails: GitHubGpgKeyEmail[]
+  createdAt: string | null
+  expiresAt: string | null
+}
+
+export interface GitHubSshSigningKey {
+  id: number
+  title: string
+  key: string
+  createdAt: string | null
+}
+
+export interface GitHubBlockedUser {
+  login: string
+  avatarUrl: string
+  htmlUrl: string
+}
+
+export type GitHubInteractionLimitGroup =
+  | 'existing_users'
+  | 'contributors_only'
+  | 'collaborators_only'
+
+export type GitHubInteractionLimitExpiry =
+  | 'one_day'
+  | 'three_days'
+  | 'one_week'
+  | 'one_month'
+  | 'six_months'
+
+export interface GitHubInteractionLimits {
+  limit: GitHubInteractionLimitGroup
+  origin: string | null
+  expiresAt: string | null
+}
+
+export interface GitHubOrganizationMembership {
+  orgLogin: string
+  orgAvatarUrl: string
+  orgDescription: string | null
+  role: string
+  state: 'active' | 'pending'
+  isPublic: boolean
+}
+
+export interface GitHubCodespacesSecret {
+  name: string
+  createdAt: string | null
+  updatedAt: string | null
+  selectedRepositoryIds: number[]
+}
+
+export interface UpsertCodespacesSecretInput {
+  name: string
+  value: string
+  selectedRepositoryIds: number[]
+}
+
+export interface GitHubSavedReply {
+  id: string
+  databaseId: number | null
+  title: string
+  body: string
+}

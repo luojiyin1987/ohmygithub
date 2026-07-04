@@ -9,6 +9,7 @@ import { PullsApi } from './modules/pulls'
 import { ReleasesApi } from './modules/releases'
 import { RepositoriesApi } from './modules/repositories'
 import { SearchApi } from './modules/search'
+import { UserSettingsApi } from './modules/user-settings'
 import { createOctokit, type GitHubOctokit } from './transport'
 import type {
   GitHubApiOptions,
@@ -71,6 +72,7 @@ export interface GitHubApi extends GitHubClient {
   readonly releases: ReleasesApi
   readonly repositories: RepositoriesApi
   readonly search: SearchApi
+  readonly userSettings: UserSettingsApi
 }
 
 export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
@@ -86,6 +88,7 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
   const releases = new ReleasesApi(octokit)
   const repositories = new RepositoriesApi(octokit)
   const search = new SearchApi(octokit)
+  const userSettings = new UserSettingsApi(octokit)
 
   return {
     octokit,
@@ -100,6 +103,7 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
     releases,
     repositories,
     search,
+    userSettings,
     getAccountProfile: (login) => accounts.getProfile(login),
     getAccountOverview: (login) => accounts.getOverview(login),
     getAccountContributions: (options) => accounts.getContributions(options),

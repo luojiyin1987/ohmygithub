@@ -14,10 +14,12 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "libsodium-wrappers": "^0.8.4",
     "octokit": "^5.0.5",
     "undici": "^8.5.0"
   },
   "devDependencies": {
+    "@types/libsodium-wrappers": "^0.8.2",
     "typescript": "^5.8.3",
     "vitest": "^4.1.9"
   }

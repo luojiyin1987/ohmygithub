@@ -164,12 +164,26 @@
     "description": "Application settings",
     "navigation": "Settings navigation",
     "sections": {
-      "interface": "Interface"
+      "interface": "Interface",
+      "account": "Account",
+      "access": "Access",
+      "codeAutomation": "Code & automation",
+      "security": "Security",
+      "integrations": "Integrations",
+      "archives": "Archives"
     },
     "tabs": {
       "appearance": "Appearance",
       "keyboard": "Keyboard",
-      "about": "About"
+      "about": "About",
+      "github-profile": "Public profile",
+      "github-emails": "Emails",
+      "github-keys": "SSH & GPG keys",
+      "github-organizations": "Organizations",
+      "github-blocked-users": "Blocked users",
+      "github-interaction-limits": "Interaction limits",
+      "github-codespaces": "Codespaces",
+      "github-saved-replies": "Saved replies"
     },
     "about": {
       "checkForUpdate": "Check for Update",
@@ -288,7 +302,254 @@
         }
       }
     },
-    "title": "Settings"
+    "title": "Settings",
+    "links": {
+      "account": "Account",
+      "notifications": "Notifications",
+      "billing": "Billing & licensing",
+      "passwordAuthentication": "Password & authentication",
+      "sessions": "Sessions",
+      "codeReviewLimits": "Code review limits",
+      "repositories": "Repositories",
+      "packages": "Packages",
+      "copilot": "Copilot",
+      "pages": "Pages",
+      "codeSecurity": "Code security",
+      "applications": "Applications",
+      "scheduledReminders": "Scheduled reminders",
+      "securityLog": "Security log",
+      "sponsorshipLog": "Sponsorship log",
+      "developerSettings": "Developer settings"
+    },
+    "github": {
+      "signInRequired": "Sign in to GitHub to manage these settings.",
+      "signIn": "Sign in",
+      "missingScopesTitle": "Reauthorization required",
+      "missingScopesDescription": "Your current login is missing the {scopes} permission. Sign in again to edit these settings.",
+      "reauthorize": "Reauthorize",
+      "loadFailed": "Failed to load from GitHub",
+      "retry": "Retry"
+    },
+    "githubProfile": {
+      "changeAvatar": "Change your avatar on GitHub",
+      "sections": {
+        "profile": "Profile",
+        "socialAccounts": "Social accounts"
+      },
+      "fields": {
+        "name": "Name",
+        "namePlaceholder": "Your display name",
+        "publicEmail": "Public email",
+        "publicEmailNone": "Not visible",
+        "bio": "Bio",
+        "bioPlaceholder": "Tell us a little bit about yourself",
+        "url": "URL",
+        "twitter": "X (Twitter) username",
+        "twitterPlaceholder": "username",
+        "company": "Company",
+        "companyPlaceholder": "Company name",
+        "location": "Location",
+        "locationPlaceholder": "City, Country",
+        "hireable": "Available for hire"
+      },
+      "update": "Update profile",
+      "addSocialAccount": "Add",
+      "socialAccountPlaceholder": "Link to social profile",
+      "toasts": {
+        "updated": "Profile updated",
+        "updateFailed": "Failed to update profile",
+        "socialAccountFailed": "Failed to update social accounts"
+      }
+    },
+    "githubEmails": {
+      "sections": {
+        "emails": "Email addresses",
+        "privacy": "Privacy"
+      },
+      "changePrimary": "Change primary on GitHub",
+      "badges": {
+        "primary": "Primary",
+        "unverified": "Unverified",
+        "public": "Public"
+      },
+      "add": "Add",
+      "addPlaceholder": "Add an email address",
+      "keepPrivate": "Keep my email addresses private",
+      "keepPrivateDescription": "Web-based operations will use your no-reply address instead.",
+      "delete": {
+        "title": "Remove email address",
+        "description": "Remove {email} from your GitHub account?",
+        "cancel": "Cancel",
+        "confirm": "Remove"
+      },
+      "toasts": {
+        "added": "Email added",
+        "addedDescription": "A verification email was sent to {email}.",
+        "deleted": "Email removed",
+        "failed": "Email operation failed"
+      }
+    },
+    "githubKeys": {
+      "sections": {
+        "ssh": "Authentication keys (SSH)",
+        "signing": "Signing keys (SSH)",
+        "gpg": "GPG keys"
+      },
+      "newKey": "New key",
+      "untitled": "Untitled key",
+      "addedOn": "Added on {date}",
+      "expiresOn": "Expires on {date}",
+      "empty": {
+        "ssh": "No SSH authentication keys.",
+        "signing": "No SSH signing keys.",
+        "gpg": "No GPG keys."
+      },
+      "add": {
+        "sshTitle": "New SSH key",
+        "signingTitle": "New SSH signing key",
+        "gpgTitle": "New GPG key",
+        "sshDescription": "Paste your public key, beginning with ssh-ed25519 or ssh-rsa.",
+        "gpgDescription": "Paste your ASCII-armored public GPG key.",
+        "title": "Title",
+        "nameOptional": "Name (optional)",
+        "titlePlaceholder": "e.g. Personal laptop",
+        "key": "Key",
+        "sshKeyPlaceholder": "Begins with ssh-ed25519, ssh-rsa, ecdsa-sha2-nistp256…",
+        "gpgKeyPlaceholder": "Begins with -----BEGIN PGP PUBLIC KEY BLOCK-----",
+        "cancel": "Cancel",
+        "confirm": "Add key"
+      },
+      "delete": {
+        "title": "Delete key",
+        "description": "Delete {key}? This cannot be undone and may break existing access.",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "toasts": {
+        "added": "Key added",
+        "deleted": "Key deleted",
+        "failed": "Key operation failed"
+      }
+    },
+    "githubCodespaces": {
+      "sections": {
+        "secrets": "Codespaces secrets"
+      },
+      "newSecret": "New secret",
+      "empty": "No Codespaces secrets.",
+      "repositoryCount": "{count} repositories",
+      "updatedOn": "Updated on {date}",
+      "update": "Update",
+      "preferencesHint": "Editor, region, and other Codespaces preferences have no API.",
+      "openOnGitHub": "Open on GitHub",
+      "editor": {
+        "createTitle": "New Codespaces secret",
+        "updateTitle": "Update {name}",
+        "description": "The value is encrypted before it leaves this app and is only available to the selected repositories.",
+        "name": "Name",
+        "value": "Value",
+        "repositories": "Repository access ({count} selected)",
+        "searchRepositories": "Search your repositories",
+        "noRepositories": "No repositories found.",
+        "cancel": "Cancel",
+        "confirm": "Save secret"
+      },
+      "delete": {
+        "title": "Delete secret",
+        "description": "Delete {name}? Codespaces using it will lose access.",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "toasts": {
+        "saved": "Secret saved",
+        "deleted": "Secret deleted",
+        "failed": "Secret operation failed"
+      }
+    },
+    "githubBlockedUsers": {
+      "description": "Blocked users cannot follow you, mention you, or interact with your repositories.",
+      "sections": {
+        "blocked": "Blocked users"
+      },
+      "empty": "You have not blocked any users.",
+      "unblock": "Unblock",
+      "block": "Block user",
+      "blockPlaceholder": "Search by username",
+      "confirm": {
+        "title": "Block user",
+        "description": "Block {username}? They will be unfollowed and removed from your repositories.",
+        "cancel": "Cancel",
+        "confirm": "Block"
+      },
+      "toasts": {
+        "blocked": "Blocked {username}",
+        "unblocked": "Unblocked {username}",
+        "failed": "Block operation failed"
+      }
+    },
+    "githubInteractionLimits": {
+      "description": "Temporarily restrict which users can comment, open issues, or create pull requests across all your public repositories.",
+      "sections": {
+        "limits": "Temporary interaction limits"
+      },
+      "activeUntil": "{limit} is active until {date}.",
+      "groups": {
+        "no_limit": {
+          "label": "No limits",
+          "description": "Anyone can interact with your repositories."
+        },
+        "existing_users": {
+          "label": "Limit to existing users",
+          "description": "Users with brand-new accounts cannot interact."
+        },
+        "contributors_only": {
+          "label": "Limit to prior contributors",
+          "description": "Only users who previously contributed can interact."
+        },
+        "collaborators_only": {
+          "label": "Limit to repository collaborators",
+          "description": "Only collaborators can interact."
+        }
+      },
+      "expiry": {
+        "one_day": "24 hours",
+        "three_days": "3 days",
+        "one_week": "1 week",
+        "one_month": "1 month",
+        "six_months": "6 months"
+      },
+      "save": "Save",
+      "toasts": {
+        "saved": "Interaction limits updated",
+        "failed": "Failed to update interaction limits"
+      }
+    },
+    "githubOrganizations": {
+      "sections": {
+        "memberships": "Organization memberships"
+      },
+      "manageOnGitHub": "Manage on GitHub",
+      "empty": "You do not belong to any organizations.",
+      "roles": {
+        "admin": "Owner",
+        "member": "Member"
+      },
+      "pending": "Pending invitation",
+      "accept": "Accept",
+      "publicMembership": "Public membership",
+      "toasts": {
+        "accepted": "Joined {org}",
+        "failed": "Organization operation failed"
+      }
+    },
+    "githubSavedReplies": {
+      "readOnlyNote": "The GitHub API only allows reading saved replies.",
+      "editOnGitHub": "Edit on GitHub",
+      "sections": {
+        "replies": "Saved replies"
+      },
+      "empty": "No saved replies."
+    }
   },
   "account": {
     "actions": {

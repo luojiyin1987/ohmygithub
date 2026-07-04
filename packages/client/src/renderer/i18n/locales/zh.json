@@ -164,12 +164,26 @@
     "description": "应用设置",
     "navigation": "设置导航",
     "sections": {
-      "interface": "界面"
+      "interface": "界面",
+      "account": "账号",
+      "access": "访问",
+      "codeAutomation": "代码与自动化",
+      "security": "安全",
+      "integrations": "集成",
+      "archives": "归档"
     },
     "tabs": {
       "appearance": "外观",
       "keyboard": "键盘",
-      "about": "关于"
+      "about": "关于",
+      "github-profile": "公开资料",
+      "github-emails": "邮箱",
+      "github-keys": "SSH 和 GPG 密钥",
+      "github-organizations": "组织",
+      "github-blocked-users": "已屏蔽用户",
+      "github-interaction-limits": "互动限制",
+      "github-codespaces": "Codespaces",
+      "github-saved-replies": "快捷回复"
     },
     "about": {
       "checkForUpdate": "检查更新",
@@ -288,7 +302,254 @@
         }
       }
     },
-    "title": "设置"
+    "title": "设置",
+    "links": {
+      "account": "账户",
+      "notifications": "通知",
+      "billing": "账单与许可",
+      "passwordAuthentication": "密码与身份验证",
+      "sessions": "会话",
+      "codeReviewLimits": "代码审查限制",
+      "repositories": "仓库",
+      "packages": "软件包",
+      "copilot": "Copilot",
+      "pages": "Pages",
+      "codeSecurity": "代码安全",
+      "applications": "应用",
+      "scheduledReminders": "定时提醒",
+      "securityLog": "安全日志",
+      "sponsorshipLog": "赞助日志",
+      "developerSettings": "开发者设置"
+    },
+    "github": {
+      "signInRequired": "登录 GitHub 后即可管理这些设置。",
+      "signIn": "登录",
+      "missingScopesTitle": "需要重新授权",
+      "missingScopesDescription": "当前登录缺少 {scopes} 权限，重新登录后即可编辑这些设置。",
+      "reauthorize": "重新授权",
+      "loadFailed": "从 GitHub 加载失败",
+      "retry": "重试"
+    },
+    "githubProfile": {
+      "changeAvatar": "在 GitHub 上更换头像",
+      "sections": {
+        "profile": "个人资料",
+        "socialAccounts": "社交账号"
+      },
+      "fields": {
+        "name": "姓名",
+        "namePlaceholder": "显示名称",
+        "publicEmail": "公开邮箱",
+        "publicEmailNone": "不公开",
+        "bio": "简介",
+        "bioPlaceholder": "介绍一下自己",
+        "url": "网址",
+        "twitter": "X（Twitter）用户名",
+        "twitterPlaceholder": "用户名",
+        "company": "公司",
+        "companyPlaceholder": "公司名称",
+        "location": "所在地",
+        "locationPlaceholder": "城市、国家",
+        "hireable": "可接受工作邀请"
+      },
+      "update": "更新资料",
+      "addSocialAccount": "添加",
+      "socialAccountPlaceholder": "社交主页链接",
+      "toasts": {
+        "updated": "资料已更新",
+        "updateFailed": "更新资料失败",
+        "socialAccountFailed": "更新社交账号失败"
+      }
+    },
+    "githubEmails": {
+      "sections": {
+        "emails": "邮箱地址",
+        "privacy": "隐私"
+      },
+      "changePrimary": "在 GitHub 上更换主邮箱",
+      "badges": {
+        "primary": "主邮箱",
+        "unverified": "未验证",
+        "public": "公开"
+      },
+      "add": "添加",
+      "addPlaceholder": "添加邮箱地址",
+      "keepPrivate": "保持邮箱地址私密",
+      "keepPrivateDescription": "网页操作将改用 no-reply 邮箱地址。",
+      "delete": {
+        "title": "移除邮箱地址",
+        "description": "从 GitHub 账号中移除 {email}？",
+        "cancel": "取消",
+        "confirm": "移除"
+      },
+      "toasts": {
+        "added": "邮箱已添加",
+        "addedDescription": "验证邮件已发送至 {email}。",
+        "deleted": "邮箱已移除",
+        "failed": "邮箱操作失败"
+      }
+    },
+    "githubKeys": {
+      "sections": {
+        "ssh": "认证密钥（SSH）",
+        "signing": "签名密钥（SSH）",
+        "gpg": "GPG 密钥"
+      },
+      "newKey": "新增密钥",
+      "untitled": "未命名密钥",
+      "addedOn": "添加于 {date}",
+      "expiresOn": "过期于 {date}",
+      "empty": {
+        "ssh": "暂无 SSH 认证密钥。",
+        "signing": "暂无 SSH 签名密钥。",
+        "gpg": "暂无 GPG 密钥。"
+      },
+      "add": {
+        "sshTitle": "新增 SSH 密钥",
+        "signingTitle": "新增 SSH 签名密钥",
+        "gpgTitle": "新增 GPG 密钥",
+        "sshDescription": "粘贴公钥内容，以 ssh-ed25519 或 ssh-rsa 开头。",
+        "gpgDescription": "粘贴 ASCII-armored 格式的 GPG 公钥。",
+        "title": "标题",
+        "nameOptional": "名称（可选）",
+        "titlePlaceholder": "例如：个人笔记本",
+        "key": "密钥",
+        "sshKeyPlaceholder": "以 ssh-ed25519、ssh-rsa、ecdsa-sha2-nistp256… 开头",
+        "gpgKeyPlaceholder": "以 -----BEGIN PGP PUBLIC KEY BLOCK----- 开头",
+        "cancel": "取消",
+        "confirm": "添加密钥"
+      },
+      "delete": {
+        "title": "删除密钥",
+        "description": "删除 {key}？此操作不可撤销，可能导致现有访问失效。",
+        "cancel": "取消",
+        "confirm": "删除"
+      },
+      "toasts": {
+        "added": "密钥已添加",
+        "deleted": "密钥已删除",
+        "failed": "密钥操作失败"
+      }
+    },
+    "githubCodespaces": {
+      "sections": {
+        "secrets": "Codespaces 机密"
+      },
+      "newSecret": "新增机密",
+      "empty": "暂无 Codespaces 机密。",
+      "repositoryCount": "{count} 个仓库",
+      "updatedOn": "更新于 {date}",
+      "update": "更新",
+      "preferencesHint": "编辑器、区域等其他 Codespaces 偏好没有 API。",
+      "openOnGitHub": "在 GitHub 上打开",
+      "editor": {
+        "createTitle": "新增 Codespaces 机密",
+        "updateTitle": "更新 {name}",
+        "description": "机密值在本地加密后上传，仅所选仓库可用。",
+        "name": "名称",
+        "value": "值",
+        "repositories": "仓库访问（已选 {count} 个）",
+        "searchRepositories": "搜索你的仓库",
+        "noRepositories": "未找到仓库。",
+        "cancel": "取消",
+        "confirm": "保存机密"
+      },
+      "delete": {
+        "title": "删除机密",
+        "description": "删除 {name}？使用它的 Codespaces 将失去访问权限。",
+        "cancel": "取消",
+        "confirm": "删除"
+      },
+      "toasts": {
+        "saved": "机密已保存",
+        "deleted": "机密已删除",
+        "failed": "机密操作失败"
+      }
+    },
+    "githubBlockedUsers": {
+      "description": "被屏蔽的用户无法关注你、提及你，也无法与你的仓库互动。",
+      "sections": {
+        "blocked": "已屏蔽用户"
+      },
+      "empty": "尚未屏蔽任何用户。",
+      "unblock": "解除屏蔽",
+      "block": "屏蔽用户",
+      "blockPlaceholder": "按用户名搜索",
+      "confirm": {
+        "title": "屏蔽用户",
+        "description": "屏蔽 {username}？对方将被取消关注并从你的仓库中移除。",
+        "cancel": "取消",
+        "confirm": "屏蔽"
+      },
+      "toasts": {
+        "blocked": "已屏蔽 {username}",
+        "unblocked": "已解除屏蔽 {username}",
+        "failed": "屏蔽操作失败"
+      }
+    },
+    "githubInteractionLimits": {
+      "description": "临时限制哪些用户可以在你的所有公开仓库中评论、创建 issue 或 PR。",
+      "sections": {
+        "limits": "临时互动限制"
+      },
+      "activeUntil": "{limit}生效中，截止 {date}。",
+      "groups": {
+        "no_limit": {
+          "label": "无限制",
+          "description": "任何人都可以与你的仓库互动。"
+        },
+        "existing_users": {
+          "label": "仅限现有用户",
+          "description": "新注册账号无法互动。"
+        },
+        "contributors_only": {
+          "label": "仅限历史贡献者",
+          "description": "仅曾经贡献过的用户可以互动。"
+        },
+        "collaborators_only": {
+          "label": "仅限仓库协作者",
+          "description": "仅协作者可以互动。"
+        }
+      },
+      "expiry": {
+        "one_day": "24 小时",
+        "three_days": "3 天",
+        "one_week": "1 周",
+        "one_month": "1 个月",
+        "six_months": "6 个月"
+      },
+      "save": "保存",
+      "toasts": {
+        "saved": "互动限制已更新",
+        "failed": "更新互动限制失败"
+      }
+    },
+    "githubOrganizations": {
+      "sections": {
+        "memberships": "组织成员身份"
+      },
+      "manageOnGitHub": "在 GitHub 上管理",
+      "empty": "你尚未加入任何组织。",
+      "roles": {
+        "admin": "所有者",
+        "member": "成员"
+      },
+      "pending": "待接受邀请",
+      "accept": "接受",
+      "publicMembership": "公开成员身份",
+      "toasts": {
+        "accepted": "已加入 {org}",
+        "failed": "组织操作失败"
+      }
+    },
+    "githubSavedReplies": {
+      "readOnlyNote": "GitHub API 仅支持读取快捷回复。",
+      "editOnGitHub": "在 GitHub 上编辑",
+      "sections": {
+        "replies": "快捷回复"
+      },
+      "empty": "暂无快捷回复。"
+    }
   },
   "account": {
     "actions": {

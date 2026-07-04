@@ -40,6 +40,109 @@ type GitHubOrganization = {
   description: string | null
 }
 
+type GitHubUserSettingsProfile = {
+  login: string
+  name: string | null
+  email: string | null
+  bio: string | null
+  company: string | null
+  location: string | null
+  blog: string | null
+  twitterUsername: string | null
+  hireable: boolean
+  avatarUrl: string
+  htmlUrl: string
+}
+
+type UpdateUserSettingsProfileInput = {
+  name?: string
+  email?: string
+  bio?: string
+  company?: string
+  location?: string
+  blog?: string
+  twitterUsername?: string
+  hireable?: boolean
+}
+
+type GitHubSocialAccount = {
+  provider: string
+  url: string
+}
+
+type GitHubUserEmail = {
+  email: string
+  primary: boolean
+  verified: boolean
+  visibility: string | null
+}
+
+type GitHubSshKey = {
+  id: number
+  title: string
+  key: string
+  createdAt: string | null
+}
+
+type GitHubGpgKey = {
+  id: number
+  keyId: string
+  name: string | null
+  emails: Array<{ email: string; verified: boolean }>
+  createdAt: string | null
+  expiresAt: string | null
+}
+
+type GitHubBlockedUser = {
+  login: string
+  avatarUrl: string
+  htmlUrl: string
+}
+
+type GitHubInteractionLimitGroup = 'existing_users' | 'contributors_only' | 'collaborators_only'
+
+type GitHubInteractionLimitExpiry =
+  | 'one_day'
+  | 'three_days'
+  | 'one_week'
+  | 'one_month'
+  | 'six_months'
+
+type GitHubInteractionLimits = {
+  limit: GitHubInteractionLimitGroup
+  origin: string | null
+  expiresAt: string | null
+}
+
+type GitHubOrganizationMembership = {
+  orgLogin: string
+  orgAvatarUrl: string
+  orgDescription: string | null
+  role: string
+  state: 'active' | 'pending'
+  isPublic: boolean
+}
+
+type GitHubCodespacesSecret = {
+  name: string
+  createdAt: string | null
+  updatedAt: string | null
+  selectedRepositoryIds: number[]
+}
+
+type UpsertCodespacesSecretInput = {
+  name: string
+  value: string
+  selectedRepositoryIds: number[]
+}
+
+type GitHubSavedReply = {
+  id: string
+  databaseId: number | null
+  title: string
+  body: string
+}
+
 type GitHubAccountProfileType = 'User' | 'Organization' | 'Bot' | (string & {})
 
 type GitHubAccountProfile = {
@@ -1783,6 +1886,42 @@ interface Window {
     bookmarks: {
       get: () => Promise<StoredWorkspaceBookmarksInfo>
       update: (payload: StoredWorkspaceBookmarks) => Promise<StoredWorkspaceBookmarksInfo>
+    }
+    userSettings: {
+      getProfile: () => Promise<GitHubUserSettingsProfile>
+      updateProfile: (input: UpdateUserSettingsProfileInput) => Promise<GitHubUserSettingsProfile>
+      listSocialAccounts: () => Promise<GitHubSocialAccount[]>
+      addSocialAccounts: (urls: string[]) => Promise<GitHubSocialAccount[]>
+      deleteSocialAccounts: (urls: string[]) => Promise<void>
+      listEmails: () => Promise<GitHubUserEmail[]>
+      addEmail: (email: string) => Promise<void>
+      deleteEmail: (email: string) => Promise<void>
+      setPrimaryEmailVisibility: (visibility: 'public' | 'private') => Promise<void>
+      listSshKeys: () => Promise<GitHubSshKey[]>
+      addSshKey: (title: string, key: string) => Promise<GitHubSshKey>
+      deleteSshKey: (keyId: number) => Promise<void>
+      listGpgKeys: () => Promise<GitHubGpgKey[]>
+      addGpgKey: (key: string, name?: string) => Promise<GitHubGpgKey>
+      deleteGpgKey: (keyId: number) => Promise<void>
+      listSshSigningKeys: () => Promise<GitHubSshKey[]>
+      addSshSigningKey: (title: string, key: string) => Promise<GitHubSshKey>
+      deleteSshSigningKey: (keyId: number) => Promise<void>
+      listBlockedUsers: () => Promise<GitHubBlockedUser[]>
+      blockUser: (username: string) => Promise<void>
+      unblockUser: (username: string) => Promise<void>
+      getInteractionLimits: () => Promise<GitHubInteractionLimits | null>
+      setInteractionLimits: (
+        limit: GitHubInteractionLimitGroup,
+        expiry?: GitHubInteractionLimitExpiry
+      ) => Promise<GitHubInteractionLimits | null>
+      clearInteractionLimits: () => Promise<void>
+      listOrganizationMemberships: () => Promise<GitHubOrganizationMembership[]>
+      acceptOrganizationInvitation: (org: string) => Promise<void>
+      setOrganizationMembershipVisibility: (org: string, isPublic: boolean) => Promise<void>
+      listCodespacesSecrets: () => Promise<GitHubCodespacesSecret[]>
+      upsertCodespacesSecret: (input: UpsertCodespacesSecretInput) => Promise<void>
+      deleteCodespacesSecret: (name: string) => Promise<void>
+      listSavedReplies: () => Promise<GitHubSavedReply[]>
     }
     links: {
       openGitHubUrl: (url: string) => Promise<void>

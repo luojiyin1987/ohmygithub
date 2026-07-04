@@ -62,6 +62,16 @@ export function getAuthenticatedAccessToken(): string {
   return auth.accessToken
 }
 
+export function getAuthenticatedViewerLogin(): string {
+  const auth = readStoredAuth()
+
+  if (!auth?.viewer.login) {
+    throw new Error('GitHub authentication is required')
+  }
+
+  return auth.viewer.login
+}
+
 export function getAuthenticatedAuthMetadata(): Pick<StoredAuth, 'method' | 'scopes'> | null {
   const auth = readStoredAuth()
 

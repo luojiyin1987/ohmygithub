@@ -211,6 +211,51 @@ const api = {
     get: () => ipcRenderer.invoke('bookmarks:get'),
     update: (payload: unknown) => ipcRenderer.invoke('bookmarks:update', payload)
   },
+  userSettings: {
+    getProfile: () => ipcRenderer.invoke('user-settings:get-profile'),
+    updateProfile: (input: unknown) => ipcRenderer.invoke('user-settings:update-profile', input),
+    listSocialAccounts: () => ipcRenderer.invoke('user-settings:list-social-accounts'),
+    addSocialAccounts: (urls: string[]) => ipcRenderer.invoke('user-settings:add-social-accounts', urls),
+    deleteSocialAccounts: (urls: string[]) =>
+      ipcRenderer.invoke('user-settings:delete-social-accounts', urls),
+    listEmails: () => ipcRenderer.invoke('user-settings:list-emails'),
+    addEmail: (email: string) => ipcRenderer.invoke('user-settings:add-email', email),
+    deleteEmail: (email: string) => ipcRenderer.invoke('user-settings:delete-email', email),
+    setPrimaryEmailVisibility: (visibility: string) =>
+      ipcRenderer.invoke('user-settings:set-primary-email-visibility', visibility),
+    listSshKeys: () => ipcRenderer.invoke('user-settings:list-ssh-keys'),
+    addSshKey: (title: string, key: string) =>
+      ipcRenderer.invoke('user-settings:add-ssh-key', title, key),
+    deleteSshKey: (keyId: number) => ipcRenderer.invoke('user-settings:delete-ssh-key', keyId),
+    listGpgKeys: () => ipcRenderer.invoke('user-settings:list-gpg-keys'),
+    addGpgKey: (key: string, name?: string) =>
+      ipcRenderer.invoke('user-settings:add-gpg-key', key, name),
+    deleteGpgKey: (keyId: number) => ipcRenderer.invoke('user-settings:delete-gpg-key', keyId),
+    listSshSigningKeys: () => ipcRenderer.invoke('user-settings:list-ssh-signing-keys'),
+    addSshSigningKey: (title: string, key: string) =>
+      ipcRenderer.invoke('user-settings:add-ssh-signing-key', title, key),
+    deleteSshSigningKey: (keyId: number) =>
+      ipcRenderer.invoke('user-settings:delete-ssh-signing-key', keyId),
+    listBlockedUsers: () => ipcRenderer.invoke('user-settings:list-blocked-users'),
+    blockUser: (username: string) => ipcRenderer.invoke('user-settings:block-user', username),
+    unblockUser: (username: string) => ipcRenderer.invoke('user-settings:unblock-user', username),
+    getInteractionLimits: () => ipcRenderer.invoke('user-settings:get-interaction-limits'),
+    setInteractionLimits: (limit: string, expiry?: string) =>
+      ipcRenderer.invoke('user-settings:set-interaction-limits', limit, expiry),
+    clearInteractionLimits: () => ipcRenderer.invoke('user-settings:clear-interaction-limits'),
+    listOrganizationMemberships: () =>
+      ipcRenderer.invoke('user-settings:list-organization-memberships'),
+    acceptOrganizationInvitation: (org: string) =>
+      ipcRenderer.invoke('user-settings:accept-organization-invitation', org),
+    setOrganizationMembershipVisibility: (org: string, isPublic: boolean) =>
+      ipcRenderer.invoke('user-settings:set-organization-membership-visibility', org, isPublic),
+    listCodespacesSecrets: () => ipcRenderer.invoke('user-settings:list-codespaces-secrets'),
+    upsertCodespacesSecret: (input: unknown) =>
+      ipcRenderer.invoke('user-settings:upsert-codespaces-secret', input),
+    deleteCodespacesSecret: (name: string) =>
+      ipcRenderer.invoke('user-settings:delete-codespaces-secret', name),
+    listSavedReplies: () => ipcRenderer.invoke('user-settings:list-saved-replies')
+  },
   links: {
     openGitHubUrl: (url: string) => ipcRenderer.invoke('links:open-github-url', url),
     openExternalUrl: (url: string) => ipcRenderer.invoke('links:open-external-url', url)

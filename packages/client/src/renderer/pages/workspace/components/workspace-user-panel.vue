@@ -43,11 +43,11 @@ async function logout(): Promise<void> {
   }
 }
 
-function openSettings(): void {
+function openSettings(tab: 'github-profile' | 'appearance' = 'github-profile'): void {
   void router.push({
     path: '/settings',
     query: {
-      tab: 'appearance',
+      tab,
     },
   })
 }
@@ -104,11 +104,11 @@ function openProfile(): void {
         <UserCircle />
         <span>{{ t('workspace.userMenu.profile') }}</span>
       </DropdownMenuItem>
-      <DropdownMenuItem @select="openSettings">
+      <DropdownMenuItem @select="openSettings('github-profile')">
         <Settings />
         <span>{{ t('workspace.userMenu.settings') }}</span>
       </DropdownMenuItem>
-      <DropdownMenuItem @select="openSettings">
+      <DropdownMenuItem @select="openSettings('appearance')">
         <Palette />
         <span>{{ t('workspace.userMenu.appearance') }}</span>
       </DropdownMenuItem>

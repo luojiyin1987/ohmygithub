@@ -32,14 +32,19 @@ interface AccessTokenResponse {
 export const defaultGitHubOAuthScopes = [
   'repo',
   'notifications',
+  'user',
   'read:user',
   'user:email',
   'user:follow',
-  'read:org',
+  'admin:org',
   'read:project',
   'read:packages',
   'read:audit_log',
-  'workflow'
+  'workflow',
+  'admin:public_key',
+  'admin:gpg_key',
+  'admin:ssh_signing_key',
+  'codespace:secrets'
 ] as const
 
 interface AuthApiOptions {
