@@ -1768,6 +1768,7 @@ interface Window {
     }
     links: {
       openGitHubUrl: (url: string) => Promise<void>
+      openExternalUrl: (url: string) => Promise<void>
     }
     updates: {
       getInfo: () => Promise<{ version: string; platform: string }>

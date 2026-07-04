@@ -212,7 +212,8 @@ const api = {
     update: (payload: unknown) => ipcRenderer.invoke('bookmarks:update', payload)
   },
   links: {
-    openGitHubUrl: (url: string) => ipcRenderer.invoke('links:open-github-url', url)
+    openGitHubUrl: (url: string) => ipcRenderer.invoke('links:open-github-url', url),
+    openExternalUrl: (url: string) => ipcRenderer.invoke('links:open-external-url', url)
   },
   updates: {
     getInfo: () => ipcRenderer.invoke('app:get-info'),

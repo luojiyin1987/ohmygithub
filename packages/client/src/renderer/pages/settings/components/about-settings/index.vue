@@ -9,6 +9,7 @@ import liquidLogo from '../../../../../../../../assets/liquid-glass-icon.png'
 import shadowLogo from '../../../../../../../../assets/shadow-icon.png'
 
 const AUTHOR_PROFILE_URL = 'https://github.com/sheepbox8646'
+const TELEGRAM_URL = 'https://t.me/ohmygithub'
 
 const { t } = useI18n()
 
@@ -52,6 +53,10 @@ async function handleCheckOrDownload(): Promise<void> {
 
 function openAuthorProfile(): void {
   void window.ohMyGithub.links.openGitHubUrl(AUTHOR_PROFILE_URL)
+}
+
+function openTelegram(): void {
+  void window.ohMyGithub.links.openExternalUrl(TELEGRAM_URL)
 }
 </script>
 
@@ -104,7 +109,7 @@ function openAuthorProfile(): void {
           as="a"
           href="#"
           variant="outline"
-          @click.prevent
+          @click.prevent="openTelegram"
         >
           <TelegramIcon class="size-4" />
           {{ t('settings.about.telegram') }}
