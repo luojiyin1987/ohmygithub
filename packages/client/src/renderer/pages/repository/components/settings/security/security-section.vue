@@ -50,20 +50,22 @@ function setActiveTab(id: string): void {
       @update:active-id="setActiveTab"
     />
 
-    <AdvancedSecurityPanel
-      v-if="activeTab === 'advanced-security'"
-      :owner="owner"
-      :repo="repo"
-    />
-    <DeployKeysPanel
-      v-else-if="activeTab === 'deploy-keys'"
-      :owner="owner"
-      :repo="repo"
-    />
-    <SecretsPanel
-      v-else-if="activeTab === 'secrets'"
-      :owner="owner"
-      :repo="repo"
-    />
+    <div class="mx-auto w-full max-w-3xl space-y-8 px-2">
+      <AdvancedSecurityPanel
+        v-if="activeTab === 'advanced-security'"
+        :owner="owner"
+        :repo="repo"
+      />
+      <DeployKeysPanel
+        v-else-if="activeTab === 'deploy-keys'"
+        :owner="owner"
+        :repo="repo"
+      />
+      <SecretsPanel
+        v-else-if="activeTab === 'secrets'"
+        :owner="owner"
+        :repo="repo"
+      />
+    </div>
   </div>
 </template>

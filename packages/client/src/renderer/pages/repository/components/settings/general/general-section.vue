@@ -22,6 +22,8 @@ import {
   useRepositorySettingsInvalidation,
 } from '@/composables/github/use-repository-settings'
 import { useToast } from '@/composables/use-toast'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
+import SettingsRow from '@/pages/settings/components/appearance-settings/settings-row.vue'
 import BasicsForm from './basics-form.vue'
 import MergeOptionsForm from './merge-options-form.vue'
 import DangerZone from './danger-zone.vue'
@@ -165,7 +167,7 @@ function openExternal(): void {
 
   <div
     v-else
-    class="grid gap-8"
+    class="mx-auto w-full max-w-3xl space-y-8 px-2"
   >
     <BasicsForm
       :owner="owner"
@@ -175,49 +177,48 @@ function openExternal(): void {
       @saved="refresh"
     />
 
-    <section class="grid gap-3">
-      <h3 class="text-control font-medium text-foreground">
-        {{ t('repository.settings.general.defaultBranch.title') }}
-      </h3>
-      <p class="text-caption text-muted-foreground">
-        {{ t('repository.settings.general.defaultBranch.description') }}
-      </p>
-      <div class="flex max-w-xl items-center gap-2">
-        <GithubBranchSelect
-          v-model="selectedDefaultBranch"
-          :default-branch="settings.defaultBranch"
-          :owner="owner"
-          :repo="repo"
-          trigger-class="w-64"
-        />
-        <Button
-          v-if="isDefaultBranchDirty"
-          :disabled="isSavingDefaultBranch"
-          size="sm"
-          type="button"
-          @click="saveDefaultBranch"
-        >
-          <Spinner
-            v-if="isSavingDefaultBranch"
-            class="size-3.5"
+    <SettingsSection :title="t('repository.settings.general.defaultBranch.title')">
+      <SettingsRow
+        :description="t('repository.settings.general.defaultBranch.description')"
+        :label="t('repository.settings.general.defaultBranch.title')"
+      >
+        <div class="flex items-center gap-2">
+          <GithubBranchSelect
+            v-model="selectedDefaultBranch"
+            :default-branch="settings.defaultBranch"
+            :owner="owner"
+            :repo="repo"
+            trigger-class="w-52"
           />
-          {{ t('repository.settings.general.defaultBranch.save') }}
-        </Button>
-        <Button
-          v-if="settings.defaultBranch"
-          size="sm"
-          type="button"
-          variant="outline"
-          @click="openRenameDialog"
-        >
-          <Pencil
-            class="size-3.5"
-            :stroke-width="1.75"
-          />
-          {{ t('repository.settings.general.defaultBranch.rename') }}
-        </Button>
-      </div>
-    </section>
+          <Button
+            v-if="isDefaultBranchDirty"
+            :disabled="isSavingDefaultBranch"
+            size="sm"
+            type="button"
+            @click="saveDefaultBranch"
+          >
+            <Spinner
+              v-if="isSavingDefaultBranch"
+              class="size-3.5"
+            />
+            {{ t('repository.settings.general.defaultBranch.save') }}
+          </Button>
+          <Button
+            v-if="settings.defaultBranch"
+            size="sm"
+            type="button"
+            variant="outline"
+            @click="openRenameDialog"
+          >
+            <Pencil
+              class="size-3.5"
+              :stroke-width="1.75"
+            />
+            {{ t('repository.settings.general.defaultBranch.rename') }}
+          </Button>
+        </div>
+      </SettingsRow>
+    </SettingsSection>
 
     <MergeOptionsForm
       :owner="owner"

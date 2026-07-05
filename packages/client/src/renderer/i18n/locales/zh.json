@@ -1785,13 +1785,16 @@
           "pending": "待接受",
           "cancelInvitation": "取消邀请",
           "unknownInvitee": "(邮箱邀请)",
-          "empty": "还没有直接协作者。"
+          "empty": "还没有直接协作者。",
+          "addTitle": "添加协作者",
+          "role": "角色"
         },
         "teams": {
           "add": "添加团队",
           "addPlaceholder": "团队 slug",
           "remove": "移除团队",
-          "empty": "还没有团队拥有此仓库的访问权限。"
+          "empty": "还没有团队拥有此仓库的访问权限。",
+          "addTitle": "添加团队"
         },
         "moderation": {
           "title": "互动限制",
@@ -2011,7 +2014,8 @@
           "addVariable": "添加变量",
           "updateVariable": "更新变量",
           "removeVariable": "删除变量",
-          "variablesEmpty": "没有变量。"
+          "variablesEmpty": "没有变量。",
+          "secretsTitle": "密钥"
         }
       },
       "integrations": {

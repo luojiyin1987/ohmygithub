@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Trash2, UsersRound } from 'lucide-vue-next'
+import { Plus, Trash2 } from 'lucide-vue-next'
 import {
   Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -12,6 +18,7 @@ import {
   SelectValue,
   Spinner,
 } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
 import { removeTeamAccess, setTeamAccess } from '@/composables/github/use-repository-settings'
 import { useToast } from '@/composables/use-toast'
 
@@ -30,10 +37,20 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const toast = useToast()
 
+const isAddDialogOpen = ref(false)
 const newTeamSlug = ref('')
 const newPermission = ref<string>('pull')
 const isAdding = ref(false)
+const addError = ref<string | null>(null)
 const pendingKeys = ref(new Set<string>())
+
+watch(isAddDialogOpen, (open) => {
+  if (open) {
+    newTeamSlug.value = ''
+    newPermission.value = 'pull'
+    addError.value = null
+  }
+})
 
 function isPending(key: string): boolean {
   return pendingKeys.value.has(key)
@@ -59,15 +76,16 @@ async function add(): Promise<void> {
   const slug = newTeamSlug.value.trim()
   if (!slug || isAdding.value) return
   isAdding.value = true
+  addError.value = null
 
   try {
     await setTeamAccess(props.owner, slug, props.owner, props.repo, newPermission.value)
-    newTeamSlug.value = ''
+    isAddDialogOpen.value = false
+    emit('refresh')
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('repository.settings.access.error'))
+    addError.value = error instanceof Error ? error.message : t('repository.settings.access.error')
   } finally {
     isAdding.value = false
-    emit('refresh')
   }
 }
 
@@ -82,64 +100,34 @@ function remove(slug: string): void {
 </script>
 
 <template>
-  <div class="grid gap-3">
-    <form
-      class="flex max-w-xl items-center gap-2"
-      @submit.prevent="add"
-    >
-      <Input
-        v-model="newTeamSlug"
-        autocomplete="off"
-        class="flex-1"
-        :placeholder="t('repository.settings.access.teams.addPlaceholder')"
-        spellcheck="false"
-      />
-      <Select v-model="newPermission">
-        <SelectTrigger class="w-32">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem
-            v-for="permission in TEAM_PERMISSIONS"
-            :key="permission"
-            :value="permission"
-          >
-            {{ t(`repository.settings.access.roles.${permission}`) }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+  <SettingsSection :title="t('repository.settings.access.tabs.teams')">
+    <template #actions>
       <Button
-        :disabled="isAdding || !newTeamSlug.trim()"
         size="sm"
-        type="submit"
+        type="button"
+        variant="outline"
+        @click="isAddDialogOpen = true"
       >
-        <Spinner
-          v-if="isAdding"
-          class="size-3.5"
-        />
-        <UsersRound
-          v-else
-          class="size-3.5"
-          :stroke-width="1.75"
-        />
+        <Plus class="size-4" />
         {{ t('repository.settings.access.teams.add') }}
       </Button>
-    </form>
+    </template>
 
-    <div
-      v-if="overview.teams.length > 0"
-      class="overflow-hidden rounded-xl border border-border bg-card"
-    >
+    <div class="divide-y divide-border">
+      <p
+        v-if="overview.teams.length === 0"
+        class="px-4 py-6 text-center text-body text-muted-foreground"
+      >
+        {{ t('repository.settings.access.teams.empty') }}
+      </p>
+
       <div
-        v-for="(team, index) in overview.teams"
+        v-for="team in overview.teams"
         :key="team.slug"
-        :class="[
-          'flex items-center justify-between gap-4 px-4 py-2.5',
-          index > 0 ? 'border-t border-border' : '',
-        ]"
+        class="flex items-center justify-between gap-4 px-4 py-3"
       >
         <div class="grid min-w-0 gap-0.5">
-          <span class="truncate text-body font-medium text-foreground">{{ team.name }}</span>
+          <span class="truncate text-control font-medium text-foreground">{{ team.name }}</span>
           <span class="truncate text-caption text-muted-foreground">{{ team.org }}/{{ team.slug }}</span>
         </div>
         <div class="flex shrink-0 items-center gap-2">
@@ -148,10 +136,13 @@ function remove(slug: string): void {
             :model-value="team.permission"
             @update:model-value="changePermission(team.slug, $event)"
           >
-            <SelectTrigger class="w-32">
+            <SelectTrigger
+              class="min-w-28"
+              size="sm"
+            >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="end">
               <SelectItem
                 v-for="permission in TEAM_PERMISSIONS"
                 :key="permission"
@@ -165,24 +156,84 @@ function remove(slug: string): void {
             :aria-label="t('repository.settings.access.teams.remove')"
             :disabled="isPending(`remove:${team.slug}`)"
             size="icon-sm"
-            type="button"
-            variant="outline"
+            variant="ghost"
             @click="remove(team.slug)"
           >
-            <Trash2
-              class="size-3.5 text-muted-foreground"
-              :stroke-width="1.75"
-            />
+            <Trash2 class="size-4" />
           </Button>
         </div>
       </div>
     </div>
+  </SettingsSection>
 
-    <p
-      v-else
-      class="text-body text-muted-foreground"
-    >
-      {{ t('repository.settings.access.teams.empty') }}
-    </p>
-  </div>
+  <Dialog v-model:open="isAddDialogOpen">
+    <DialogContent class="sm:max-w-sm">
+      <DialogHeader>
+        <DialogTitle>{{ t('repository.settings.access.teams.addTitle') }}</DialogTitle>
+      </DialogHeader>
+
+      <form
+        class="grid gap-3"
+        @submit.prevent="add"
+      >
+        <div class="grid gap-1.5">
+          <Label for="team-slug">{{ t('repository.settings.access.teams.addPlaceholder') }}</Label>
+          <Input
+            id="team-slug"
+            v-model="newTeamSlug"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div class="grid gap-1.5">
+          <Label>{{ t('repository.settings.access.collaborators.role') }}</Label>
+          <Select v-model="newPermission">
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="permission in TEAM_PERMISSIONS"
+                :key="permission"
+                :value="permission"
+              >
+                {{ t(`repository.settings.access.roles.${permission}`) }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <p
+          v-if="addError"
+          class="text-body text-destructive"
+        >
+          {{ addError }}
+        </p>
+      </form>
+
+      <DialogFooter>
+        <Button
+          :disabled="isAdding"
+          size="sm"
+          type="button"
+          variant="outline"
+          @click="isAddDialogOpen = false"
+        >
+          {{ t('repository.settings.general.dangerZone.cancel') }}
+        </Button>
+        <Button
+          :disabled="isAdding || !newTeamSlug.trim()"
+          size="sm"
+          type="button"
+          @click="add"
+        >
+          <Spinner
+            v-if="isAdding"
+            class="size-3.5"
+          />
+          {{ t('repository.settings.access.teams.add') }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>

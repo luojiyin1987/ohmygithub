@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Trash2, UserPlus } from 'lucide-vue-next'
+import { Plus, Trash2 } from 'lucide-vue-next'
 import {
   Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -12,6 +18,7 @@ import {
   SelectValue,
   Spinner,
 } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
 import {
   addCollaborator,
   cancelInvitation,
@@ -36,10 +43,20 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const toast = useToast()
 
+const isAddDialogOpen = ref(false)
 const newUsername = ref('')
 const newRole = ref<GitHubRepositoryCollaboratorRole>('push')
 const isAdding = ref(false)
+const addError = ref<string | null>(null)
 const pendingKeys = ref(new Set<string>())
+
+watch(isAddDialogOpen, (open) => {
+  if (open) {
+    newUsername.value = ''
+    newRole.value = 'push'
+    addError.value = null
+  }
+})
 
 function isPending(key: string): boolean {
   return pendingKeys.value.has(key)
@@ -65,18 +82,19 @@ async function add(): Promise<void> {
   const username = newUsername.value.trim()
   if (!username || isAdding.value) return
   isAdding.value = true
+  addError.value = null
 
   try {
     const result = await addCollaborator(props.owner, props.repo, username, newRole.value)
     toast.success(t(result === 'invited'
       ? 'repository.settings.access.collaborators.invited'
       : 'repository.settings.access.collaborators.added', { username }))
-    newUsername.value = ''
+    isAddDialogOpen.value = false
+    emit('refresh')
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('repository.settings.access.error'))
+    addError.value = error instanceof Error ? error.message : t('repository.settings.access.error')
   } finally {
     isAdding.value = false
-    emit('refresh')
   }
 }
 
@@ -101,61 +119,31 @@ function cancel(id: number): void {
 </script>
 
 <template>
-  <div class="grid gap-3">
-    <form
-      class="flex max-w-xl items-center gap-2"
-      @submit.prevent="add"
-    >
-      <Input
-        v-model="newUsername"
-        autocomplete="off"
-        class="flex-1"
-        :placeholder="t('repository.settings.access.collaborators.addPlaceholder')"
-        spellcheck="false"
-      />
-      <Select v-model="newRole">
-        <SelectTrigger class="w-32">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem
-            v-for="role in COLLABORATOR_ROLES"
-            :key="role"
-            :value="role"
-          >
-            {{ t(`repository.settings.access.roles.${role}`) }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+  <SettingsSection :title="t('repository.settings.access.tabs.collaborators')">
+    <template #actions>
       <Button
-        :disabled="isAdding || !newUsername.trim()"
         size="sm"
-        type="submit"
+        type="button"
+        variant="outline"
+        @click="isAddDialogOpen = true"
       >
-        <Spinner
-          v-if="isAdding"
-          class="size-3.5"
-        />
-        <UserPlus
-          v-else
-          class="size-3.5"
-          :stroke-width="1.75"
-        />
+        <Plus class="size-4" />
         {{ t('repository.settings.access.collaborators.add') }}
       </Button>
-    </form>
+    </template>
 
-    <div
-      v-if="overview.collaborators.length > 0 || overview.invitations.length > 0"
-      class="overflow-hidden rounded-xl border border-border bg-card"
-    >
+    <div class="divide-y divide-border">
+      <p
+        v-if="overview.collaborators.length === 0 && overview.invitations.length === 0"
+        class="px-4 py-6 text-center text-body text-muted-foreground"
+      >
+        {{ t('repository.settings.access.collaborators.empty') }}
+      </p>
+
       <div
-        v-for="(collaborator, index) in overview.collaborators"
+        v-for="collaborator in overview.collaborators"
         :key="collaborator.login"
-        :class="[
-          'flex items-center justify-between gap-4 px-4 py-2.5',
-          index > 0 ? 'border-t border-border' : '',
-        ]"
+        class="flex items-center justify-between gap-4 px-4 py-3"
       >
         <div class="flex min-w-0 items-center gap-2.5">
           <img
@@ -163,7 +151,7 @@ function cancel(id: number): void {
             class="size-6 rounded-full"
             :src="collaborator.avatarUrl"
           >
-          <span class="truncate text-body font-medium text-foreground">{{ collaborator.login }}</span>
+          <span class="truncate text-control font-medium text-foreground">{{ collaborator.login }}</span>
         </div>
         <div class="flex shrink-0 items-center gap-2">
           <Select
@@ -171,10 +159,13 @@ function cancel(id: number): void {
             :model-value="collaborator.roleName"
             @update:model-value="changeRole(collaborator.login, $event)"
           >
-            <SelectTrigger class="w-32">
+            <SelectTrigger
+              class="min-w-28"
+              size="sm"
+            >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="end">
               <SelectItem
                 v-for="role in COLLABORATOR_ROLES"
                 :key="role"
@@ -188,14 +179,10 @@ function cancel(id: number): void {
             :aria-label="t('repository.settings.access.collaborators.remove')"
             :disabled="isPending(`remove:${collaborator.login}`)"
             size="icon-sm"
-            type="button"
-            variant="outline"
+            variant="ghost"
             @click="remove(collaborator.login)"
           >
-            <Trash2
-              class="size-3.5 text-muted-foreground"
-              :stroke-width="1.75"
-            />
+            <Trash2 class="size-4" />
           </Button>
         </div>
       </div>
@@ -203,7 +190,7 @@ function cancel(id: number): void {
       <div
         v-for="invitation in overview.invitations"
         :key="invitation.id"
-        class="flex items-center justify-between gap-4 border-t border-border px-4 py-2.5"
+        class="flex items-center justify-between gap-4 px-4 py-3"
       >
         <div class="flex min-w-0 items-center gap-2.5">
           <img
@@ -212,10 +199,10 @@ function cancel(id: number): void {
             class="size-6 rounded-full"
             :src="invitation.inviteeAvatarUrl"
           >
-          <span class="truncate text-body font-medium text-foreground">
+          <span class="truncate text-control font-medium text-foreground">
             {{ invitation.inviteeLogin ?? t('repository.settings.access.collaborators.unknownInvitee') }}
           </span>
-          <span class="rounded-full bg-muted px-1.5 text-caption text-muted-foreground">
+          <span class="select-none rounded-full bg-muted px-1.5 text-caption text-muted-foreground">
             {{ t('repository.settings.access.collaborators.pending') }}
           </span>
         </div>
@@ -225,10 +212,13 @@ function cancel(id: number): void {
             :model-value="invitation.permissions"
             @update:model-value="changeInvitation(invitation.id, $event)"
           >
-            <SelectTrigger class="w-32">
+            <SelectTrigger
+              class="min-w-28"
+              size="sm"
+            >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="end">
               <SelectItem
                 v-for="permission in INVITATION_PERMISSIONS"
                 :key="permission"
@@ -242,24 +232,84 @@ function cancel(id: number): void {
             :aria-label="t('repository.settings.access.collaborators.cancelInvitation')"
             :disabled="isPending(`cancel:${invitation.id}`)"
             size="icon-sm"
-            type="button"
-            variant="outline"
+            variant="ghost"
             @click="cancel(invitation.id)"
           >
-            <Trash2
-              class="size-3.5 text-muted-foreground"
-              :stroke-width="1.75"
-            />
+            <Trash2 class="size-4" />
           </Button>
         </div>
       </div>
     </div>
+  </SettingsSection>
 
-    <p
-      v-else
-      class="text-body text-muted-foreground"
-    >
-      {{ t('repository.settings.access.collaborators.empty') }}
-    </p>
-  </div>
+  <Dialog v-model:open="isAddDialogOpen">
+    <DialogContent class="sm:max-w-sm">
+      <DialogHeader>
+        <DialogTitle>{{ t('repository.settings.access.collaborators.addTitle') }}</DialogTitle>
+      </DialogHeader>
+
+      <form
+        class="grid gap-3"
+        @submit.prevent="add"
+      >
+        <div class="grid gap-1.5">
+          <Label for="collaborator-username">{{ t('repository.settings.access.collaborators.addPlaceholder') }}</Label>
+          <Input
+            id="collaborator-username"
+            v-model="newUsername"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div class="grid gap-1.5">
+          <Label>{{ t('repository.settings.access.collaborators.role') }}</Label>
+          <Select v-model="newRole">
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="role in COLLABORATOR_ROLES"
+                :key="role"
+                :value="role"
+              >
+                {{ t(`repository.settings.access.roles.${role}`) }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <p
+          v-if="addError"
+          class="text-body text-destructive"
+        >
+          {{ addError }}
+        </p>
+      </form>
+
+      <DialogFooter>
+        <Button
+          :disabled="isAdding"
+          size="sm"
+          type="button"
+          variant="outline"
+          @click="isAddDialogOpen = false"
+        >
+          {{ t('repository.settings.general.dangerZone.cancel') }}
+        </Button>
+        <Button
+          :disabled="isAdding || !newUsername.trim()"
+          size="sm"
+          type="button"
+          @click="add"
+        >
+          <Spinner
+            v-if="isAdding"
+            class="size-3.5"
+          />
+          {{ t('repository.settings.access.collaborators.add') }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>

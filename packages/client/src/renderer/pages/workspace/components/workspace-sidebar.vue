@@ -895,12 +895,18 @@ function persistPinnedOrganizationLogins(logins: string[]): void {
   height: 0;
 }
 
-:global(html[data-platform="mac"]) .workspace-titlebar-spacer {
+/*
+ * Wrap the whole selector in a single :global(): Vue's scoped-CSS compiler drops
+ * the descendant when the form is `:global(parent) .child` (it emits just the
+ * parent), so the spacer never got its height. One :global() around the full
+ * selector keeps the ancestor relationship intact.
+ */
+:global(html[data-platform="mac"] .workspace-titlebar-spacer) {
   height: 2.25rem;
   -webkit-app-region: drag;
 }
 
-:global(html[data-platform="mac"]) .workspace-titlebar-spacer[data-fullscreen="true"] {
+:global(html[data-platform="mac"] .workspace-titlebar-spacer[data-fullscreen="true"]) {
   height: 0.25rem;
 }
 

@@ -1785,13 +1785,16 @@
           "pending": "Pending",
           "cancelInvitation": "Cancel invitation",
           "unknownInvitee": "(email invitation)",
-          "empty": "No direct collaborators yet."
+          "empty": "No direct collaborators yet.",
+          "addTitle": "Add collaborator",
+          "role": "Role"
         },
         "teams": {
           "add": "Add team",
           "addPlaceholder": "Team slug",
           "remove": "Remove team",
-          "empty": "No teams have access to this repository."
+          "empty": "No teams have access to this repository.",
+          "addTitle": "Add team"
         },
         "moderation": {
           "title": "Interaction limits",
@@ -2011,7 +2014,8 @@
           "addVariable": "Add variable",
           "updateVariable": "Update variable",
           "removeVariable": "Delete variable",
-          "variablesEmpty": "No variables."
+          "variablesEmpty": "No variables.",
+          "secretsTitle": "Secrets"
         }
       },
       "integrations": {

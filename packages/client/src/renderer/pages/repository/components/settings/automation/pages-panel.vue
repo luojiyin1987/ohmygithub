@@ -5,7 +5,6 @@ import { ExternalLink } from 'lucide-vue-next'
 import {
   Button,
   Input,
-  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -14,6 +13,8 @@ import {
   Spinner,
 } from '@oh-my-github/ui'
 import GithubBranchSelect from '@/components/github/github-branch-select.vue'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
+import SettingsRow from '@/pages/settings/components/appearance-settings/settings-row.vue'
 import {
   disableRepositoryPages,
   enableRepositoryPages,
@@ -118,46 +119,55 @@ function openVisibility(): void {
     <Spinner class="size-4 text-muted-foreground" />
   </div>
 
-  <div
+  <SettingsSection
     v-else-if="!pages.enabled"
-    class="grid max-w-xl gap-3"
+    :title="t('repository.settings.automation.tabs.pages')"
   >
-    <p class="text-body text-muted-foreground">
-      {{ t('repository.settings.automation.pages.disabledHint') }}
-    </p>
-    <div class="grid gap-1.5">
-      <Label>{{ t('repository.settings.automation.pages.buildType') }}</Label>
+    <SettingsRow
+      :description="t('repository.settings.automation.pages.disabledHint')"
+      :label="t('repository.settings.automation.pages.buildType')"
+    >
       <Select v-model="enableBuildType">
-        <SelectTrigger class="w-64">
+        <SelectTrigger
+          class="min-w-48"
+          size="sm"
+        >
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent align="end">
           <SelectItem value="workflow">{{ t('repository.settings.automation.pages.workflow') }}</SelectItem>
           <SelectItem value="legacy">{{ t('repository.settings.automation.pages.legacy') }}</SelectItem>
         </SelectContent>
       </Select>
-    </div>
-    <div
+    </SettingsRow>
+
+    <SettingsRow
       v-if="enableBuildType === 'legacy'"
-      class="flex items-center gap-2"
+      :label="t('repository.settings.automation.pages.legacy')"
     >
-      <GithubBranchSelect
-        v-model="enableBranch"
-        :owner="owner"
-        :repo="repo"
-        trigger-class="w-52"
-      />
-      <Select v-model="enablePath">
-        <SelectTrigger class="w-28">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="/">/</SelectItem>
-          <SelectItem value="/docs">/docs</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-    <div>
+      <div class="flex items-center gap-2">
+        <GithubBranchSelect
+          v-model="enableBranch"
+          :owner="owner"
+          :repo="repo"
+          trigger-class="w-44"
+        />
+        <Select v-model="enablePath">
+          <SelectTrigger
+            class="min-w-24"
+            size="sm"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="end">
+            <SelectItem value="/">/</SelectItem>
+            <SelectItem value="/docs">/docs</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </SettingsRow>
+
+    <SettingsRow :label="t('repository.settings.automation.pages.enable')">
       <Button
         :disabled="isBusy || (enableBuildType === 'legacy' && !enableBranch)"
         size="sm"
@@ -170,87 +180,87 @@ function openVisibility(): void {
         />
         {{ t('repository.settings.automation.pages.enable') }}
       </Button>
-    </div>
-  </div>
+    </SettingsRow>
+  </SettingsSection>
 
   <div
     v-else
-    class="grid max-w-xl gap-4"
+    class="space-y-8"
   >
-    <div class="grid gap-1">
-      <button
-        v-if="pages.url"
-        class="inline-flex items-center gap-1 text-body font-medium text-foreground underline-offset-4 outline-hidden hover:underline"
-        type="button"
-        @click="openSite"
-      >
-        {{ pages.url }}
-        <ExternalLink
-          class="size-3.5"
-          :stroke-width="1.75"
-        />
-      </button>
-      <span class="text-caption text-muted-foreground">
-        {{ t('repository.settings.automation.pages.summary', {
+    <SettingsSection :title="t('repository.settings.automation.tabs.pages')">
+      <SettingsRow
+        :description="t('repository.settings.automation.pages.summary', {
           buildType: pages.buildType ?? '—',
           source: pages.sourceBranch ? `${pages.sourceBranch}${pages.sourcePath ?? ''}` : '—',
           build: pages.latestBuildStatus ?? '—',
-        }) }}
-      </span>
-    </div>
-
-    <SettingsToggleRow
-      :disabled="isBusy"
-      :model-value="pages.httpsEnforced"
-      :title="t('repository.settings.automation.pages.httpsEnforced')"
-      @update:model-value="toggleHttps"
-    />
-
-    <div class="grid gap-1.5">
-      <Label for="pages-cname">{{ t('repository.settings.automation.pages.cname') }}</Label>
-      <div class="flex items-center gap-2">
-        <Input
-          id="pages-cname"
-          v-model="cnameText"
-          autocomplete="off"
-          class="flex-1"
-          placeholder="docs.example.com"
-          spellcheck="false"
-        />
+        })"
+        :label="pages.url ?? t('repository.settings.automation.tabs.pages')"
+      >
         <Button
-          :disabled="isBusy || cnameText.trim() === (pages.cname ?? '')"
-          size="sm"
+          v-if="pages.url"
+          size="icon-sm"
           type="button"
-          @click="saveCname"
+          variant="ghost"
+          @click="openSite"
         >
-          {{ t('repository.settings.automation.save') }}
+          <ExternalLink class="size-4" />
         </Button>
-      </div>
-    </div>
+      </SettingsRow>
 
-    <div class="flex items-center gap-2">
-      <Button
+      <SettingsToggleRow
         :disabled="isBusy"
-        size="sm"
-        type="button"
-        variant="outline"
-        @click="requestBuild"
-      >
-        {{ t('repository.settings.automation.pages.requestBuild') }}
-      </Button>
-      <Button
-        :disabled="isBusy"
-        size="sm"
-        type="button"
-        variant="destructive"
-        @click="disable"
-      >
-        {{ t('repository.settings.automation.pages.disable') }}
-      </Button>
-    </div>
+        :model-value="pages.httpsEnforced"
+        :title="t('repository.settings.automation.pages.httpsEnforced')"
+        @update:model-value="toggleHttps"
+      />
+
+      <SettingsRow :label="t('repository.settings.automation.pages.cname')">
+        <div class="flex items-center gap-2">
+          <Input
+            v-model="cnameText"
+            autocomplete="off"
+            class="w-56"
+            placeholder="docs.example.com"
+            spellcheck="false"
+          />
+          <Button
+            v-if="cnameText.trim() !== (pages.cname ?? '')"
+            :disabled="isBusy"
+            size="sm"
+            type="button"
+            @click="saveCname"
+          >
+            {{ t('repository.settings.automation.save') }}
+          </Button>
+        </div>
+      </SettingsRow>
+
+      <SettingsRow :label="t('repository.settings.automation.pages.requestBuild')">
+        <div class="flex items-center gap-2">
+          <Button
+            :disabled="isBusy"
+            size="sm"
+            type="button"
+            variant="outline"
+            @click="requestBuild"
+          >
+            {{ t('repository.settings.automation.pages.requestBuild') }}
+          </Button>
+          <Button
+            :disabled="isBusy"
+            size="sm"
+            type="button"
+            variant="destructive"
+            @click="disable"
+          >
+            {{ t('repository.settings.automation.pages.disable') }}
+          </Button>
+        </div>
+      </SettingsRow>
+    </SettingsSection>
 
     <button
-      class="inline-flex items-center gap-1 justify-self-start text-caption text-muted-foreground underline-offset-4 outline-hidden hover:underline"
+      class="inline-flex items-center gap-1 px-2 text-caption text-muted-foreground underline-offset-4 outline-hidden hover:underline"
       type="button"
       @click="openVisibility"
     >

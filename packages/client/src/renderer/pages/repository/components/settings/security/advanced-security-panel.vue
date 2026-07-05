@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ExternalLink } from 'lucide-vue-next'
 import { Spinner } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
 import {
   setAutomatedSecurityFixes,
   setPrivateVulnerabilityReporting,
@@ -83,8 +84,9 @@ function openExternal(): void {
 
   <div
     v-else
-    class="grid gap-1"
+    class="grid gap-3"
   >
+    <SettingsSection :title="t('repository.settings.security.tabs.advancedSecurity')">
     <SettingsToggleRow
       v-if="overview.advancedSecurity !== 'unavailable'"
       :description="t('repository.settings.security.advancedSecurityHint')"
@@ -129,9 +131,10 @@ function openExternal(): void {
       :title="t('repository.settings.security.privateReporting')"
       @update:model-value="togglePrivateReporting"
     />
+    </SettingsSection>
 
     <button
-      class="inline-flex items-center gap-1 justify-self-start pt-2 text-caption text-muted-foreground underline-offset-4 outline-hidden hover:underline"
+      class="inline-flex items-center gap-1 justify-self-start px-2 text-caption text-muted-foreground underline-offset-4 outline-hidden hover:underline"
       type="button"
       @click="openExternal"
     >

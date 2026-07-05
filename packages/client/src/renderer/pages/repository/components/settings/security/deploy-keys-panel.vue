@@ -1,8 +1,21 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { KeyRound, Trash2 } from 'lucide-vue-next'
-import { Button, Input, Spinner, Switch, Textarea } from '@oh-my-github/ui'
+import { Plus, Trash2 } from 'lucide-vue-next'
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  Spinner,
+  Switch,
+  Textarea,
+} from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
 import {
   addDeployKey,
   deleteDeployKey,
@@ -25,11 +38,22 @@ const query = useDeployKeysQuery(() => props.owner, () => props.repo, hasIdentit
 const keys = computed(() => query.data.value ?? [])
 const isLoading = computed(() => query.isLoading.value)
 
+const isAddDialogOpen = ref(false)
 const newTitle = ref('')
 const newKey = ref('')
 const newReadOnly = ref(true)
 const isAdding = ref(false)
+const addError = ref<string | null>(null)
 const pending = ref(new Set<number>())
+
+watch(isAddDialogOpen, (open) => {
+  if (open) {
+    newTitle.value = ''
+    newKey.value = ''
+    newReadOnly.value = true
+    addError.value = null
+  }
+})
 
 function refresh(): void {
   invalidateSecurity('deploy-keys', props.owner, props.repo)
@@ -40,16 +64,16 @@ async function add(): Promise<void> {
   const key = newKey.value.trim()
   if (!title || !key || isAdding.value) return
   isAdding.value = true
+  addError.value = null
 
   try {
     await addDeployKey(props.owner, props.repo, title, key, newReadOnly.value)
-    newTitle.value = ''
-    newKey.value = ''
+    isAddDialogOpen.value = false
+    refresh()
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('repository.settings.security.error'))
+    addError.value = error instanceof Error ? error.message : t('repository.settings.security.error')
   } finally {
     isAdding.value = false
-    refresh()
   }
 }
 
@@ -71,46 +95,18 @@ async function remove(keyId: number): Promise<void> {
 </script>
 
 <template>
-  <div class="grid gap-4">
-    <form
-      class="grid max-w-xl gap-2"
-      @submit.prevent="add"
-    >
-      <Input
-        v-model="newTitle"
-        autocomplete="off"
-        :placeholder="t('repository.settings.security.deployKeys.titlePlaceholder')"
-        spellcheck="false"
-      />
-      <Textarea
-        v-model="newKey"
-        :placeholder="t('repository.settings.security.deployKeys.keyPlaceholder')"
-        rows="3"
-        spellcheck="false"
-      />
-      <div class="flex items-center justify-between gap-4">
-        <label class="flex items-center gap-2 text-body text-foreground">
-          <Switch v-model="newReadOnly" />
-          {{ t('repository.settings.security.deployKeys.readOnly') }}
-        </label>
-        <Button
-          :disabled="isAdding || !newTitle.trim() || !newKey.trim()"
-          size="sm"
-          type="submit"
-        >
-          <Spinner
-            v-if="isAdding"
-            class="size-3.5"
-          />
-          <KeyRound
-            v-else
-            class="size-3.5"
-            :stroke-width="1.75"
-          />
-          {{ t('repository.settings.security.deployKeys.add') }}
-        </Button>
-      </div>
-    </form>
+  <SettingsSection :title="t('repository.settings.security.tabs.deployKeys')">
+    <template #actions>
+      <Button
+        size="sm"
+        type="button"
+        variant="outline"
+        @click="isAddDialogOpen = true"
+      >
+        <Plus class="size-4" />
+        {{ t('repository.settings.security.deployKeys.add') }}
+      </Button>
+    </template>
 
     <div
       v-if="isLoading"
@@ -120,19 +116,23 @@ async function remove(keyId: number): Promise<void> {
     </div>
 
     <div
-      v-else-if="keys.length > 0"
-      class="overflow-hidden rounded-xl border border-border bg-card"
+      v-else
+      class="divide-y divide-border"
     >
+      <p
+        v-if="keys.length === 0"
+        class="px-4 py-6 text-center text-body text-muted-foreground"
+      >
+        {{ t('repository.settings.security.deployKeys.empty') }}
+      </p>
+
       <div
-        v-for="(key, index) in keys"
+        v-for="key in keys"
         :key="key.id"
-        :class="[
-          'flex items-center justify-between gap-4 px-4 py-2.5',
-          index > 0 ? 'border-t border-border' : '',
-        ]"
+        class="flex items-center justify-between gap-4 px-4 py-3"
       >
         <div class="grid min-w-0 gap-0.5">
-          <span class="truncate text-body font-medium text-foreground">{{ key.title }}</span>
+          <span class="truncate text-control font-medium text-foreground">{{ key.title }}</span>
           <span class="truncate font-mono text-caption text-muted-foreground">
             {{ key.key.slice(0, 40) }}… · {{ t(key.readOnly
               ? 'repository.settings.security.deployKeys.readOnlyBadge'
@@ -143,23 +143,76 @@ async function remove(keyId: number): Promise<void> {
           :aria-label="t('repository.settings.security.deployKeys.remove')"
           :disabled="pending.has(key.id)"
           size="icon-sm"
-          type="button"
-          variant="outline"
+          variant="ghost"
           @click="remove(key.id)"
         >
-          <Trash2
-            class="size-3.5 text-muted-foreground"
-            :stroke-width="1.75"
-          />
+          <Trash2 class="size-4" />
         </Button>
       </div>
     </div>
+  </SettingsSection>
 
-    <p
-      v-else
-      class="text-body text-muted-foreground"
-    >
-      {{ t('repository.settings.security.deployKeys.empty') }}
-    </p>
-  </div>
+  <Dialog v-model:open="isAddDialogOpen">
+    <DialogContent class="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle>{{ t('repository.settings.security.deployKeys.add') }}</DialogTitle>
+      </DialogHeader>
+
+      <div class="grid gap-3">
+        <div class="grid gap-1.5">
+          <Label for="deploy-key-title">{{ t('repository.settings.security.deployKeys.titlePlaceholder') }}</Label>
+          <Input
+            id="deploy-key-title"
+            v-model="newTitle"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div class="grid gap-1.5">
+          <Label for="deploy-key-value">{{ t('repository.settings.security.deployKeys.keyPlaceholder') }}</Label>
+          <Textarea
+            id="deploy-key-value"
+            v-model="newKey"
+            rows="3"
+            spellcheck="false"
+          />
+        </div>
+        <label class="flex items-center gap-2 text-body text-foreground">
+          <Switch v-model="newReadOnly" />
+          {{ t('repository.settings.security.deployKeys.readOnly') }}
+        </label>
+
+        <p
+          v-if="addError"
+          class="text-body text-destructive"
+        >
+          {{ addError }}
+        </p>
+      </div>
+
+      <DialogFooter>
+        <Button
+          :disabled="isAdding"
+          size="sm"
+          type="button"
+          variant="outline"
+          @click="isAddDialogOpen = false"
+        >
+          {{ t('repository.settings.general.dangerZone.cancel') }}
+        </Button>
+        <Button
+          :disabled="isAdding || !newTitle.trim() || !newKey.trim()"
+          size="sm"
+          type="button"
+          @click="add"
+        >
+          <Spinner
+            v-if="isAdding"
+            class="size-3.5"
+          />
+          {{ t('repository.settings.security.deployKeys.add') }}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>

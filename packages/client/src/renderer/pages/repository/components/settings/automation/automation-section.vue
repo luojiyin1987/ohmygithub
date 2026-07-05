@@ -82,11 +82,12 @@ function setActiveTab(id: string): void {
       @update:active-id="setActiveTab"
     />
 
-    <BranchesPanel
-      v-if="activeTab === 'branches'"
-      :owner="owner"
-      :repo="repo"
-    />
+    <div class="mx-auto w-full max-w-3xl space-y-8 px-2">
+      <BranchesPanel
+        v-if="activeTab === 'branches'"
+        :owner="owner"
+        :repo="repo"
+      />
     <RulesPanel
       v-else-if="activeTab === 'rules'"
       :owner="owner"
@@ -117,10 +118,11 @@ function setActiveTab(id: string): void {
       :owner="owner"
       :repo="repo"
     />
-    <CustomPropertiesPanel
-      v-else-if="activeTab === 'custom-properties'"
-      :owner="owner"
-      :repo="repo"
-    />
+      <CustomPropertiesPanel
+        v-else-if="activeTab === 'custom-properties'"
+        :owner="owner"
+        :repo="repo"
+      />
+    </div>
   </div>
 </template>

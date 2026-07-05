@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next'
 import {
   Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Input,
+  Label,
   SegmentedControl,
   Spinner,
 } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
 import {
   createRepositoryVariable,
   deleteRepositorySecret,
@@ -46,14 +53,39 @@ const showVariables = computed(() => scope.value === 'actions')
 const variablesQuery = useRepositoryVariablesQuery(() => props.owner, () => props.repo, showVariables)
 const variables = computed(() => variablesQuery.data.value ?? [])
 
+const isSecretDialogOpen = ref(false)
 const secretName = ref('')
+const secretNameLocked = ref(false)
 const secretValue = ref('')
 const isSavingSecret = ref(false)
+const secretError = ref<string | null>(null)
+
+const isVariableDialogOpen = ref(false)
 const variableName = ref('')
 const variableValue = ref('')
 const editingVariable = ref<string | null>(null)
 const isSavingVariable = ref(false)
+const variableError = ref<string | null>(null)
+
 const pending = ref(new Set<string>())
+
+watch(isSecretDialogOpen, (open) => {
+  if (!open) {
+    secretName.value = ''
+    secretValue.value = ''
+    secretNameLocked.value = false
+    secretError.value = null
+  }
+})
+
+watch(isVariableDialogOpen, (open) => {
+  if (!open) {
+    variableName.value = ''
+    variableValue.value = ''
+    editingVariable.value = null
+    variableError.value = null
+  }
+})
 
 function updateScope(value: unknown): void {
   if (value === 'actions' || value === 'codespaces' || value === 'dependabot') {
@@ -61,27 +93,38 @@ function updateScope(value: unknown): void {
   }
 }
 
+function openNewSecret(): void {
+  secretName.value = ''
+  secretValue.value = ''
+  secretNameLocked.value = false
+  secretError.value = null
+  isSecretDialogOpen.value = true
+}
+
+function openEditSecret(name: string): void {
+  secretName.value = name
+  secretNameLocked.value = true
+  secretValue.value = ''
+  secretError.value = null
+  isSecretDialogOpen.value = true
+}
+
 async function saveSecret(): Promise<void> {
   const name = secretName.value.trim().toUpperCase()
   if (!name || !secretValue.value || isSavingSecret.value) return
   isSavingSecret.value = true
+  secretError.value = null
 
   try {
     await upsertRepositorySecret(props.owner, props.repo, scope.value, name, secretValue.value)
-    secretName.value = ''
-    secretValue.value = ''
     toast.success(t('repository.settings.security.secrets.saved', { name }))
+    isSecretDialogOpen.value = false
+    invalidateSecrets(scope.value, props.owner, props.repo)
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('repository.settings.security.error'))
+    secretError.value = error instanceof Error ? error.message : t('repository.settings.security.error')
   } finally {
     isSavingSecret.value = false
-    invalidateSecrets(scope.value, props.owner, props.repo)
   }
-}
-
-function editSecret(name: string): void {
-  secretName.value = name
-  secretValue.value = ''
 }
 
 async function removeSecret(name: string): Promise<void> {
@@ -101,10 +144,27 @@ async function removeSecret(name: string): Promise<void> {
   }
 }
 
+function openNewVariable(): void {
+  editingVariable.value = null
+  variableName.value = ''
+  variableValue.value = ''
+  variableError.value = null
+  isVariableDialogOpen.value = true
+}
+
+function openEditVariable(variable: GitHubRepositoryVariable): void {
+  editingVariable.value = variable.name
+  variableName.value = variable.name
+  variableValue.value = variable.value
+  variableError.value = null
+  isVariableDialogOpen.value = true
+}
+
 async function saveVariable(): Promise<void> {
   const name = variableName.value.trim().toUpperCase()
   if (!name || isSavingVariable.value) return
   isSavingVariable.value = true
+  variableError.value = null
 
   try {
     if (editingVariable.value) {
@@ -112,21 +172,13 @@ async function saveVariable(): Promise<void> {
     } else {
       await createRepositoryVariable(props.owner, props.repo, name, variableValue.value)
     }
-    variableName.value = ''
-    variableValue.value = ''
-    editingVariable.value = null
+    isVariableDialogOpen.value = false
+    invalidateSecurity('variables', props.owner, props.repo)
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('repository.settings.security.error'))
+    variableError.value = error instanceof Error ? error.message : t('repository.settings.security.error')
   } finally {
     isSavingVariable.value = false
-    invalidateSecurity('variables', props.owner, props.repo)
   }
-}
-
-function editVariable(variable: GitHubRepositoryVariable): void {
-  editingVariable.value = variable.name
-  variableName.value = variable.name
-  variableValue.value = variable.value
 }
 
 async function removeVariable(name: string): Promise<void> {
@@ -148,7 +200,7 @@ async function removeVariable(name: string): Promise<void> {
 </script>
 
 <template>
-  <div class="grid gap-4">
+  <div class="space-y-8">
     <SegmentedControl
       :aria-label="t('repository.settings.security.secrets.scopesLabel')"
       class="justify-self-start"
@@ -157,197 +209,263 @@ async function removeVariable(name: string): Promise<void> {
       @update:model-value="updateScope"
     />
 
-    <form
-      class="flex max-w-xl items-center gap-2"
-      @submit.prevent="saveSecret"
-    >
-      <Input
-        v-model="secretName"
-        autocomplete="off"
-        class="w-48 font-mono uppercase"
-        :placeholder="t('repository.settings.security.secrets.namePlaceholder')"
-        spellcheck="false"
-      />
-      <Input
-        v-model="secretValue"
-        autocomplete="off"
-        class="flex-1"
-        :placeholder="t('repository.settings.security.secrets.valuePlaceholder')"
-        spellcheck="false"
-        type="password"
-      />
-      <Button
-        :disabled="isSavingSecret || !secretName.trim() || !secretValue"
-        size="sm"
-        type="submit"
-      >
-        <Spinner
-          v-if="isSavingSecret"
-          class="size-3.5"
-        />
-        <Plus
-          v-else
-          class="size-3.5"
-          :stroke-width="1.75"
-        />
-        {{ t('repository.settings.security.secrets.save') }}
-      </Button>
-    </form>
-
-    <div
-      v-if="isLoadingSecrets"
-      class="flex min-h-[6rem] items-center justify-center"
-    >
-      <Spinner class="size-4 text-muted-foreground" />
-    </div>
-
-    <div
-      v-else-if="secrets.length > 0"
-      class="overflow-hidden rounded-xl border border-border bg-card"
-    >
-      <div
-        v-for="(secret, index) in secrets"
-        :key="secret.name"
-        :class="[
-          'flex items-center justify-between gap-4 px-4 py-2.5',
-          index > 0 ? 'border-t border-border' : '',
-        ]"
-      >
-        <div class="grid min-w-0 gap-0.5">
-          <span class="truncate font-mono text-body font-medium text-foreground">{{ secret.name }}</span>
-          <span
-            v-if="secret.updatedAt"
-            class="text-caption text-muted-foreground"
-          >
-            {{ t('repository.settings.security.secrets.updated', { date: new Date(secret.updatedAt).toLocaleDateString() }) }}
-          </span>
-        </div>
-        <div class="flex shrink-0 items-center gap-2">
-          <Button
-            :aria-label="t('repository.settings.security.secrets.update')"
-            size="icon-sm"
-            type="button"
-            variant="outline"
-            @click="editSecret(secret.name)"
-          >
-            <Pencil
-              class="size-3.5 text-muted-foreground"
-              :stroke-width="1.75"
-            />
-          </Button>
-          <Button
-            :aria-label="t('repository.settings.security.secrets.remove')"
-            :disabled="pending.has(`secret:${secret.name}`)"
-            size="icon-sm"
-            type="button"
-            variant="outline"
-            @click="removeSecret(secret.name)"
-          >
-            <Trash2
-              class="size-3.5 text-muted-foreground"
-              :stroke-width="1.75"
-            />
-          </Button>
-        </div>
-      </div>
-    </div>
-
-    <p
-      v-else
-      class="text-body text-muted-foreground"
-    >
-      {{ t('repository.settings.security.secrets.empty') }}
-    </p>
-
-    <template v-if="showVariables">
-      <h3 class="mt-2 text-control font-medium text-foreground">
-        {{ t('repository.settings.security.secrets.variablesTitle') }}
-      </h3>
-
-      <form
-        class="flex max-w-xl items-center gap-2"
-        @submit.prevent="saveVariable"
-      >
-        <Input
-          v-model="variableName"
-          autocomplete="off"
-          class="w-48 font-mono uppercase"
-          :disabled="editingVariable !== null"
-          :placeholder="t('repository.settings.security.secrets.namePlaceholder')"
-          spellcheck="false"
-        />
-        <Input
-          v-model="variableValue"
-          autocomplete="off"
-          class="flex-1"
-          :placeholder="t('repository.settings.security.secrets.variableValuePlaceholder')"
-          spellcheck="false"
-        />
+    <SettingsSection :title="t('repository.settings.security.secrets.secretsTitle')">
+      <template #actions>
         <Button
-          :disabled="isSavingVariable || !variableName.trim()"
           size="sm"
-          type="submit"
+          type="button"
+          variant="outline"
+          @click="openNewSecret"
         >
-          <Spinner
-            v-if="isSavingVariable"
-            class="size-3.5"
-          />
-          {{ t(editingVariable ? 'repository.settings.security.secrets.updateVariable' : 'repository.settings.security.secrets.addVariable') }}
+          <Plus class="size-4" />
+          {{ t('repository.settings.security.secrets.save') }}
         </Button>
-      </form>
+      </template>
 
       <div
-        v-if="variables.length > 0"
-        class="overflow-hidden rounded-xl border border-border bg-card"
+        v-if="isLoadingSecrets"
+        class="flex min-h-[6rem] items-center justify-center"
       >
+        <Spinner class="size-4 text-muted-foreground" />
+      </div>
+
+      <div
+        v-else
+        class="divide-y divide-border"
+      >
+        <p
+          v-if="secrets.length === 0"
+          class="px-4 py-6 text-center text-body text-muted-foreground"
+        >
+          {{ t('repository.settings.security.secrets.empty') }}
+        </p>
+
         <div
-          v-for="(variable, index) in variables"
-          :key="variable.name"
-          :class="[
-            'flex items-center justify-between gap-4 px-4 py-2.5',
-            index > 0 ? 'border-t border-border' : '',
-          ]"
+          v-for="secret in secrets"
+          :key="secret.name"
+          class="flex items-center justify-between gap-4 px-4 py-3"
         >
           <div class="grid min-w-0 gap-0.5">
-            <span class="truncate font-mono text-body font-medium text-foreground">{{ variable.name }}</span>
+            <span class="truncate font-mono text-control font-medium text-foreground">{{ secret.name }}</span>
+            <span
+              v-if="secret.updatedAt"
+              class="text-caption text-muted-foreground"
+            >
+              {{ t('repository.settings.security.secrets.updated', { date: new Date(secret.updatedAt).toLocaleDateString() }) }}
+            </span>
+          </div>
+          <div class="flex shrink-0 items-center gap-2">
+            <Button
+              :aria-label="t('repository.settings.security.secrets.update')"
+              size="icon-sm"
+              variant="ghost"
+              @click="openEditSecret(secret.name)"
+            >
+              <Pencil class="size-4" />
+            </Button>
+            <Button
+              :aria-label="t('repository.settings.security.secrets.remove')"
+              :disabled="pending.has(`secret:${secret.name}`)"
+              size="icon-sm"
+              variant="ghost"
+              @click="removeSecret(secret.name)"
+            >
+              <Trash2 class="size-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </SettingsSection>
+
+    <SettingsSection
+      v-if="showVariables"
+      :title="t('repository.settings.security.secrets.variablesTitle')"
+    >
+      <template #actions>
+        <Button
+          size="sm"
+          type="button"
+          variant="outline"
+          @click="openNewVariable"
+        >
+          <Plus class="size-4" />
+          {{ t('repository.settings.security.secrets.addVariable') }}
+        </Button>
+      </template>
+
+      <div class="divide-y divide-border">
+        <p
+          v-if="variables.length === 0"
+          class="px-4 py-6 text-center text-body text-muted-foreground"
+        >
+          {{ t('repository.settings.security.secrets.variablesEmpty') }}
+        </p>
+
+        <div
+          v-for="variable in variables"
+          :key="variable.name"
+          class="flex items-center justify-between gap-4 px-4 py-3"
+        >
+          <div class="grid min-w-0 gap-0.5">
+            <span class="truncate font-mono text-control font-medium text-foreground">{{ variable.name }}</span>
             <span class="truncate font-mono text-caption text-muted-foreground">{{ variable.value }}</span>
           </div>
           <div class="flex shrink-0 items-center gap-2">
             <Button
               :aria-label="t('repository.settings.security.secrets.updateVariable')"
               size="icon-sm"
-              type="button"
-              variant="outline"
-              @click="editVariable(variable)"
+              variant="ghost"
+              @click="openEditVariable(variable)"
             >
-              <Pencil
-                class="size-3.5 text-muted-foreground"
-                :stroke-width="1.75"
-              />
+              <Pencil class="size-4" />
             </Button>
             <Button
               :aria-label="t('repository.settings.security.secrets.removeVariable')"
               :disabled="pending.has(`variable:${variable.name}`)"
               size="icon-sm"
-              type="button"
-              variant="outline"
+              variant="ghost"
               @click="removeVariable(variable.name)"
             >
-              <Trash2
-                class="size-3.5 text-muted-foreground"
-                :stroke-width="1.75"
-              />
+              <Trash2 class="size-4" />
             </Button>
           </div>
         </div>
       </div>
+    </SettingsSection>
 
-      <p
-        v-else
-        class="text-body text-muted-foreground"
-      >
-        {{ t('repository.settings.security.secrets.variablesEmpty') }}
-      </p>
-    </template>
+    <Dialog v-model:open="isSecretDialogOpen">
+      <DialogContent class="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>
+            {{ t(secretNameLocked
+              ? 'repository.settings.security.secrets.update'
+              : 'repository.settings.security.secrets.save') }}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div class="grid gap-3">
+          <div class="grid gap-1.5">
+            <Label for="secret-name">{{ t('repository.settings.security.secrets.namePlaceholder') }}</Label>
+            <Input
+              id="secret-name"
+              v-model="secretName"
+              autocomplete="off"
+              class="font-mono uppercase"
+              :disabled="secretNameLocked"
+              spellcheck="false"
+            />
+          </div>
+          <div class="grid gap-1.5">
+            <Label for="secret-value">{{ t('repository.settings.security.secrets.valuePlaceholder') }}</Label>
+            <Input
+              id="secret-value"
+              v-model="secretValue"
+              autocomplete="off"
+              spellcheck="false"
+              type="password"
+            />
+          </div>
+
+          <p
+            v-if="secretError"
+            class="text-body text-destructive"
+          >
+            {{ secretError }}
+          </p>
+        </div>
+
+        <DialogFooter>
+          <Button
+            :disabled="isSavingSecret"
+            size="sm"
+            type="button"
+            variant="outline"
+            @click="isSecretDialogOpen = false"
+          >
+            {{ t('repository.settings.general.dangerZone.cancel') }}
+          </Button>
+          <Button
+            :disabled="isSavingSecret || !secretName.trim() || !secretValue"
+            size="sm"
+            type="button"
+            @click="saveSecret"
+          >
+            <Spinner
+              v-if="isSavingSecret"
+              class="size-3.5"
+            />
+            {{ t('repository.settings.security.secrets.save') }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog v-model:open="isVariableDialogOpen">
+      <DialogContent class="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>
+            {{ t(editingVariable
+              ? 'repository.settings.security.secrets.updateVariable'
+              : 'repository.settings.security.secrets.addVariable') }}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div class="grid gap-3">
+          <div class="grid gap-1.5">
+            <Label for="variable-name">{{ t('repository.settings.security.secrets.namePlaceholder') }}</Label>
+            <Input
+              id="variable-name"
+              v-model="variableName"
+              autocomplete="off"
+              class="font-mono uppercase"
+              :disabled="editingVariable !== null"
+              spellcheck="false"
+            />
+          </div>
+          <div class="grid gap-1.5">
+            <Label for="variable-value">{{ t('repository.settings.security.secrets.variableValuePlaceholder') }}</Label>
+            <Input
+              id="variable-value"
+              v-model="variableValue"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+
+          <p
+            v-if="variableError"
+            class="text-body text-destructive"
+          >
+            {{ variableError }}
+          </p>
+        </div>
+
+        <DialogFooter>
+          <Button
+            :disabled="isSavingVariable"
+            size="sm"
+            type="button"
+            variant="outline"
+            @click="isVariableDialogOpen = false"
+          >
+            {{ t('repository.settings.general.dangerZone.cancel') }}
+          </Button>
+          <Button
+            :disabled="isSavingVariable || !variableName.trim()"
+            size="sm"
+            type="button"
+            @click="saveVariable"
+          >
+            <Spinner
+              v-if="isSavingVariable"
+              class="size-3.5"
+            />
+            {{ t(editingVariable
+              ? 'repository.settings.security.secrets.updateVariable'
+              : 'repository.settings.security.secrets.addVariable') }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>

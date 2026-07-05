@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ExternalLink, Trash2 } from 'lucide-vue-next'
 import { Button, Spinner } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
 import {
   deleteSelfHostedRunner,
   useRepositorySettingsInvalidation,
@@ -50,42 +51,37 @@ function openExternal(): void {
 
 <template>
   <div class="grid gap-3">
-    <div class="flex items-center justify-between">
-      <p class="text-caption text-muted-foreground">
-        {{ t('repository.settings.automation.runners.hint') }}
-      </p>
-      <Button
-        size="sm"
-        type="button"
-        variant="outline"
-        @click="openExternal"
-      >
-        {{ t('repository.settings.automation.runners.new') }}
-        <ExternalLink
-          class="size-3.5"
-          :stroke-width="1.75"
-        />
-      </Button>
-    </div>
+    <SettingsSection :title="t('repository.settings.automation.tabs.runners')">
+      <template #actions>
+        <Button
+          size="sm"
+          type="button"
+          variant="outline"
+          @click="openExternal"
+        >
+          {{ t('repository.settings.automation.runners.new') }}
+          <ExternalLink
+            class="size-3.5"
+            :stroke-width="1.75"
+          />
+        </Button>
+      </template>
 
-    <div
-      v-if="isLoading"
-      class="flex min-h-[8rem] items-center justify-center"
-    >
-      <Spinner class="size-4 text-muted-foreground" />
-    </div>
-
-    <div
-      v-else-if="runners.length > 0"
-      class="overflow-hidden rounded-xl border border-border bg-card"
-    >
       <div
-        v-for="(runner, index) in runners"
+        v-if="isLoading"
+        class="flex min-h-[8rem] items-center justify-center"
+      >
+        <Spinner class="size-4 text-muted-foreground" />
+      </div>
+
+      <div
+        v-else-if="runners.length > 0"
+        class="divide-y divide-border"
+      >
+      <div
+        v-for="runner in runners"
         :key="runner.id"
-        :class="[
-          'flex items-center justify-between gap-4 px-4 py-2.5',
-          index > 0 ? 'border-t border-border' : '',
-        ]"
+        class="flex items-center justify-between gap-4 px-4 py-3"
       >
         <div class="grid min-w-0 gap-0.5">
           <div class="flex min-w-0 items-center gap-2">
@@ -115,13 +111,18 @@ function openExternal(): void {
           />
         </Button>
       </div>
-    </div>
+      </div>
 
-    <p
-      v-else
-      class="text-body text-muted-foreground"
-    >
-      {{ t('repository.settings.automation.runners.empty') }}
+      <p
+        v-else
+        class="px-4 py-6 text-center text-body text-muted-foreground"
+      >
+        {{ t('repository.settings.automation.runners.empty') }}
+      </p>
+    </SettingsSection>
+
+    <p class="select-none px-2 text-caption text-muted-foreground">
+      {{ t('repository.settings.automation.runners.hint') }}
     </p>
   </div>
 </template>

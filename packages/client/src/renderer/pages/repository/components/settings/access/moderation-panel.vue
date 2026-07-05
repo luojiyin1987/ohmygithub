@@ -13,6 +13,7 @@ import {
   SelectValue,
   Spinner,
 } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
 import {
   clearRepositoryInteractionLimits,
   setRepositoryInteractionLimits,
@@ -104,24 +105,10 @@ function openExternal(path: string): void {
     </div>
 
     <template v-else>
-      <div class="grid gap-1">
-        <h3 class="text-control font-medium text-foreground">
-          {{ t('repository.settings.access.moderation.title') }}
-        </h3>
-        <p class="text-caption text-muted-foreground">
-          {{ t('repository.settings.access.moderation.description') }}
-        </p>
-        <p
-          v-if="isFromOtherLevel"
-          class="text-caption text-warning"
-        >
-          {{ t('repository.settings.access.moderation.inheritedLimit', { origin: limits?.origin ?? '' }) }}
-        </p>
-      </div>
-
+      <SettingsSection :title="t('repository.settings.access.moderation.title')">
       <RadioGroup
         v-model="selectedLimit"
-        class="grid gap-0 overflow-hidden rounded-xl border border-border bg-card"
+        class="grid gap-0 divide-y divide-border"
       >
         <label class="flex items-start gap-3 px-4 py-3">
           <RadioGroupItem
@@ -140,7 +127,7 @@ function openExternal(path: string): void {
         <label
           v-for="group in LIMIT_GROUPS"
           :key="group"
-          class="flex items-start gap-3 border-t border-border px-4 py-3"
+          class="flex items-start gap-3 px-4 py-3"
         >
           <RadioGroupItem
             class="mt-0.5"
@@ -156,6 +143,14 @@ function openExternal(path: string): void {
           </span>
         </label>
       </RadioGroup>
+      </SettingsSection>
+
+      <p
+        v-if="isFromOtherLevel"
+        class="px-2 text-caption text-warning"
+      >
+        {{ t('repository.settings.access.moderation.inheritedLimit', { origin: limits?.origin ?? '' }) }}
+      </p>
 
       <div class="flex items-center justify-end gap-3">
         <Select

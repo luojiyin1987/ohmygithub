@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ChevronRight, ExternalLink, Trash2 } from 'lucide-vue-next'
 import { Button, Spinner } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
 import {
   deleteBranchProtection,
   useProtectedBranchesQuery,
@@ -87,41 +88,38 @@ function openExternal(): void {
 
 <template>
   <div class="grid gap-3">
-    <div class="flex items-center justify-between">
-      <p class="text-caption text-muted-foreground">
-        {{ t('repository.settings.automation.branches.hint') }}
-      </p>
-      <Button
-        size="sm"
-        type="button"
-        variant="outline"
-        @click="openExternal"
-      >
-        {{ t('repository.settings.automation.editOnGitHub') }}
-        <ExternalLink
-          class="size-3.5"
-          :stroke-width="1.75"
-        />
-      </Button>
-    </div>
+    <SettingsSection :title="t('repository.settings.automation.tabs.branches')">
+      <template #actions>
+        <Button
+          size="sm"
+          type="button"
+          variant="outline"
+          @click="openExternal"
+        >
+          {{ t('repository.settings.automation.editOnGitHub') }}
+          <ExternalLink
+            class="size-3.5"
+            :stroke-width="1.75"
+          />
+        </Button>
+      </template>
 
-    <div
-      v-if="isLoading"
-      class="flex min-h-[8rem] items-center justify-center"
-    >
-      <Spinner class="size-4 text-muted-foreground" />
-    </div>
-
-    <div
-      v-else-if="branches.length > 0"
-      class="overflow-hidden rounded-xl border border-border bg-card"
-    >
       <div
-        v-for="(summary, index) in branches"
-        :key="summary.branch"
-        :class="index > 0 ? 'border-t border-border' : ''"
+        v-if="isLoading"
+        class="flex min-h-[8rem] items-center justify-center"
       >
-        <div class="flex items-center justify-between gap-4 px-4 py-2.5">
+        <Spinner class="size-4 text-muted-foreground" />
+      </div>
+
+      <div
+        v-else-if="branches.length > 0"
+        class="divide-y divide-border"
+      >
+      <div
+        v-for="summary in branches"
+        :key="summary.branch"
+      >
+        <div class="flex items-center justify-between gap-4 px-4 py-3">
           <button
             class="flex min-w-0 flex-1 items-center gap-2 text-left outline-hidden"
             type="button"
@@ -162,13 +160,18 @@ function openExternal(): void {
           </div>
         </dl>
       </div>
-    </div>
+      </div>
 
-    <p
-      v-else
-      class="text-body text-muted-foreground"
-    >
-      {{ t('repository.settings.automation.branches.empty') }}
+      <p
+        v-else
+        class="px-4 py-6 text-center text-body text-muted-foreground"
+      >
+        {{ t('repository.settings.automation.branches.empty') }}
+      </p>
+    </SettingsSection>
+
+    <p class="select-none px-2 text-caption text-muted-foreground">
+      {{ t('repository.settings.automation.branches.hint') }}
     </p>
   </div>
 </template>

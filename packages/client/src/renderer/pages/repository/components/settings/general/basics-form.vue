@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n'
 import {
   Button,
   Input,
-  Label,
   Spinner,
   TagsInput,
   TagsInputInput,
@@ -13,6 +12,9 @@ import {
   TagsInputItemText,
   Textarea,
 } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
+import SettingsBlock from '@/pages/settings/components/appearance-settings/settings-block.vue'
+import SettingsRow from '@/pages/settings/components/appearance-settings/settings-row.vue'
 import { replaceTopics, updateGeneralSettings } from '@/composables/github/use-repository-settings'
 import { useToast } from '@/composables/use-toast'
 
@@ -89,69 +91,10 @@ async function save(): Promise<void> {
 </script>
 
 <template>
-  <section class="grid gap-3">
-    <h3 class="text-control font-medium text-foreground">
-      {{ t('repository.settings.general.basics.title') }}
-    </h3>
-
-    <div class="grid max-w-xl gap-1.5">
-      <Label for="repository-settings-name">{{ t('repository.settings.general.basics.name') }}</Label>
-      <Input
-        id="repository-settings-name"
-        v-model="name"
-        autocomplete="off"
-        spellcheck="false"
-      />
-      <p class="text-caption text-muted-foreground">
-        {{ t('repository.settings.general.basics.nameHint') }}
-      </p>
-    </div>
-
-    <div class="grid max-w-xl gap-1.5">
-      <Label for="repository-settings-description">
-        {{ t('repository.settings.general.basics.description') }}
-      </Label>
-      <Textarea
-        id="repository-settings-description"
-        v-model="description"
-        rows="2"
-      />
-    </div>
-
-    <div class="grid max-w-xl gap-1.5">
-      <Label for="repository-settings-homepage">
-        {{ t('repository.settings.general.basics.homepage') }}
-      </Label>
-      <Input
-        id="repository-settings-homepage"
-        v-model="homepage"
-        autocomplete="off"
-        placeholder="https://"
-        spellcheck="false"
-        type="url"
-      />
-    </div>
-
-    <div class="grid max-w-xl gap-1.5">
-      <Label>{{ t('repository.settings.general.basics.topics') }}</Label>
-      <TagsInput v-model="topics">
-        <TagsInputItem
-          v-for="topic in topics"
-          :key="topic"
-          :value="topic"
-        >
-          <TagsInputItemText />
-          <TagsInputItemDelete />
-        </TagsInputItem>
-        <TagsInputInput :placeholder="t('repository.settings.general.basics.topicsPlaceholder')" />
-      </TagsInput>
-    </div>
-
-    <div
-      v-if="isDirty"
-      class="flex max-w-xl justify-end"
-    >
+  <SettingsSection :title="t('repository.settings.general.basics.title')">
+    <template #actions>
       <Button
+        v-if="isDirty"
         :disabled="isSaving"
         size="sm"
         type="button"
@@ -163,6 +106,50 @@ async function save(): Promise<void> {
         />
         {{ t('repository.settings.general.basics.save') }}
       </Button>
-    </div>
-  </section>
+    </template>
+
+    <SettingsRow
+      :description="t('repository.settings.general.basics.nameHint')"
+      :label="t('repository.settings.general.basics.name')"
+    >
+      <Input
+        v-model="name"
+        autocomplete="off"
+        class="w-64"
+        spellcheck="false"
+      />
+    </SettingsRow>
+
+    <SettingsBlock :label="t('repository.settings.general.basics.description')">
+      <Textarea
+        v-model="description"
+        rows="2"
+      />
+    </SettingsBlock>
+
+    <SettingsRow :label="t('repository.settings.general.basics.homepage')">
+      <Input
+        v-model="homepage"
+        autocomplete="off"
+        class="w-64"
+        placeholder="https://"
+        spellcheck="false"
+        type="url"
+      />
+    </SettingsRow>
+
+    <SettingsBlock :label="t('repository.settings.general.basics.topics')">
+      <TagsInput v-model="topics">
+        <TagsInputItem
+          v-for="topic in topics"
+          :key="topic"
+          :value="topic"
+        >
+          <TagsInputItemText />
+          <TagsInputItemDelete />
+        </TagsInputItem>
+        <TagsInputInput :placeholder="t('repository.settings.general.basics.topicsPlaceholder')" />
+      </TagsInput>
+    </SettingsBlock>
+  </SettingsSection>
 </template>

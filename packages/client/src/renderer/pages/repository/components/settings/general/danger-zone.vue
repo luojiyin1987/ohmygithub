@@ -21,6 +21,7 @@ import {
 } from '@/composables/github/use-repository-settings'
 import { findMissingScopes, useAuthStateQuery } from '@/composables/github/use-user-settings'
 import { useToast } from '@/composables/use-toast'
+import SettingsRow from '@/pages/settings/components/appearance-settings/settings-row.vue'
 import { isDangerConfirmed } from './danger-confirm'
 
 type DangerAction = 'visibility' | 'transfer' | 'archive' | 'delete'
@@ -136,21 +137,18 @@ const dialogDescriptionKey = computed(() => {
 </script>
 
 <template>
-  <section class="grid gap-3">
-    <h3 class="text-control font-medium text-destructive">
-      {{ t('repository.settings.general.dangerZone.title') }}
-    </h3>
+  <section class="space-y-2.5">
+    <div class="flex min-h-7 items-center px-2">
+      <h3 class="select-none text-caption font-medium text-destructive">
+        {{ t('repository.settings.general.dangerZone.title') }}
+      </h3>
+    </div>
 
-    <div class="overflow-hidden rounded-xl border border-destructive/40">
-      <div class="flex items-center justify-between gap-6 px-4 py-3">
-        <div class="grid gap-0.5">
-          <span class="text-body font-medium text-foreground">
-            {{ t('repository.settings.general.dangerZone.visibility.title') }}
-          </span>
-          <span class="text-caption text-muted-foreground">
-            {{ t('repository.settings.general.dangerZone.visibility.description', { visibility: settings.visibility }) }}
-          </span>
-        </div>
+    <div class="overflow-hidden rounded-[var(--radius-menu-shell)] border border-destructive/40 bg-card">
+      <SettingsRow
+        :description="t('repository.settings.general.dangerZone.visibility.description', { visibility: settings.visibility })"
+        :label="t('repository.settings.general.dangerZone.visibility.title')"
+      >
         <Button
           size="sm"
           type="button"
@@ -161,12 +159,9 @@ const dialogDescriptionKey = computed(() => {
             ? 'repository.settings.general.dangerZone.visibility.makePublic'
             : 'repository.settings.general.dangerZone.visibility.makePrivate') }}
         </Button>
-      </div>
+      </SettingsRow>
 
-      <div class="flex items-center justify-between gap-6 border-t border-destructive/20 px-4 py-3">
-        <span class="text-body font-medium text-foreground">
-          {{ t('repository.settings.general.dangerZone.transfer.title') }}
-        </span>
+      <SettingsRow :label="t('repository.settings.general.dangerZone.transfer.title')">
         <Button
           size="sm"
           type="button"
@@ -175,12 +170,9 @@ const dialogDescriptionKey = computed(() => {
         >
           {{ t('repository.settings.general.dangerZone.transfer.action') }}
         </Button>
-      </div>
+      </SettingsRow>
 
-      <div class="flex items-center justify-between gap-6 border-t border-destructive/20 px-4 py-3">
-        <span class="text-body font-medium text-foreground">
-          {{ t('repository.settings.general.dangerZone.archive.title') }}
-        </span>
+      <SettingsRow :label="t('repository.settings.general.dangerZone.archive.title')">
         <Button
           size="sm"
           type="button"
@@ -191,20 +183,14 @@ const dialogDescriptionKey = computed(() => {
             ? 'repository.settings.general.dangerZone.archive.unarchiveAction'
             : 'repository.settings.general.dangerZone.archive.archiveAction') }}
         </Button>
-      </div>
+      </SettingsRow>
 
-      <div class="flex items-center justify-between gap-6 border-t border-destructive/20 px-4 py-3">
-        <div class="grid gap-0.5">
-          <span class="text-body font-medium text-foreground">
-            {{ t('repository.settings.general.dangerZone.delete.title') }}
-          </span>
-          <span
-            v-if="missingDeleteScopes.length > 0"
-            class="text-caption text-muted-foreground"
-          >
-            {{ t('repository.settings.general.dangerZone.delete.missingScope') }}
-          </span>
-        </div>
+      <SettingsRow
+        :description="missingDeleteScopes.length > 0
+          ? t('repository.settings.general.dangerZone.delete.missingScope')
+          : ''"
+        :label="t('repository.settings.general.dangerZone.delete.title')"
+      >
         <Button
           v-if="missingDeleteScopes.length > 0"
           size="sm"
@@ -223,7 +209,7 @@ const dialogDescriptionKey = computed(() => {
         >
           {{ t('repository.settings.general.dangerZone.delete.action') }}
         </Button>
-      </div>
+      </SettingsRow>
     </div>
 
     <Dialog

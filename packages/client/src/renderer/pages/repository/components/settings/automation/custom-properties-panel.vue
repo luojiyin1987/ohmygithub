@@ -2,6 +2,8 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button, Input, Spinner } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
+import SettingsRow from '@/pages/settings/components/appearance-settings/settings-row.vue'
 import {
   updateRepositoryCustomProperties,
   useCustomPropertiesQuery,
@@ -80,44 +82,42 @@ async function save(): Promise<void> {
 
   <div
     v-else-if="properties.length > 0"
-    class="grid max-w-xl gap-3"
+    class="grid gap-3"
   >
-    <p class="text-caption text-muted-foreground">
-      {{ t('repository.settings.automation.customProperties.hint') }}
-    </p>
+    <SettingsSection :title="t('repository.settings.automation.tabs.custom-properties')">
+      <template #actions>
+        <Button
+          v-if="isDirty"
+          :disabled="isSaving"
+          size="sm"
+          type="button"
+          @click="save"
+        >
+          <Spinner
+            v-if="isSaving"
+            class="size-3.5"
+          />
+          {{ t('repository.settings.automation.save') }}
+        </Button>
+      </template>
 
-    <div class="grid gap-2">
-      <div
+      <SettingsRow
         v-for="property in properties"
         :key="property.propertyName"
-        class="grid grid-cols-[minmax(0,12rem)_minmax(0,1fr)] items-center gap-3"
+        :label="property.propertyName"
       >
-        <span class="truncate text-body font-medium text-foreground">{{ property.propertyName }}</span>
         <Input
           v-model="drafts[property.propertyName]"
           autocomplete="off"
+          class="w-64"
           spellcheck="false"
         />
-      </div>
-    </div>
+      </SettingsRow>
+    </SettingsSection>
 
-    <div
-      v-if="isDirty"
-      class="flex justify-end"
-    >
-      <Button
-        :disabled="isSaving"
-        size="sm"
-        type="button"
-        @click="save"
-      >
-        <Spinner
-          v-if="isSaving"
-          class="size-3.5"
-        />
-        {{ t('repository.settings.automation.save') }}
-      </Button>
-    </div>
+    <p class="select-none px-2 text-caption text-muted-foreground">
+      {{ t('repository.settings.automation.customProperties.hint') }}
+    </p>
   </div>
 
   <p

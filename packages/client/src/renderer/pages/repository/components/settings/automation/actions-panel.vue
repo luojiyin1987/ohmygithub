@@ -12,6 +12,9 @@ import {
   Spinner,
   Textarea,
 } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
+import SettingsRow from '@/pages/settings/components/appearance-settings/settings-row.vue'
+import SettingsBlock from '@/pages/settings/components/appearance-settings/settings-block.vue'
 import {
   updateActionsAccessLevel,
   updateActionsPermissions,
@@ -153,102 +156,99 @@ function saveRetention(): void {
 
   <div
     v-else
-    class="grid gap-4"
+    class="space-y-8"
   >
-    <SettingsToggleRow
-      :description="t('repository.settings.automation.actions.enabledHint')"
-      :disabled="isPending('enabled')"
-      :model-value="settings.enabled"
-      :title="t('repository.settings.automation.actions.enabled')"
-      @update:model-value="toggleEnabled"
-    />
+    <SettingsSection :title="t('repository.settings.automation.actions.allowedActions')">
+      <SettingsToggleRow
+        :description="t('repository.settings.automation.actions.enabledHint')"
+        :disabled="isPending('enabled')"
+        :model-value="settings.enabled"
+        :title="t('repository.settings.automation.actions.enabled')"
+        @update:model-value="toggleEnabled"
+      />
 
-    <template v-if="settings.enabled">
-      <div class="flex items-center justify-between gap-6">
-        <span class="text-body font-medium text-foreground">
-          {{ t('repository.settings.automation.actions.allowedActions') }}
-        </span>
-        <Select
-          :disabled="isPending('allowedActions')"
-          :model-value="settings.allowedActions ?? 'all'"
-          @update:model-value="changeAllowedActions"
-        >
-          <SelectTrigger class="w-64">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{{ t('repository.settings.automation.actions.allowed.all') }}</SelectItem>
-            <SelectItem value="local_only">{{ t('repository.settings.automation.actions.allowed.local_only') }}</SelectItem>
-            <SelectItem value="selected">{{ t('repository.settings.automation.actions.allowed.selected') }}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div
-        v-if="settings.allowedActions === 'selected'"
-        class="grid gap-2 pl-4"
-      >
-        <SettingsToggleRow
-          :disabled="isPending('githubOwnedAllowed')"
-          :model-value="settings.selectedActions?.githubOwnedAllowed ?? false"
-          :title="t('repository.settings.automation.actions.githubOwned')"
-          @update:model-value="toggleSelectedFlag('githubOwnedAllowed', $event)"
-        />
-        <SettingsToggleRow
-          :disabled="isPending('verifiedAllowed')"
-          :model-value="settings.selectedActions?.verifiedAllowed ?? false"
-          :title="t('repository.settings.automation.actions.verified')"
-          @update:model-value="toggleSelectedFlag('verifiedAllowed', $event)"
-        />
-        <div class="grid gap-1.5">
-          <span class="text-body font-medium text-foreground">
-            {{ t('repository.settings.automation.actions.patterns') }}
-          </span>
-          <Textarea
-            v-model="patternsText"
-            :placeholder="t('repository.settings.automation.actions.patternsPlaceholder')"
-            rows="3"
-            spellcheck="false"
-          />
-          <div class="flex justify-end">
-            <Button
-              :disabled="isPending('selectedActions')"
+      <template v-if="settings.enabled">
+        <SettingsRow :label="t('repository.settings.automation.actions.allowedActions')">
+          <Select
+            :disabled="isPending('allowedActions')"
+            :model-value="settings.allowedActions ?? 'all'"
+            @update:model-value="changeAllowedActions"
+          >
+            <SelectTrigger
+              class="min-w-56"
               size="sm"
-              type="button"
-              @click="saveSelectedActions"
             >
-              {{ t('repository.settings.automation.save') }}
-            </Button>
-          </div>
-        </div>
-      </div>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="all">{{ t('repository.settings.automation.actions.allowed.all') }}</SelectItem>
+              <SelectItem value="local_only">{{ t('repository.settings.automation.actions.allowed.local_only') }}</SelectItem>
+              <SelectItem value="selected">{{ t('repository.settings.automation.actions.allowed.selected') }}</SelectItem>
+            </SelectContent>
+          </Select>
+        </SettingsRow>
 
-      <div
+        <template v-if="settings.allowedActions === 'selected'">
+          <SettingsToggleRow
+            :disabled="isPending('githubOwnedAllowed')"
+            :model-value="settings.selectedActions?.githubOwnedAllowed ?? false"
+            :title="t('repository.settings.automation.actions.githubOwned')"
+            @update:model-value="toggleSelectedFlag('githubOwnedAllowed', $event)"
+          />
+          <SettingsToggleRow
+            :disabled="isPending('verifiedAllowed')"
+            :model-value="settings.selectedActions?.verifiedAllowed ?? false"
+            :title="t('repository.settings.automation.actions.verified')"
+            @update:model-value="toggleSelectedFlag('verifiedAllowed', $event)"
+          />
+          <SettingsBlock :label="t('repository.settings.automation.actions.patterns')">
+            <Textarea
+              v-model="patternsText"
+              :placeholder="t('repository.settings.automation.actions.patternsPlaceholder')"
+              rows="3"
+              spellcheck="false"
+            />
+            <div class="mt-2 flex justify-end">
+              <Button
+                :disabled="isPending('selectedActions')"
+                size="sm"
+                type="button"
+                @click="saveSelectedActions"
+              >
+                {{ t('repository.settings.automation.save') }}
+              </Button>
+            </div>
+          </SettingsBlock>
+        </template>
+      </template>
+    </SettingsSection>
+
+    <SettingsSection
+      v-if="settings.enabled"
+      :title="t('repository.settings.automation.actions.workflowPermissions')"
+    >
+      <SettingsRow
         v-if="settings.defaultWorkflowPermissions !== null"
-        class="flex items-center justify-between gap-6"
+        :description="t('repository.settings.automation.actions.workflowPermissionsHint')"
+        :label="t('repository.settings.automation.actions.workflowPermissions')"
       >
-        <div class="grid gap-0.5">
-          <span class="text-body font-medium text-foreground">
-            {{ t('repository.settings.automation.actions.workflowPermissions') }}
-          </span>
-          <span class="text-caption text-muted-foreground">
-            {{ t('repository.settings.automation.actions.workflowPermissionsHint') }}
-          </span>
-        </div>
         <Select
           :disabled="isPending('workflow')"
           :model-value="settings.defaultWorkflowPermissions"
           @update:model-value="changeWorkflowPermissions"
         >
-          <SelectTrigger class="w-48">
+          <SelectTrigger
+            class="min-w-48"
+            size="sm"
+          >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent align="end">
             <SelectItem value="read">{{ t('repository.settings.automation.actions.permissionRead') }}</SelectItem>
             <SelectItem value="write">{{ t('repository.settings.automation.actions.permissionWrite') }}</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </SettingsRow>
 
       <SettingsToggleRow
         v-if="settings.canApprovePullRequestReviews !== null"
@@ -258,41 +258,34 @@ function saveRetention(): void {
         @update:model-value="toggleCanApprove"
       />
 
-      <div
+      <SettingsRow
         v-if="settings.accessLevel !== null"
-        class="flex items-center justify-between gap-6"
+        :label="t('repository.settings.automation.actions.accessLevel')"
       >
-        <span class="text-body font-medium text-foreground">
-          {{ t('repository.settings.automation.actions.accessLevel') }}
-        </span>
         <Select
           :disabled="isPending('accessLevel')"
           :model-value="settings.accessLevel"
           @update:model-value="changeAccessLevel"
         >
-          <SelectTrigger class="w-48">
+          <SelectTrigger
+            class="min-w-48"
+            size="sm"
+          >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent align="end">
             <SelectItem value="none">{{ t('repository.settings.automation.actions.access.none') }}</SelectItem>
             <SelectItem value="user">{{ t('repository.settings.automation.actions.access.user') }}</SelectItem>
             <SelectItem value="organization">{{ t('repository.settings.automation.actions.access.organization') }}</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </SettingsRow>
 
-      <div
+      <SettingsRow
         v-if="settings.retentionDays !== null"
-        class="flex items-center justify-between gap-6"
+        :description="t('repository.settings.automation.actions.retentionHint')"
+        :label="t('repository.settings.automation.actions.retention')"
       >
-        <div class="grid gap-0.5">
-          <span class="text-body font-medium text-foreground">
-            {{ t('repository.settings.automation.actions.retention') }}
-          </span>
-          <span class="text-caption text-muted-foreground">
-            {{ t('repository.settings.automation.actions.retentionHint') }}
-          </span>
-        </div>
         <div class="flex items-center gap-2">
           <Input
             v-model="retentionText"
@@ -300,7 +293,8 @@ function saveRetention(): void {
             inputmode="numeric"
           />
           <Button
-            :disabled="isPending('retention') || retentionText === String(settings.retentionDays)"
+            v-if="retentionText !== String(settings.retentionDays)"
+            :disabled="isPending('retention')"
             size="sm"
             type="button"
             @click="saveRetention"
@@ -308,7 +302,7 @@ function saveRetention(): void {
             {{ t('repository.settings.automation.save') }}
           </Button>
         </div>
-      </div>
-    </template>
+      </SettingsRow>
+    </SettingsSection>
   </div>
 </template>

@@ -82,11 +82,12 @@ function retry(): void {
       @update:active-id="setActiveTab"
     />
 
-    <ModerationPanel
-      v-if="activeTab === 'moderation'"
-      :owner="owner"
-      :repo="repo"
-    />
+    <div class="mx-auto w-full max-w-3xl space-y-8 px-2">
+      <ModerationPanel
+        v-if="activeTab === 'moderation'"
+        :owner="owner"
+        :repo="repo"
+      />
 
     <div
       v-else-if="isLoading"
@@ -121,12 +122,13 @@ function retry(): void {
       @refresh="refresh"
     />
 
-    <TeamsPanel
-      v-else-if="activeTab === 'teams'"
-      :overview="overview"
-      :owner="owner"
-      :repo="repo"
-      @refresh="refresh"
-    />
+      <TeamsPanel
+        v-else-if="activeTab === 'teams'"
+        :overview="overview"
+        :owner="owner"
+        :repo="repo"
+        @refresh="refresh"
+      />
+    </div>
   </div>
 </template>

@@ -8,6 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
+import SettingsRow from '@/pages/settings/components/appearance-settings/settings-row.vue'
 import {
   setDiscussionsEnabled,
   setImmutableReleases,
@@ -110,11 +112,7 @@ function defaultsLabel(prefix: 'squash' | 'merge', option: string): string {
 </script>
 
 <template>
-  <section class="grid gap-1">
-    <h3 class="text-control font-medium text-foreground">
-      {{ t('repository.settings.general.features.title') }}
-    </h3>
-
+  <SettingsSection :title="t('repository.settings.general.features.title')">
     <SettingsToggleRow
       :disabled="isPending('hasWiki')"
       :model-value="settings.hasWiki"
@@ -160,33 +158,31 @@ function defaultsLabel(prefix: 'squash' | 'merge', option: string): string {
       :title="t('repository.settings.general.signoff')"
       @update:model-value="patchToggle('webCommitSignoffRequired', $event)"
     />
+  </SettingsSection>
 
-    <h3 class="mt-4 text-control font-medium text-foreground">
-      {{ t('repository.settings.general.pullRequests.title') }}
-    </h3>
-
+  <SettingsSection :title="t('repository.settings.general.pullRequests.title')">
     <SettingsToggleRow
       :disabled="isPending('allowMergeCommit')"
       :model-value="settings.allowMergeCommit"
       :title="t('repository.settings.general.pullRequests.mergeCommits')"
       @update:model-value="patchToggle('allowMergeCommit', $event)"
     />
-    <div
+    <SettingsRow
       v-if="settings.allowMergeCommit"
-      class="flex items-center justify-between gap-6 py-1 pl-4"
+      :label="t('repository.settings.general.pullRequests.mergeDefaults')"
     >
-      <span class="text-body text-muted-foreground">
-        {{ t('repository.settings.general.pullRequests.mergeDefaults') }}
-      </span>
       <Select
         :disabled="isPending('mergeDefaults')"
         :model-value="mergeDefault"
         @update:model-value="updateMergeDefault"
       >
-        <SelectTrigger class="w-72">
+        <SelectTrigger
+          class="min-w-56"
+          size="sm"
+        >
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent align="end">
           <SelectItem
             v-for="option in MERGE_DEFAULT_OPTIONS"
             :key="option"
@@ -196,7 +192,7 @@ function defaultsLabel(prefix: 'squash' | 'merge', option: string): string {
           </SelectItem>
         </SelectContent>
       </Select>
-    </div>
+    </SettingsRow>
 
     <SettingsToggleRow
       :disabled="isPending('allowSquashMerge')"
@@ -204,22 +200,22 @@ function defaultsLabel(prefix: 'squash' | 'merge', option: string): string {
       :title="t('repository.settings.general.pullRequests.squashMerging')"
       @update:model-value="patchToggle('allowSquashMerge', $event)"
     />
-    <div
+    <SettingsRow
       v-if="settings.allowSquashMerge"
-      class="flex items-center justify-between gap-6 py-1 pl-4"
+      :label="t('repository.settings.general.pullRequests.squashDefaults')"
     >
-      <span class="text-body text-muted-foreground">
-        {{ t('repository.settings.general.pullRequests.squashDefaults') }}
-      </span>
       <Select
         :disabled="isPending('squashDefaults')"
         :model-value="squashDefault"
         @update:model-value="updateSquashDefault"
       >
-        <SelectTrigger class="w-72">
+        <SelectTrigger
+          class="min-w-56"
+          size="sm"
+        >
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent align="end">
           <SelectItem
             v-for="option in SQUASH_DEFAULT_OPTIONS"
             :key="option"
@@ -229,7 +225,7 @@ function defaultsLabel(prefix: 'squash' | 'merge', option: string): string {
           </SelectItem>
         </SelectContent>
       </Select>
-    </div>
+    </SettingsRow>
 
     <SettingsToggleRow
       :disabled="isPending('allowRebaseMerge')"
@@ -255,19 +251,18 @@ function defaultsLabel(prefix: 'squash' | 'merge', option: string): string {
       :title="t('repository.settings.general.pullRequests.deleteBranchOnMerge')"
       @update:model-value="patchToggle('deleteBranchOnMerge', $event)"
     />
+  </SettingsSection>
 
-    <template v-if="settings.immutableReleases !== null">
-      <h3 class="mt-4 text-control font-medium text-foreground">
-        {{ t('repository.settings.general.releases.title') }}
-      </h3>
-
-      <SettingsToggleRow
-        :description="t('repository.settings.general.releases.immutableHint')"
-        :disabled="isPending('immutableReleases')"
-        :model-value="settings.immutableReleases === true"
-        :title="t('repository.settings.general.releases.immutable')"
-        @update:model-value="toggleImmutableReleases"
-      />
-    </template>
-  </section>
+  <SettingsSection
+    v-if="settings.immutableReleases !== null"
+    :title="t('repository.settings.general.releases.title')"
+  >
+    <SettingsToggleRow
+      :description="t('repository.settings.general.releases.immutableHint')"
+      :disabled="isPending('immutableReleases')"
+      :model-value="settings.immutableReleases === true"
+      :title="t('repository.settings.general.releases.immutable')"
+      @update:model-value="toggleImmutableReleases"
+    />
+  </SettingsSection>
 </template>

@@ -16,6 +16,7 @@ import {
   Spinner,
   Switch,
 } from '@oh-my-github/ui'
+import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
 import {
   createEnvironmentBranchPolicy,
   deleteEnvironmentBranchPolicy,
@@ -162,41 +163,34 @@ async function remove(name: string): Promise<void> {
 
 <template>
   <div class="grid gap-3">
-    <div class="flex items-center justify-between">
-      <p class="text-caption text-muted-foreground">
-        {{ t('repository.settings.automation.environments.hint') }}
-      </p>
-      <Button
-        size="sm"
-        type="button"
-        @click="openCreate"
-      >
-        <Plus
-          class="size-3.5"
-          :stroke-width="1.75"
-        />
-        {{ t('repository.settings.automation.environments.add') }}
-      </Button>
-    </div>
+    <SettingsSection :title="t('repository.settings.automation.tabs.environments')">
+      <template #actions>
+        <Button
+          size="sm"
+          type="button"
+          variant="outline"
+          @click="openCreate"
+        >
+          <Plus class="size-4" />
+          {{ t('repository.settings.automation.environments.add') }}
+        </Button>
+      </template>
 
-    <div
-      v-if="isLoading"
-      class="flex min-h-[8rem] items-center justify-center"
-    >
-      <Spinner class="size-4 text-muted-foreground" />
-    </div>
-
-    <div
-      v-else-if="environments.length > 0"
-      class="overflow-hidden rounded-xl border border-border bg-card"
-    >
       <div
-        v-for="(environment, index) in environments"
+        v-if="isLoading"
+        class="flex min-h-[8rem] items-center justify-center"
+      >
+        <Spinner class="size-4 text-muted-foreground" />
+      </div>
+
+      <div
+        v-else-if="environments.length > 0"
+        class="divide-y divide-border"
+      >
+      <div
+        v-for="environment in environments"
         :key="environment.name"
-        :class="[
-          'flex items-center justify-between gap-4 px-4 py-2.5',
-          index > 0 ? 'border-t border-border' : '',
-        ]"
+        class="flex items-center justify-between gap-4 px-4 py-3"
       >
         <div class="grid min-w-0 gap-0.5">
           <span class="truncate text-body font-medium text-foreground">{{ environment.name }}</span>
@@ -237,13 +231,18 @@ async function remove(name: string): Promise<void> {
           </Button>
         </div>
       </div>
-    </div>
+      </div>
 
-    <p
-      v-else
-      class="text-body text-muted-foreground"
-    >
-      {{ t('repository.settings.automation.environments.empty') }}
+      <p
+        v-else
+        class="px-4 py-6 text-center text-body text-muted-foreground"
+      >
+        {{ t('repository.settings.automation.environments.empty') }}
+      </p>
+    </SettingsSection>
+
+    <p class="select-none px-2 text-caption text-muted-foreground">
+      {{ t('repository.settings.automation.environments.hint') }}
     </p>
 
     <Dialog v-model:open="isDialogOpen">
