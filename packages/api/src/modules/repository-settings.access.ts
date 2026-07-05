@@ -171,7 +171,7 @@ export class RepositorySettingsAccessApi {
     return ((response.data ?? []) as CollaboratorResponse[]).map((item) => ({
       login: item.login ?? '',
       avatarUrl: item.avatar_url ?? '',
-      roleName: item.role_name ?? 'pull',
+      roleName: normalizeRoleName(item.role_name),
       htmlUrl: item.html_url ?? `https://github.com/${item.login ?? ''}`,
     }))
   }
@@ -211,4 +211,12 @@ export class RepositorySettingsAccessApi {
       return []
     }
   }
+}
+
+// GitHub reports the standard collaborator tiers as read/write in role_name,
+// but the collaborator PUT endpoint only accepts pull/push for those tiers.
+function normalizeRoleName(value: string | null | undefined): string {
+  if (value === 'read') return 'pull'
+  if (value === 'write') return 'push'
+  return value ?? 'pull'
 }

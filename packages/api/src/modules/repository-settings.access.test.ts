@@ -22,6 +22,12 @@ describe('RepositorySettingsAccessApi', () => {
         roleName: 'admin',
         htmlUrl: 'https://github.com/alice',
       },
+      {
+        login: 'walt',
+        avatarUrl: 'https://avatars.example/walt',
+        roleName: 'push',
+        htmlUrl: 'https://github.com/walt',
+      },
     ])
     expect(overview.invitations).toEqual([
       {
@@ -165,6 +171,12 @@ function createApi(overrides: { teamsError?: boolean; ownerType?: string; emptyL
             avatar_url: 'https://avatars.example/alice',
             role_name: 'admin',
             html_url: 'https://github.com/alice',
+          },
+          {
+            login: 'walt',
+            avatar_url: 'https://avatars.example/walt',
+            role_name: 'write',
+            html_url: 'https://github.com/walt',
           },
         ],
       }
