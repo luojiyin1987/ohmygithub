@@ -78,12 +78,12 @@ interface AuthState {
 
 - 新增 Pinia store `stores/auth.ts`:持有响应式 `AuthState`,提供 `refresh()`(IPC `auth:get`)、`switchAccount(id)`、`logout()`;App 启动时加载。登录页 OAuth/PAT 成功后也经该 store 刷新。
 - 路由守卫维持现状(每次导航 IPC 直读),仅新增一条:已认证访问 `/auth` 且带 `?add=1` 时**允许停留**(现状是强制弹回工作区)。
-- **软重载切换流程**(store.switchAccount 内):
-  1. `await` IPC `auth:switch-account`,更新 store 状态;
-  2. `useQueryCache().invalidateQueries({ key: ['github'] })` 使整个 `['github']` 前缀的 Pinia Colada 查询缓存失效,不残留旧账号数据;
-  3. `router.replace` 到工作区首页(workspace-root);
-  4. `App.vue` 顶层 `<RouterView :key="activeAccountId">` 强制整棵组件树重建,workspace-page 的 viewer ref 等本地状态随重挂载重置。
-- 未登录时 key 为 null,登录/退出同样触发重建,行为一致。
+- **软重载切换流程**(composable `useAuthActions().switchAccount` 内,登录成功与退出登录走同一门控):
+  1. 置 `authStore.isSwitching = true`,`app.vue` 顶层 `<RouterView v-if="!authStore.isSwitching" />` 先卸载整棵组件树(所有查询变为 inactive,本地状态销毁);
+  2. `await` IPC `auth:switch-account`,更新 store 状态;
+  3. `queryCache.getEntries({ key: ['github'] })` 逐条 `queryCache.remove(entry)`,整体移除 `['github']` 前缀缓存(用移除而非 invalidate:invalidate 是 stale-while-revalidate,重挂载后会先闪现旧账号数据);
+  4. `router.replace` 到工作区首页(workspace-root),复位 `isSwitching`,组件树以新账号冷缓存重建。
+- 卸载→重建由 `v-if` 门控保证,无需 `:key`;中间只有一帧背景色空白,无白屏加载。
 
 ## 4. 登录页(pages/auth/auth-page.vue)
 
