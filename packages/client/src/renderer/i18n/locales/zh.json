@@ -38,9 +38,7 @@
     }
   },
   "pagination": {
-    "next": "下一页",
-    "pageInput": "跳转到页码",
-    "previous": "上一页"
+    "pageInput": "跳转到页码"
   },
   "actions": {
     "statuses": {

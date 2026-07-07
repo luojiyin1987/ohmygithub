@@ -2,9 +2,7 @@
 import type { HTMLAttributes } from 'vue'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import {
-  Button,
   Input,
   Pagination as UiPagination,
   PaginationContent,
@@ -56,8 +54,13 @@ const shouldRender = computed(() =>
   || props.totalCount > normalizedPerPage.value
   || props.page > 1
 )
-const canGoPrevious = computed(() => props.page > 1)
 const canGoNext = computed(() => props.hasNextPage ?? props.page < pageCount.value)
+// The compact variant has no reliable total (e.g. the commits API only reports
+// hasNextPage), so feed the pagination root exactly one page beyond the current
+// one while more results exist — reka-ui then disables prev/next correctly.
+const compactTotal = computed(() =>
+  (props.page + (canGoNext.value ? 1 : 0)) * normalizedPerPage.value
+)
 const summaryValues = computed(() => ({
   count: new Intl.NumberFormat().format(props.totalCount),
   page: props.page,
@@ -103,16 +106,6 @@ function commitPageInput(): void {
 function resetPageInput(): void {
   pageInput.value = String(props.page)
 }
-
-function goToPreviousPage(): void {
-  if (!canGoPrevious.value) return
-  setPage(props.page - 1)
-}
-
-function goToNextPage(): void {
-  if (!canGoNext.value) return
-  setPage(props.page + 1)
-}
 </script>
 
 <template>
@@ -131,26 +124,18 @@ function goToNextPage(): void {
       v-if="variant === 'compact'"
       class="flex shrink-0 items-center gap-1"
     >
-      <Button
-        :aria-label="t('pagination.previous')"
-        :disabled="disabled || !canGoPrevious"
-        size="icon-sm"
-        type="button"
-        variant="ghost"
-        @click="goToPreviousPage"
+      <UiPagination
+        v-model:page="pageModel"
+        class="mx-0 w-auto"
+        :disabled="disabled"
+        :items-per-page="normalizedPerPage"
+        :total="compactTotal"
       >
-        <ChevronLeft class="size-3.5" />
-      </Button>
-      <Button
-        :aria-label="t('pagination.next')"
-        :disabled="disabled || !canGoNext"
-        size="icon-sm"
-        type="button"
-        variant="ghost"
-        @click="goToNextPage"
-      >
-        <ChevronRight class="size-3.5" />
-      </Button>
+        <PaginationContent>
+          <PaginationPrevious size="icon-sm" />
+          <PaginationNext size="icon-sm" />
+        </PaginationContent>
+      </UiPagination>
       <Input
         v-model="pageInput"
         :aria-label="t('pagination.pageInput')"

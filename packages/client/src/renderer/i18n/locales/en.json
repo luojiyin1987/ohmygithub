@@ -38,9 +38,7 @@
     }
   },
   "pagination": {
-    "next": "Next page",
-    "pageInput": "Go to page",
-    "previous": "Previous page"
+    "pageInput": "Go to page"
   },
   "actions": {
     "statuses": {
