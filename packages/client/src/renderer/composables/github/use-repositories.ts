@@ -27,6 +27,29 @@ export function useRepositoryViewerAdminQuery(
   })
 }
 
+export function useRepositoryViewerPushQuery(
+  owner: MaybeRefOrGetter<string>,
+  repo: MaybeRefOrGetter<string>,
+  enabled: MaybeRefOrGetter<boolean>,
+) {
+  return useQuery<boolean>({
+    key: () => ['github', 'repository', 'viewer-push', toValue(owner), toValue(repo)],
+    enabled: () => Boolean(toValue(owner)) && Boolean(toValue(repo)) && toValue(enabled),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    query: async () => {
+      if (!window.ohMyGithub?.repositories) {
+        throw new Error('GitHub repositories bridge is unavailable')
+      }
+
+      return window.ohMyGithub.repositories.getViewerPush(toValue(owner), toValue(repo))
+    },
+  })
+}
+
 export function useRepositoryOverviewQuery(
   owner: MaybeRefOrGetter<string>,
   repo: MaybeRefOrGetter<string>,

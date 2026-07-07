@@ -27,6 +27,7 @@ import GitHubMarkdownRenderer from '@/components/github/github-markdown-renderer
 
 const props = defineProps<{
   release: GitHubRelease
+  canManage: boolean
   isLatest: boolean
   owner: string
   repo: string
@@ -165,7 +166,7 @@ function openUrl(url: string | null): void {
 
       <div class="flex shrink-0 items-center gap-2">
         <Button
-          v-if="release.draft"
+          v-if="canManage && release.draft"
           size="sm"
           type="button"
           variant="outline"
@@ -191,7 +192,10 @@ function openUrl(url: string | null): void {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem @click="emit('edit', release)">
+            <DropdownMenuItem
+              v-if="canManage"
+              @click="emit('edit', release)"
+            >
               <Pencil class="size-3.5" />
               {{ t('repository.releases.actions.edit') }}
             </DropdownMenuItem>
@@ -199,14 +203,16 @@ function openUrl(url: string | null): void {
               <ExternalLink class="size-3.5" />
               {{ t('repository.releases.actions.openOnGitHub') }}
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              @click="emit('delete', release)"
-            >
-              <Trash2 class="size-3.5" />
-              {{ t('repository.releases.actions.delete') }}
-            </DropdownMenuItem>
+            <template v-if="canManage">
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                @click="emit('delete', release)"
+              >
+                <Trash2 class="size-3.5" />
+                {{ t('repository.releases.actions.delete') }}
+              </DropdownMenuItem>
+            </template>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

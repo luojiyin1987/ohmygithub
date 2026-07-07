@@ -2275,6 +2275,7 @@ interface Window {
     }
     repositories: {
       getViewerAdmin: (owner: string, repo: string) => Promise<boolean>
+      getViewerPush: (owner: string, repo: string) => Promise<boolean>
       getViewerState: (owner: string, repo: string) => Promise<GitHubRepositoryViewerState>
       getNavigationCounts: (owner: string, repo: string) => Promise<GitHubRepositoryNavigationCounts>
       getOverview: (owner: string, repo: string) => Promise<GitHubRepositoryOverview>

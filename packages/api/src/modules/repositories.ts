@@ -79,7 +79,7 @@ interface RepositoryResponse {
   fork?: boolean
   archived?: boolean
   is_template?: boolean
-  permissions?: { admin?: boolean } | null
+  permissions?: { admin?: boolean, push?: boolean } | null
   default_branch?: string | null
   language?: string | null
   topics?: string[]
@@ -440,6 +440,15 @@ export class RepositoriesApi {
     try {
       const repository = await this.getRepository(options)
       return Boolean(repository.permissions?.admin)
+    } catch {
+      return false
+    }
+  }
+
+  async getViewerPush(options: RepositoryOptions): Promise<boolean> {
+    try {
+      const repository = await this.getRepository(options)
+      return Boolean(repository.permissions?.push)
     } catch {
       return false
     }

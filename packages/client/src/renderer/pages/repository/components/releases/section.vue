@@ -17,6 +17,7 @@ import {
   publishRelease,
   useRepositoryReleasesQuery,
 } from '@/composables/github/use-releases'
+import { useRepositoryViewerPushQuery } from '@/composables/github/use-repositories'
 import { useToast } from '@/composables/use-toast'
 import ReleaseFormDialog from './release-form-dialog.vue'
 import ReleaseList from './list.vue'
@@ -39,6 +40,13 @@ const isDeleting = ref(false)
 const publishingReleaseId = ref<number | null>(null)
 
 const hasRepositoryIdentity = computed(() => Boolean(props.owner && props.repo))
+const viewerPushQuery = useRepositoryViewerPushQuery(
+  () => props.owner,
+  () => props.repo,
+  hasRepositoryIdentity,
+)
+// Creating, editing and deleting releases requires push access.
+const canManageReleases = computed(() => viewerPushQuery.data.value ?? false)
 const releasesQuery = useRepositoryReleasesQuery(
   () => props.owner,
   () => props.repo,
@@ -165,6 +173,7 @@ function resolveErrorMessage(error: unknown): string | undefined {
         </p>
       </div>
       <Button
+        v-if="canManageReleases"
         :disabled="!hasRepositoryIdentity"
         size="sm"
         type="button"
@@ -179,6 +188,7 @@ function resolveErrorMessage(error: unknown): string | undefined {
     </div>
 
     <ReleaseList
+      :can-manage="canManageReleases"
       :has-error="hasError"
       :has-identity="hasRepositoryIdentity"
       :has-next-page="hasNextPage"

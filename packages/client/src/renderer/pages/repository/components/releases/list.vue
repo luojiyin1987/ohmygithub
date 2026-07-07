@@ -14,6 +14,7 @@ import ReleaseRow from './row.vue'
 
 const props = defineProps<{
   releases: GitHubRelease[]
+  canManage: boolean
   hasError: boolean
   hasIdentity: boolean
   hasNextPage: boolean
@@ -124,6 +125,7 @@ const showEmpty = computed(() =>
         <ReleaseRow
           v-for="release in releases"
           :key="release.id"
+          :can-manage="canManage"
           :is-latest="release.id === latestReleaseId"
           :owner="owner"
           :release="release"

@@ -169,6 +169,8 @@ const api = {
   repositories: {
     getViewerAdmin: (owner: string, repo: string) =>
       ipcRenderer.invoke('repositories:get-viewer-admin', owner, repo),
+    getViewerPush: (owner: string, repo: string) =>
+      ipcRenderer.invoke('repositories:get-viewer-push', owner, repo),
     getViewerState: (owner: string, repo: string) =>
       ipcRenderer.invoke('repositories:get-viewer-state', owner, repo),
     getNavigationCounts: (owner: string, repo: string) =>
