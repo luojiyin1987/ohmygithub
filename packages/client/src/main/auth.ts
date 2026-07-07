@@ -51,6 +51,25 @@ const pendingDeviceFlows = new Map<
   }
 >()
 
+const authChangeListeners = new Set<() => void>()
+
+export function onAuthChanged(listener: () => void): () => void {
+  authChangeListeners.add(listener)
+  return () => {
+    authChangeListeners.delete(listener)
+  }
+}
+
+export function isAuthenticated(): boolean {
+  return getActiveAccount(readAuthFile()) !== null
+}
+
+function emitAuthChanged(): void {
+  for (const listener of authChangeListeners) {
+    listener()
+  }
+}
+
 export function initializeAuth(): AuthState {
   return getAuthState()
 }
@@ -108,6 +127,7 @@ function switchToAccount(accountId: number): AuthState {
   }
 
   writeAuthFile(setActiveAccount(file, accountId))
+  emitAuthChanged()
   return getAuthState()
 }
 
@@ -116,6 +136,7 @@ function logoutActiveAccount(): AuthState {
 
   if (file && file.activeAccountId !== null) {
     writeAuthFile(removeAccount(file, file.activeAccountId))
+    emitAuthChanged()
   }
 
   return getAuthState()
@@ -233,6 +254,7 @@ function persistAccount(input: {
 }): void {
   const file = readAuthFile() ?? createEmptyAuthFile()
   writeAuthFile(upsertAccount(file, input, new Date().toISOString()))
+  emitAuthChanged()
 }
 
 function getAuthState(): AuthState {
