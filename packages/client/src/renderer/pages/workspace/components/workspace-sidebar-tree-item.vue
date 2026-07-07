@@ -6,7 +6,7 @@ import type {
   WorkspaceSidebarTreeSortInput,
 } from '@/pages/workspace/types'
 import type { UseSortableOptions } from '@vueuse/integrations/useSortable'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useQuery } from '@pinia/colada'
 import { useSortable } from '@vueuse/integrations/useSortable'
@@ -324,18 +324,22 @@ const moveTargetFolders = computed(() => {
 const canMoveBookmarkToRoot = computed(() =>
   actionContext.value?.kind === 'bookmark' && actionContext.value.bookmarkFolderId !== null,
 )
-const childSortable = useSortable(childList, visibleChildren, {
+// Only bookmark-folder child lists may own a Sortable instance: a
+// disabled-after-init toggle is unreliable (the instance is created lazily by
+// watchElement, after option() calls no-op), and stray instances on other
+// expandable items join the shared drag group and interfere with drops.
+const sortableChildList = computed(() => isSortableChildList.value ? childList.value : null)
+useSortable(sortableChildList, visibleChildren, {
   draggable: '[data-workspace-draggable="true"]',
   group: 'workspace-bookmarks',
+  // Damp the placeholder tug-of-war with the parent list this child list is
+  // nested inside (sortablejs nested-list setup).
+  swapThreshold: 0.65,
   watchElement: true,
   onAdd: handleSortableChange,
   onMove: canMoveSortableItem,
   onUpdate: handleSortableChange,
 } satisfies WorkspaceSortableOptions)
-
-watch(isSortableChildList, (isSortable) => {
-  childSortable.option('disabled', !isSortable)
-}, { immediate: true })
 
 function workItemIconClass(item: WorkspaceSidebarTreeItem): string {
   if (item.workItem?.iconTone === 'success') return 'text-success'
@@ -661,6 +665,12 @@ function sortableItemIds(container: HTMLElement): string[] {
       <SidebarMenuSubItem v-else-if="showChildEmpty">
         <p class="px-2 py-1.5 text-caption text-muted-foreground">
           {{ t(childEmptyKey) }}
+        </p>
+      </SidebarMenuSubItem>
+
+      <SidebarMenuSubItem v-else-if="isSortableChildList && visibleChildren.length === 0">
+        <p class="select-none rounded-md border border-dashed border-border px-2 py-1.5 text-caption text-muted-foreground">
+          {{ t('workspace.bookmarks.folderDropHint') }}
         </p>
       </SidebarMenuSubItem>
 

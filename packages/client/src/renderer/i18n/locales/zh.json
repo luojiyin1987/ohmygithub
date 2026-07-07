@@ -1139,6 +1139,9 @@
       "settingsSecurity": {
         "title": "安全"
       },
+      "settingsSecrets": {
+        "title": "密钥与变量"
+      },
       "settingsIntegrations": {
         "title": "集成"
       }
@@ -1991,8 +1994,7 @@
         "moreOnGitHub": "代码扫描、告警访问等更多设置请前往 GitHub",
         "tabs": {
           "advancedSecurity": "高级安全",
-          "deployKeys": "部署密钥",
-          "secrets": "密钥与变量"
+          "deployKeys": "部署密钥"
         },
         "advancedSecurity": "GitHub 高级安全",
         "advancedSecurityHint": "可能受套餐限制;不可用的开关会被隐藏。",
@@ -2012,33 +2014,34 @@
           "readWriteBadge": "读写",
           "empty": "没有部署密钥。"
         },
-        "secrets": {
-          "scopesLabel": "密钥作用域",
-          "scopes": {
-            "actions": "Actions",
-            "codespaces": "Codespaces",
-            "dependabot": "Dependabot"
-          },
-          "namePlaceholder": "NAME",
-          "valuePlaceholder": "值(只写)",
-          "save": "保存密钥",
-          "saved": "密钥 {name} 已保存。",
-          "update": "更新密钥",
-          "remove": "删除密钥",
-          "updated": "更新于 {date}",
-          "empty": "此作用域下没有密钥。",
-          "variablesTitle": "变量",
-          "variableValuePlaceholder": "值",
-          "addVariable": "添加变量",
-          "updateVariable": "更新变量",
-          "removeVariable": "删除变量",
-          "variablesEmpty": "没有变量。",
-          "secretsTitle": "密钥"
-        },
         "secretScanningHint": "检测到泄漏的密钥、令牌等机密时,在 GitHub 上接收告警。",
         "pushProtectionHint": "阻止包含受支持机密的提交被推送。",
         "securityUpdatesHint": "Dependabot 会自动创建拉取请求,修复有可用补丁的告警。",
         "privateReportingHint": "允许社区成员向维护者与仓库所有者私密报告潜在安全漏洞。"
+      },
+      "secrets": {
+        "navigation": "密钥与变量设置",
+        "tabs": {
+          "actions": "Actions",
+          "codespaces": "Codespaces",
+          "dependabot": "Dependabot"
+        },
+        "error": "变更失败。",
+        "namePlaceholder": "NAME",
+        "valuePlaceholder": "值(只写)",
+        "save": "保存密钥",
+        "saved": "密钥 {name} 已保存。",
+        "update": "更新密钥",
+        "remove": "删除密钥",
+        "updated": "更新于 {date}",
+        "empty": "此作用域下没有密钥。",
+        "variablesTitle": "变量",
+        "variableValuePlaceholder": "值",
+        "addVariable": "添加变量",
+        "updateVariable": "更新变量",
+        "removeVariable": "删除变量",
+        "variablesEmpty": "没有变量。",
+        "secretsTitle": "密钥"
       },
       "integrations": {
         "navigation": "集成设置",
@@ -2067,7 +2070,8 @@
     },
     "reactions": {
       "add": "添加表情回应",
-      "toggle": "切换 {reaction} 回应"
+      "toggle": "切换 {reaction} 回应",
+      "moreReactors": "还有 {count} 人"
     }
   },
   "pullRequest": {
@@ -2656,6 +2660,7 @@
       "cancel": "取消",
       "createFolder": "创建分类",
       "empty": "没有书签",
+      "folderDropHint": "拖动书签到这里",
       "folderErrors": {
         "duplicate": "已经有同名分类。",
         "empty": "请输入分类名称。"

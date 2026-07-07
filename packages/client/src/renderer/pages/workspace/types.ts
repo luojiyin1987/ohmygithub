@@ -19,6 +19,7 @@ export type RepositoryTabId =
   | 'settingsAccess'
   | 'settingsAutomation'
   | 'settingsSecurity'
+  | 'settingsSecrets'
   | 'settingsIntegrations'
 
 export type AccountTabId =

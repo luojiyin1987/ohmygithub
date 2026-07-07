@@ -4,6 +4,7 @@ import GeneralSection from './general/general-section.vue'
 import AccessSection from './access/access-section.vue'
 import AutomationSection from './automation/automation-section.vue'
 import SecuritySection from './security/security-section.vue'
+import SecretsSection from './secrets/secrets-section.vue'
 import IntegrationsSection from './integrations/integrations-section.vue'
 
 defineProps<{
@@ -47,6 +48,14 @@ const emit = defineEmits<{
 
   <SecuritySection
     v-else-if="category === 'settingsSecurity'"
+    :owner="owner"
+    :repo="repo"
+    :settings-sub="settingsSub"
+    @update:settings-sub="emit('update:settingsSub', $event)"
+  />
+
+  <SecretsSection
+    v-else-if="category === 'settingsSecrets'"
     :owner="owner"
     :repo="repo"
     :settings-sub="settingsSub"

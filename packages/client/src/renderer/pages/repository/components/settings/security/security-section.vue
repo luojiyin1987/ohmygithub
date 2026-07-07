@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n'
 import TabSwitcher from '@/components/navigation/tab-switcher.vue'
 import AdvancedSecurityPanel from './advanced-security-panel.vue'
 import DeployKeysPanel from './deploy-keys-panel.vue'
-import SecretsPanel from './secrets-panel.vue'
 
 const props = defineProps<{
   owner: string
@@ -32,7 +31,6 @@ watch(
 const tabs = computed(() => [
   { id: 'advanced-security', label: t('repository.settings.security.tabs.advancedSecurity') },
   { id: 'deploy-keys', label: t('repository.settings.security.tabs.deployKeys') },
-  { id: 'secrets', label: t('repository.settings.security.tabs.secrets') },
 ])
 
 function setActiveTab(id: string): void {
@@ -58,11 +56,6 @@ function setActiveTab(id: string): void {
       />
       <DeployKeysPanel
         v-else-if="activeTab === 'deploy-keys'"
-        :owner="owner"
-        :repo="repo"
-      />
-      <SecretsPanel
-        v-else-if="activeTab === 'secrets'"
         :owner="owner"
         :repo="repo"
       />

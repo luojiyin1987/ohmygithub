@@ -22,6 +22,7 @@ export const REPOSITORY_SETTINGS_SECTION_IDS = [
   'settingsAccess',
   'settingsAutomation',
   'settingsSecurity',
+  'settingsSecrets',
   'settingsIntegrations',
 ] as const
 

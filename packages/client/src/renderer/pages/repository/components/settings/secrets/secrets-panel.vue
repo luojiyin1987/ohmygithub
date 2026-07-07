@@ -11,7 +11,6 @@ import {
   DialogTitle,
   Input,
   Label,
-  SegmentedControl,
   Spinner,
 } from '@oh-my-github/ui'
 import SettingsSection from '@/pages/settings/components/appearance-settings/settings-section.vue'
@@ -27,11 +26,10 @@ import {
 } from '@/composables/github/use-repository-settings'
 import { useToast } from '@/composables/use-toast'
 
-const SCOPES: readonly GitHubRepositorySecretScope[] = ['actions', 'codespaces', 'dependabot']
-
 const props = defineProps<{
   owner: string
   repo: string
+  scope: GitHubRepositorySecretScope
 }>()
 
 const { t } = useI18n()
@@ -39,17 +37,12 @@ const toast = useToast()
 const { invalidateSecrets, invalidateSecurity } = useRepositorySettingsInvalidation()
 
 const hasIdentity = computed(() => Boolean(props.owner && props.repo))
-const scope = ref<GitHubRepositorySecretScope>('actions')
-const scopeItems = computed(() => SCOPES.map((item) => ({
-  value: item,
-  label: t(`repository.settings.security.secrets.scopes.${item}`),
-})))
 
-const secretsQuery = useRepositorySecretsQuery(() => props.owner, () => props.repo, scope, hasIdentity)
+const secretsQuery = useRepositorySecretsQuery(() => props.owner, () => props.repo, () => props.scope, hasIdentity)
 const secrets = computed(() => secretsQuery.data.value ?? [])
 const isLoadingSecrets = computed(() => secretsQuery.isLoading.value)
 
-const showVariables = computed(() => scope.value === 'actions')
+const showVariables = computed(() => props.scope === 'actions')
 const variablesQuery = useRepositoryVariablesQuery(() => props.owner, () => props.repo, showVariables)
 const variables = computed(() => variablesQuery.data.value ?? [])
 
@@ -87,12 +80,6 @@ watch(isVariableDialogOpen, (open) => {
   }
 })
 
-function updateScope(value: unknown): void {
-  if (value === 'actions' || value === 'codespaces' || value === 'dependabot') {
-    scope.value = value
-  }
-}
-
 function openNewSecret(): void {
   secretName.value = ''
   secretValue.value = ''
@@ -116,12 +103,12 @@ async function saveSecret(): Promise<void> {
   secretError.value = null
 
   try {
-    await upsertRepositorySecret(props.owner, props.repo, scope.value, name, secretValue.value)
-    toast.success(t('repository.settings.security.secrets.saved', { name }))
+    await upsertRepositorySecret(props.owner, props.repo, props.scope, name, secretValue.value)
+    toast.success(t('repository.settings.secrets.saved', { name }))
     isSecretDialogOpen.value = false
-    invalidateSecrets(scope.value, props.owner, props.repo)
+    invalidateSecrets(props.scope, props.owner, props.repo)
   } catch (error) {
-    secretError.value = error instanceof Error ? error.message : t('repository.settings.security.error')
+    secretError.value = error instanceof Error ? error.message : t('repository.settings.secrets.error')
   } finally {
     isSavingSecret.value = false
   }
@@ -133,14 +120,14 @@ async function removeSecret(name: string): Promise<void> {
   pending.value = new Set([...pending.value, key])
 
   try {
-    await deleteRepositorySecret(props.owner, props.repo, scope.value, name)
+    await deleteRepositorySecret(props.owner, props.repo, props.scope, name)
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('repository.settings.security.error'))
+    toast.error(error instanceof Error ? error.message : t('repository.settings.secrets.error'))
   } finally {
     const next = new Set(pending.value)
     next.delete(key)
     pending.value = next
-    invalidateSecrets(scope.value, props.owner, props.repo)
+    invalidateSecrets(props.scope, props.owner, props.repo)
   }
 }
 
@@ -175,7 +162,7 @@ async function saveVariable(): Promise<void> {
     isVariableDialogOpen.value = false
     invalidateSecurity('variables', props.owner, props.repo)
   } catch (error) {
-    variableError.value = error instanceof Error ? error.message : t('repository.settings.security.error')
+    variableError.value = error instanceof Error ? error.message : t('repository.settings.secrets.error')
   } finally {
     isSavingVariable.value = false
   }
@@ -189,7 +176,7 @@ async function removeVariable(name: string): Promise<void> {
   try {
     await deleteRepositoryVariable(props.owner, props.repo, name)
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : t('repository.settings.security.error'))
+    toast.error(error instanceof Error ? error.message : t('repository.settings.secrets.error'))
   } finally {
     const next = new Set(pending.value)
     next.delete(key)
@@ -201,15 +188,7 @@ async function removeVariable(name: string): Promise<void> {
 
 <template>
   <div class="space-y-8">
-    <SegmentedControl
-      :aria-label="t('repository.settings.security.secrets.scopesLabel')"
-      class="justify-self-start"
-      :items="scopeItems"
-      :model-value="scope"
-      @update:model-value="updateScope"
-    />
-
-    <SettingsSection :title="t('repository.settings.security.secrets.secretsTitle')">
+    <SettingsSection :title="t('repository.settings.secrets.secretsTitle')">
       <template #actions>
         <Button
           size="sm"
@@ -218,7 +197,7 @@ async function removeVariable(name: string): Promise<void> {
           @click="openNewSecret"
         >
           <Plus class="size-4" />
-          {{ t('repository.settings.security.secrets.save') }}
+          {{ t('repository.settings.secrets.save') }}
         </Button>
       </template>
 
@@ -237,7 +216,7 @@ async function removeVariable(name: string): Promise<void> {
           v-if="secrets.length === 0"
           class="px-4 py-6 text-center text-body text-muted-foreground"
         >
-          {{ t('repository.settings.security.secrets.empty') }}
+          {{ t('repository.settings.secrets.empty') }}
         </p>
 
         <div
@@ -251,12 +230,12 @@ async function removeVariable(name: string): Promise<void> {
               v-if="secret.updatedAt"
               class="text-caption text-muted-foreground"
             >
-              {{ t('repository.settings.security.secrets.updated', { date: new Date(secret.updatedAt).toLocaleDateString() }) }}
+              {{ t('repository.settings.secrets.updated', { date: new Date(secret.updatedAt).toLocaleDateString() }) }}
             </span>
           </div>
           <div class="flex shrink-0 items-center gap-2">
             <Button
-              :aria-label="t('repository.settings.security.secrets.update')"
+              :aria-label="t('repository.settings.secrets.update')"
               size="icon-sm"
               variant="ghost"
               @click="openEditSecret(secret.name)"
@@ -264,7 +243,7 @@ async function removeVariable(name: string): Promise<void> {
               <Pencil class="size-4" />
             </Button>
             <Button
-              :aria-label="t('repository.settings.security.secrets.remove')"
+              :aria-label="t('repository.settings.secrets.remove')"
               :disabled="pending.has(`secret:${secret.name}`)"
               size="icon-sm"
               variant="ghost"
@@ -279,7 +258,7 @@ async function removeVariable(name: string): Promise<void> {
 
     <SettingsSection
       v-if="showVariables"
-      :title="t('repository.settings.security.secrets.variablesTitle')"
+      :title="t('repository.settings.secrets.variablesTitle')"
     >
       <template #actions>
         <Button
@@ -289,7 +268,7 @@ async function removeVariable(name: string): Promise<void> {
           @click="openNewVariable"
         >
           <Plus class="size-4" />
-          {{ t('repository.settings.security.secrets.addVariable') }}
+          {{ t('repository.settings.secrets.addVariable') }}
         </Button>
       </template>
 
@@ -298,7 +277,7 @@ async function removeVariable(name: string): Promise<void> {
           v-if="variables.length === 0"
           class="px-4 py-6 text-center text-body text-muted-foreground"
         >
-          {{ t('repository.settings.security.secrets.variablesEmpty') }}
+          {{ t('repository.settings.secrets.variablesEmpty') }}
         </p>
 
         <div
@@ -312,7 +291,7 @@ async function removeVariable(name: string): Promise<void> {
           </div>
           <div class="flex shrink-0 items-center gap-2">
             <Button
-              :aria-label="t('repository.settings.security.secrets.updateVariable')"
+              :aria-label="t('repository.settings.secrets.updateVariable')"
               size="icon-sm"
               variant="ghost"
               @click="openEditVariable(variable)"
@@ -320,7 +299,7 @@ async function removeVariable(name: string): Promise<void> {
               <Pencil class="size-4" />
             </Button>
             <Button
-              :aria-label="t('repository.settings.security.secrets.removeVariable')"
+              :aria-label="t('repository.settings.secrets.removeVariable')"
               :disabled="pending.has(`variable:${variable.name}`)"
               size="icon-sm"
               variant="ghost"
@@ -338,14 +317,14 @@ async function removeVariable(name: string): Promise<void> {
         <DialogHeader>
           <DialogTitle>
             {{ t(secretNameLocked
-              ? 'repository.settings.security.secrets.update'
-              : 'repository.settings.security.secrets.save') }}
+              ? 'repository.settings.secrets.update'
+              : 'repository.settings.secrets.save') }}
           </DialogTitle>
         </DialogHeader>
 
         <div class="grid gap-3">
           <div class="grid gap-1.5">
-            <Label for="secret-name">{{ t('repository.settings.security.secrets.namePlaceholder') }}</Label>
+            <Label for="secret-name">{{ t('repository.settings.secrets.namePlaceholder') }}</Label>
             <Input
               id="secret-name"
               v-model="secretName"
@@ -356,7 +335,7 @@ async function removeVariable(name: string): Promise<void> {
             />
           </div>
           <div class="grid gap-1.5">
-            <Label for="secret-value">{{ t('repository.settings.security.secrets.valuePlaceholder') }}</Label>
+            <Label for="secret-value">{{ t('repository.settings.secrets.valuePlaceholder') }}</Label>
             <Input
               id="secret-value"
               v-model="secretValue"
@@ -394,7 +373,7 @@ async function removeVariable(name: string): Promise<void> {
               v-if="isSavingSecret"
               class="size-3.5"
             />
-            {{ t('repository.settings.security.secrets.save') }}
+            {{ t('repository.settings.secrets.save') }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -405,14 +384,14 @@ async function removeVariable(name: string): Promise<void> {
         <DialogHeader>
           <DialogTitle>
             {{ t(editingVariable
-              ? 'repository.settings.security.secrets.updateVariable'
-              : 'repository.settings.security.secrets.addVariable') }}
+              ? 'repository.settings.secrets.updateVariable'
+              : 'repository.settings.secrets.addVariable') }}
           </DialogTitle>
         </DialogHeader>
 
         <div class="grid gap-3">
           <div class="grid gap-1.5">
-            <Label for="variable-name">{{ t('repository.settings.security.secrets.namePlaceholder') }}</Label>
+            <Label for="variable-name">{{ t('repository.settings.secrets.namePlaceholder') }}</Label>
             <Input
               id="variable-name"
               v-model="variableName"
@@ -423,7 +402,7 @@ async function removeVariable(name: string): Promise<void> {
             />
           </div>
           <div class="grid gap-1.5">
-            <Label for="variable-value">{{ t('repository.settings.security.secrets.variableValuePlaceholder') }}</Label>
+            <Label for="variable-value">{{ t('repository.settings.secrets.variableValuePlaceholder') }}</Label>
             <Input
               id="variable-value"
               v-model="variableValue"
@@ -461,8 +440,8 @@ async function removeVariable(name: string): Promise<void> {
               class="size-3.5"
             />
             {{ t(editingVariable
-              ? 'repository.settings.security.secrets.updateVariable'
-              : 'repository.settings.security.secrets.addVariable') }}
+              ? 'repository.settings.secrets.updateVariable'
+              : 'repository.settings.secrets.addVariable') }}
           </Button>
         </DialogFooter>
       </DialogContent>

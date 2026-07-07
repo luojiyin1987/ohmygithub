@@ -61,6 +61,22 @@ describe('repository settings workspace URLs', () => {
       .toMatchObject({ repositorySection: 'settingsAutomation', repositorySettingsSub: 'webhooks' })
   })
 
+  it('round-trips the secrets section with a non-default scope tab', () => {
+    expect(createRepositoryWorkspaceUrl('octo-org', 'hello-world', 'settingsSecrets'))
+      .toBe('/octo-org/hello-world?tab=settings-secrets')
+    expect(createRepositoryWorkspaceUrl('octo-org', 'hello-world', 'settingsSecrets', 'dependabot'))
+      .toBe('/octo-org/hello-world?tab=settings-secrets&sub=dependabot')
+    expect(createWorkspaceTabFromUrl('/octo-org/hello-world?tab=settings-secrets&sub=dependabot'))
+      .toMatchObject({ repositorySection: 'settingsSecrets', repositorySettingsSub: 'dependabot' })
+  })
+
+  it('remaps the legacy security secrets sub page to the secrets section', () => {
+    expect(normalizeWorkspaceUrl('/octo-org/hello-world?tab=settings-security&sub=secrets'))
+      .toBe('/octo-org/hello-world?tab=settings-secrets')
+    expect(createWorkspaceTabFromUrl('/octo-org/hello-world?tab=settings-security&sub=secrets'))
+      .toMatchObject({ repositorySection: 'settingsSecrets', repositorySettingsSub: undefined })
+  })
+
   it('drops invalid, default-first, or misplaced sub pages', () => {
     expect(normalizeWorkspaceUrl('/octo-org/hello-world?tab=settings-automation&sub=nope'))
       .toBe('/octo-org/hello-world?tab=settings-automation')

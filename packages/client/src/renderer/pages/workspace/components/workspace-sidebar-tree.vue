@@ -6,7 +6,7 @@ import type {
   WorkspaceSidebarTreeSortInput,
 } from '@/pages/workspace/types'
 import type { UseSortableOptions } from '@vueuse/integrations/useSortable'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useI18n } from 'vue-i18n'
 import { Ellipsis } from 'lucide-vue-next'
@@ -52,22 +52,22 @@ const visibleCount = computed(() => props.visibleCounts.get(props.listId) ?? ROO
 const visibleItems = computed(() => props.items.slice(0, visibleCount.value))
 const showMore = computed(() => props.items.length > visibleCount.value)
 const sortableListId = computed(() => props.sortableListId ?? props.listId)
-const sortable = useSortable(rootList, visibleItems, {
+// Only sortable trees may own a Sortable instance: a disabled-after-init toggle
+// is unreliable (the instance is created lazily by watchElement, after option()
+// calls no-op), and stray instances join the shared drag group and fight over
+// dragover events with the lists that should receive the drop.
+const sortableRootList = computed(() => props.sortable ? rootList.value : null)
+useSortable(sortableRootList, visibleItems, {
   draggable: '[data-workspace-draggable="true"]',
   group: 'workspace-bookmarks',
+  // Damp the placeholder tug-of-war between the root list and expanded folder
+  // child lists nested inside its draggable items (sortablejs nested-list setup).
+  swapThreshold: 0.65,
   watchElement: true,
   onAdd: handleSortableChange,
   onMove: canMoveSortableItem,
   onUpdate: handleSortableChange,
 } satisfies WorkspaceSortableOptions)
-
-watch(
-  () => props.sortable,
-  (isSortable) => {
-    sortable.option('disabled', !isSortable)
-  },
-  { immediate: true },
-)
 
 function showMoreItems(): void {
   emit('showMore', props.listId, Math.min(props.items.length, visibleCount.value + ROOT_VISIBLE_STEP))

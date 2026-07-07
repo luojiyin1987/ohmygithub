@@ -1139,6 +1139,9 @@
       "settingsSecurity": {
         "title": "Security"
       },
+      "settingsSecrets": {
+        "title": "Secrets & variables"
+      },
       "settingsIntegrations": {
         "title": "Integrations"
       }
@@ -1991,8 +1994,7 @@
         "moreOnGitHub": "Code scanning, alert access, and more on GitHub",
         "tabs": {
           "advancedSecurity": "Advanced Security",
-          "deployKeys": "Deploy keys",
-          "secrets": "Secrets & variables"
+          "deployKeys": "Deploy keys"
         },
         "advancedSecurity": "GitHub Advanced Security",
         "advancedSecurityHint": "May be plan-gated; unavailable toggles are hidden.",
@@ -2012,33 +2014,34 @@
           "readWriteBadge": "read/write",
           "empty": "No deploy keys."
         },
-        "secrets": {
-          "scopesLabel": "Secret scope",
-          "scopes": {
-            "actions": "Actions",
-            "codespaces": "Codespaces",
-            "dependabot": "Dependabot"
-          },
-          "namePlaceholder": "NAME",
-          "valuePlaceholder": "Value (write-only)",
-          "save": "Save secret",
-          "saved": "Secret {name} saved.",
-          "update": "Update secret",
-          "remove": "Delete secret",
-          "updated": "Updated {date}",
-          "empty": "No secrets in this scope.",
-          "variablesTitle": "Variables",
-          "variableValuePlaceholder": "Value",
-          "addVariable": "Add variable",
-          "updateVariable": "Update variable",
-          "removeVariable": "Delete variable",
-          "variablesEmpty": "No variables.",
-          "secretsTitle": "Secrets"
-        },
         "secretScanningHint": "Receive alerts on GitHub for detected secrets, keys, or other tokens.",
         "pushProtectionHint": "Block commits that contain supported secrets.",
         "securityUpdatesHint": "Dependabot automatically opens pull requests to resolve alerts with an available patch.",
         "privateReportingHint": "Allow your community to privately report potential security vulnerabilities to maintainers and repository owners."
+      },
+      "secrets": {
+        "navigation": "Secrets & variables settings",
+        "tabs": {
+          "actions": "Actions",
+          "codespaces": "Codespaces",
+          "dependabot": "Dependabot"
+        },
+        "error": "The change failed.",
+        "namePlaceholder": "NAME",
+        "valuePlaceholder": "Value (write-only)",
+        "save": "Save secret",
+        "saved": "Secret {name} saved.",
+        "update": "Update secret",
+        "remove": "Delete secret",
+        "updated": "Updated {date}",
+        "empty": "No secrets in this scope.",
+        "variablesTitle": "Variables",
+        "variableValuePlaceholder": "Value",
+        "addVariable": "Add variable",
+        "updateVariable": "Update variable",
+        "removeVariable": "Delete variable",
+        "variablesEmpty": "No variables.",
+        "secretsTitle": "Secrets"
       },
       "integrations": {
         "navigation": "Integrations settings",
@@ -2067,7 +2070,8 @@
     },
     "reactions": {
       "add": "Add reaction",
-      "toggle": "Toggle {reaction} reaction"
+      "toggle": "Toggle {reaction} reaction",
+      "moreReactors": "+{count} more"
     }
   },
   "pullRequest": {
@@ -2656,6 +2660,7 @@
       "cancel": "Cancel",
       "createFolder": "Create folder",
       "empty": "No bookmarks",
+      "folderDropHint": "Drag bookmarks here",
       "folderErrors": {
         "duplicate": "A folder with this name already exists.",
         "empty": "Enter a folder name."

@@ -31,7 +31,8 @@ export const REPOSITORY_SETTINGS_SUBPAGES: Partial<Record<RepositoryTabId, reado
     'pages',
     'custom-properties',
   ],
-  settingsSecurity: ['advanced-security', 'deploy-keys', 'secrets'],
+  settingsSecurity: ['advanced-security', 'deploy-keys'],
+  settingsSecrets: ['actions', 'codespaces', 'dependabot'],
   settingsIntegrations: ['autolinks'],
 }
 
@@ -380,7 +381,13 @@ function normalizeWorkspacePath(path: string): string {
 }
 
 function createRepositoryUrlFromPath(path: string, rawSection: string, rawSub?: string): string {
-  const repositorySection = sanitizeRepositorySection(rawSection)
+  let repositorySection = sanitizeRepositorySection(rawSection)
+
+  // Secrets used to be a sub page of the security section.
+  if (repositorySection === 'settingsSecurity' && rawSub === 'secrets') {
+    repositorySection = 'settingsSecrets'
+    rawSub = undefined
+  }
 
   if (repositorySection === DEFAULT_REPOSITORY_SECTION) {
     return path
@@ -493,6 +500,7 @@ function sanitizeRepositorySection(value: string | undefined): RepositoryTabId {
   if (value === 'settings-access') return 'settingsAccess'
   if (value === 'settings-automation') return 'settingsAutomation'
   if (value === 'settings-security') return 'settingsSecurity'
+  if (value === 'settings-secrets') return 'settingsSecrets'
   if (value === 'settings-integrations') return 'settingsIntegrations'
   return DEFAULT_REPOSITORY_SECTION
 }
@@ -512,6 +520,7 @@ const REPOSITORY_SECTION_QUERY_TOKENS: Partial<Record<RepositoryTabId, string>> 
   settingsAccess: 'settings-access',
   settingsAutomation: 'settings-automation',
   settingsSecurity: 'settings-security',
+  settingsSecrets: 'settings-secrets',
   settingsIntegrations: 'settings-integrations',
 }
 

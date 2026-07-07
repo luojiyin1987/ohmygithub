@@ -157,7 +157,8 @@ const bookmarkItems = computed<WorkspaceSidebarTreeItem[]>(() => {
         folderId: folder.id,
       },
       icon: Folder,
-      canExpand: children.length > 0,
+      // Always expandable so empty folders can be opened as a drop target.
+      canExpand: true,
       children,
     }
   })
