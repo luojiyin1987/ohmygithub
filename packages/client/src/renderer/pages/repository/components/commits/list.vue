@@ -22,6 +22,7 @@ const props = defineProps<{
   page: number
   perPage: number
   repo: string
+  totalCount: number
 }>()
 
 const emit = defineEmits<{
@@ -132,11 +133,11 @@ const showEmpty = computed(() =>
       <AppPagination
         :disabled="isLoading"
         :has-next-page="hasNextPage"
+        :max-total="totalCount"
         :page="page"
         :per-page="perPage"
         summary-key="repository.commits.pagination.summary"
-        :total-count="0"
-        variant="compact"
+        :total-count="totalCount"
         @update:page="emit('update:page', $event)"
       />
     </footer>

@@ -28,6 +28,13 @@ const commitsQuery = usePullRequestCommitsQuery(
 const result = computed(() => commitsQuery.data.value ?? null)
 const commits = computed(() => result.value?.items ?? [])
 const hasNextPage = computed(() => result.value?.hasNextPage ?? false)
+// No total from the commits API; grow a synthetic one from the pages seen so
+// far (same approach as the repository commits section).
+const syntheticTotalCount = computed(() =>
+  (page.value - 1) * PER_PAGE
+  + commits.value.length
+  + (hasNextPage.value ? PER_PAGE : 0)
+)
 const isLoading = computed(() => commitsQuery.isLoading.value)
 const hasError = computed(() => Boolean(commitsQuery.error.value))
 
@@ -60,6 +67,7 @@ function openCommit(commit: GitHubRepositoryCommit): void {
     :page="page"
     :per-page="PER_PAGE"
     :repo="repo"
+    :total-count="syntheticTotalCount"
     @retry="refetchCommits"
     @select="openCommit"
     @update:page="page = $event"
