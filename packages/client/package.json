@@ -16,7 +16,8 @@
     "package:win:arm64": "pnpm run build && node scripts/with-env.mjs electron-builder --win --arm64",
     "package:linux": "pnpm run build && node scripts/with-env.mjs electron-builder --linux",
     "typecheck": "vue-tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate:tray-icons": "node scripts/generate-tray-icons.mjs"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
@@ -62,6 +63,7 @@
     "electron": "^42.5.0",
     "electron-builder": "^26.15.3",
     "electron-vite": "6.0.0-beta.1",
+    "sharp": "^0.35.3",
     "typescript": "^5.8.3",
     "vite": "^8.1.0",
     "vitest": "^4.1.9",

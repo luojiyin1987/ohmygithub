@@ -12,6 +12,10 @@ files:
   - package.json
   - '!**/*.map'
 
+extraResources:
+  - from: resources/tray
+    to: tray
+
 asar: true
 npmRebuild: false
 
