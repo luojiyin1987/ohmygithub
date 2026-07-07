@@ -89,11 +89,6 @@ async function copySha(): Promise<void> {
     // Clipboard unavailable — ignore.
   }
 }
-
-function openOnGitHub(): void {
-  if (!commit.value || !window.ohMyGithub?.links) return
-  void window.ohMyGithub.links.openGitHubUrl(commit.value.htmlUrl)
-}
 </script>
 
 <template>
@@ -224,14 +219,6 @@ function openOnGitHub(): void {
                 v-if="statsSummary"
                 class="tabular-nums"
               >{{ statsSummary }}</span>
-
-              <button
-                class="text-info underline-offset-4 outline-hidden hover:underline focus-visible:underline"
-                type="button"
-                @click="openOnGitHub"
-              >
-                {{ t('commit.openOnGitHub') }}
-              </button>
             </div>
           </div>
 

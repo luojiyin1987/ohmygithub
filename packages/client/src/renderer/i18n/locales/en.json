@@ -722,7 +722,6 @@
       "followersValue": "{count} followers",
       "following": "Following",
       "followingValue": "{count} following",
-      "githubProfile": "Open on GitHub",
       "hireable": "Available for hire",
       "joinedAt": "Joined {date}",
       "location": "Location",
@@ -845,7 +844,6 @@
     "missing": {
       "description": "Open a commit tab with an owner, repository, and commit sha to load the commit."
     },
-    "openOnGitHub": "Open on GitHub",
     "parents": "Parents",
     "statsSummary": "{files} files changed · +{additions} −{deletions}",
     "verified": "Verified"
@@ -1463,7 +1461,6 @@
         "title": "More GitHub permissions are required"
       },
       "noDescription": "No description provided.",
-      "openOnGitHub": "Open on GitHub",
       "title": "Overview"
     },
     "files": {
@@ -3035,8 +3032,7 @@
   },
   "app": {
     "eyebrow": "GitHub App",
-    "description": "App details are not supported yet. This is a placeholder page.",
-    "viewOnGitHub": "View on GitHub"
+    "description": "App details are not supported yet. This is a placeholder page."
   },
   "userSearch": {
     "empty": "No matching users",

@@ -28,6 +28,14 @@ export function workspaceTabToGitHubUrl(tab: WorkspaceTab): string | null {
     return tab.jobId ? `${runUrl}/job/${tab.jobId}` : runUrl
   }
 
+  if (tab.type === 'commit' && tab.owner && tab.repo && tab.commitSha) {
+    return `${repositoryBaseUrl(tab.owner, tab.repo)}/commit/${pathSegment(tab.commitSha)}`
+  }
+
+  if (tab.type === 'app' && tab.appSlug) {
+    return `${GITHUB_ORIGIN}/apps/${pathSegment(tab.appSlug)}`
+  }
+
   if (tab.type === 'search-result') {
     return searchGitHubUrl(tab.searchQuery, tab.searchMode)
   }

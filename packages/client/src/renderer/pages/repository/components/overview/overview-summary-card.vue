@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { AlertTriangle, ExternalLink, Globe } from 'lucide-vue-next'
+import { AlertTriangle, Globe } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { Skeleton } from '@oh-my-github/ui'
 import { useRepositoryContributorsQuery } from '@/composables/github/use-repositories'
@@ -48,16 +48,6 @@ const showContributors = computed(() => isContributorsLoading.value || contribut
         <h2 class="select-none truncate text-label font-medium text-foreground">
           {{ t('repository.overview.title') }}
         </h2>
-        <a
-          v-if="overview?.url"
-          class="inline-flex shrink-0 items-center gap-1 text-body text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          :href="overview.url"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <ExternalLink class="size-3.5" />
-          {{ t('repository.overview.openOnGitHub') }}
-        </a>
       </div>
 
       <div

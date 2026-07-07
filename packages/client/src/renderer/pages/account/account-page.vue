@@ -9,7 +9,6 @@ import {
   BookOpen,
   Building2,
   Clock3,
-  ExternalLink,
   FileText,
   Heart,
   LinkIcon,
@@ -538,11 +537,10 @@ function normalizeExternalUrl(value: string | null): string | null {
             </div>
 
             <ButtonGroup
-              v-if="profile.url || showFollowButton"
+              v-if="showFollowButton"
               class="shrink-0 self-start"
             >
               <Button
-                v-if="showFollowButton"
                 :aria-pressed="isFollowing"
                 :disabled="followDisabled"
                 size="sm"
@@ -552,18 +550,6 @@ function normalizeExternalUrl(value: string | null): string | null {
               >
                 <UserRound class="size-3.5" />
                 <span>{{ followLabel }}</span>
-              </Button>
-              <Button
-                v-if="profile.url"
-                as="a"
-                :href="profile.url"
-                rel="noreferrer"
-                size="sm"
-                target="_blank"
-                variant="outline"
-              >
-                <ExternalLink class="size-3.5" />
-                <span>{{ t('account.profile.githubProfile') }}</span>
               </Button>
             </ButtonGroup>
           </div>

@@ -2,8 +2,8 @@
 import type { WorkspaceTab } from '@/pages/workspace/types'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Badge, Button, Card } from '@oh-my-github/ui'
-import { Bot, ExternalLink } from 'lucide-vue-next'
+import { Badge, Card } from '@oh-my-github/ui'
+import { Bot } from 'lucide-vue-next'
 
 const props = defineProps<{
   tab: WorkspaceTab
@@ -12,7 +12,6 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const appSlug = computed(() => props.tab.appSlug ?? '')
-const githubUrl = computed(() => `https://github.com/apps/${encodeURIComponent(appSlug.value)}`)
 </script>
 
 <template>
@@ -48,18 +47,6 @@ const githubUrl = computed(() => `https://github.com/apps/${encodeURIComponent(a
             </div>
           </div>
         </div>
-
-        <Button
-          as="a"
-          class="shrink-0"
-          :href="githubUrl"
-          rel="noreferrer"
-          target="_blank"
-          variant="outline"
-        >
-          <ExternalLink class="size-3.5" />
-          {{ t('app.viewOnGitHub') }}
-        </Button>
       </Card>
     </div>
   </section>

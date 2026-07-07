@@ -722,7 +722,6 @@
       "followersValue": "{count} 个关注者",
       "following": "正在关注",
       "followingValue": "正在关注 {count} 个账号",
-      "githubProfile": "在 GitHub 打开",
       "hireable": "可接受雇佣",
       "joinedAt": "{date} 加入",
       "location": "位置",
@@ -845,7 +844,6 @@
     "missing": {
       "description": "打开带有 owner、仓库名和 commit sha 的提交标签页后，才会加载提交。"
     },
-    "openOnGitHub": "在 GitHub 上查看",
     "parents": "父提交",
     "statsSummary": "{files} 个文件变更 · +{additions} −{deletions}",
     "verified": "已验证"
@@ -1463,7 +1461,6 @@
         "title": "需要更多 GitHub 权限"
       },
       "noDescription": "这个仓库没有填写描述。",
-      "openOnGitHub": "在 GitHub 打开",
       "title": "概览"
     },
     "files": {
@@ -3035,8 +3032,7 @@
   },
   "app": {
     "eyebrow": "GitHub App",
-    "description": "暂不支持展示 App 详情，这是一个占位页面。",
-    "viewOnGitHub": "在 GitHub 上查看"
+    "description": "暂不支持展示 App 详情，这是一个占位页面。"
   },
   "userSearch": {
     "empty": "没有匹配的用户",
