@@ -5,7 +5,7 @@
 
 <div align="center">
 
-<img src="assets/logo.png" width="120" alt="Oh My GitHub logo" />
+<img src="assets/shadow-icon.png" width="120" alt="Oh My GitHub logo" />
 
 <h1>Oh My GitHub</h1>
 
