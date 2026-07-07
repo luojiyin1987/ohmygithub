@@ -40,10 +40,10 @@ interface ContributionChartTheme {
   card: string
   emptyCell: string
   foreground: string
-  greenBorder: string
-  greenDeep: string
-  greenSoft: string
-  greenSoftActive: string
+  level1: string
+  level2: string
+  level3: string
+  level4: string
   mutedForeground: string
 }
 
@@ -248,10 +248,10 @@ function isTooltipParams(value: unknown): value is { data?: unknown } {
 function heatmapColors(theme: ContributionChartTheme): string[] {
   return [
     theme.emptyCell,
-    theme.greenSoft,
-    theme.greenSoftActive,
-    theme.greenBorder,
-    theme.greenDeep,
+    theme.level1,
+    theme.level2,
+    theme.level3,
+    theme.level4,
   ]
 }
 
@@ -262,10 +262,10 @@ function readContributionChartTheme(): ContributionChartTheme {
     card: cssColorVar('--card', '#171717'),
     emptyCell: cssColorVar('--muted', '#262626'),
     foreground: cssColorVar('--foreground', '#e5e5e5'),
-    greenBorder: cssColorVar('--accent-green-border', '#28683d'),
-    greenDeep: cssColorVar('--accent-green-deep', '#9be9a8'),
-    greenSoft: cssColorVar('--accent-green-soft', '#0e4429'),
-    greenSoftActive: cssColorVar('--accent-green-soft-active', '#006d32'),
+    level1: cssColorVar('--contribution-level-1', '#0e4429'),
+    level2: cssColorVar('--contribution-level-2', '#006d32'),
+    level3: cssColorVar('--contribution-level-3', '#26a641'),
+    level4: cssColorVar('--contribution-level-4', '#39d353'),
     mutedForeground: cssColorVar('--muted-foreground', '#a3a3a3'),
   }
 }
@@ -340,10 +340,10 @@ function readContributionChartTheme(): ContributionChartTheme {
         <div class="mt-3 flex items-center justify-end gap-1 text-body text-muted-foreground">
           <span>{{ t('account.contributions.less') }}</span>
           <span class="size-2.5 rounded-sm bg-muted" />
-          <span class="size-2.5 rounded-sm bg-[var(--accent-green-soft)]" />
-          <span class="size-2.5 rounded-sm bg-[var(--accent-green-soft-active)]" />
-          <span class="size-2.5 rounded-sm bg-[var(--accent-green-border)]" />
-          <span class="size-2.5 rounded-sm bg-[var(--accent-green-deep)]" />
+          <span class="size-2.5 rounded-sm bg-[var(--contribution-level-1)]" />
+          <span class="size-2.5 rounded-sm bg-[var(--contribution-level-2)]" />
+          <span class="size-2.5 rounded-sm bg-[var(--contribution-level-3)]" />
+          <span class="size-2.5 rounded-sm bg-[var(--contribution-level-4)]" />
           <span>{{ t('account.contributions.more') }}</span>
         </div>
       </div>

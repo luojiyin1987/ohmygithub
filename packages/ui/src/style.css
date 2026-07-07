@@ -1040,6 +1040,14 @@
   --accent-green-soft-active: #d7e6dd;
   --accent-green-border: #bed9c9;
   --accent-green-deep: #2a533c;
+  /* Contribution heatmap scale — dedicated ramp, NOT the accent-green tokens:
+     those are surface tints tuned for badges and are far too faint to read as
+     activity levels on a calendar cell. Four opaque steps, even lightness
+     spacing from just-visible to deep. */
+  --contribution-level-1: #b8d9c6;
+  --contribution-level-2: #7cb894;
+  --contribution-level-3: #479266;
+  --contribution-level-4: #22593a;
   --accent-teal: #2c8b9e;
   --accent-teal-soft: #f3fafb;
   --accent-teal-soft-hover: #e0f3f7;
@@ -1351,6 +1359,12 @@
   --accent-green-soft-active: oklch(0.36 0.08 153 / 0.54);
   --accent-green-border: oklch(0.72 0.10 153 / 0.32);
   --accent-green-deep: oklch(0.84 0.08 153);
+  /* Contribution heatmap scale — fully opaque: the accent-green alpha tints
+     nearly vanish over the dark card background. */
+  --contribution-level-1: oklch(0.38 0.06 153);
+  --contribution-level-2: oklch(0.52 0.09 153);
+  --contribution-level-3: oklch(0.68 0.11 153);
+  --contribution-level-4: oklch(0.85 0.13 153);
   --accent-teal: oklch(0.74 0.10 212);
   --accent-teal-soft: oklch(0.28 0.06 212 / 0.38);
   --accent-teal-soft-hover: oklch(0.32 0.07 212 / 0.46);
