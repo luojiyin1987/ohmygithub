@@ -1044,9 +1044,9 @@
      those are surface tints tuned for badges and are far too faint to read as
      activity levels on a calendar cell. Four opaque steps, even lightness
      spacing from just-visible to deep. */
-  --contribution-level-1: #b8d9c6;
-  --contribution-level-2: #7cb894;
-  --contribution-level-3: #479266;
+  --contribution-level-1: #a2cdb5;
+  --contribution-level-2: #6fb08c;
+  --contribution-level-3: #448361;
   --contribution-level-4: #22593a;
   --accent-teal: #2c8b9e;
   --accent-teal-soft: #f3fafb;
@@ -1361,10 +1361,10 @@
   --accent-green-deep: oklch(0.84 0.08 153);
   /* Contribution heatmap scale — fully opaque: the accent-green alpha tints
      nearly vanish over the dark card background. */
-  --contribution-level-1: oklch(0.38 0.06 153);
-  --contribution-level-2: oklch(0.52 0.09 153);
-  --contribution-level-3: oklch(0.68 0.11 153);
-  --contribution-level-4: oklch(0.85 0.13 153);
+  --contribution-level-1: oklch(0.42 0.08 153);
+  --contribution-level-2: oklch(0.56 0.10 153);
+  --contribution-level-3: oklch(0.70 0.12 153);
+  --contribution-level-4: oklch(0.86 0.13 153);
   --accent-teal: oklch(0.74 0.10 212);
   --accent-teal-soft: oklch(0.28 0.06 212 / 0.38);
   --accent-teal-soft-hover: oklch(0.32 0.07 212 / 0.46);

@@ -201,12 +201,9 @@ const chartOption = computed<EChartsOption>(() => {
       },
     },
     visualMap: {
-      inRange: {
-        color: heatmapColors(theme),
-      },
-      max: Math.max(9, maxContributionCount.value),
-      min: 0,
+      pieces: contributionPieces(theme, maxContributionCount.value),
       show: false,
+      type: 'piecewise',
     },
   }
 })
@@ -245,13 +242,27 @@ function isTooltipParams(value: unknown): value is { data?: unknown } {
   return typeof value === 'object' && value !== null && 'data' in value
 }
 
-function heatmapColors(theme: ContributionChartTheme): string[] {
+interface ContributionPiece {
+  color: string
+  gt?: number
+  lte?: number
+}
+
+/**
+ * GitHub-style quartile buckets. A continuous 0→max gradient makes low-count
+ * days nearly indistinguishable from empty ones once the max grows (1/40 sits
+ * at ~2.5% of the ramp, which renders as white); quantizing guarantees any
+ * active day gets at least the first full color step.
+ */
+function contributionPieces(theme: ContributionChartTheme, maxCount: number): ContributionPiece[] {
+  const step = maxCount / 4
+
   return [
-    theme.emptyCell,
-    theme.level1,
-    theme.level2,
-    theme.level3,
-    theme.level4,
+    { lte: 0, color: theme.emptyCell },
+    { gt: 0, lte: step, color: theme.level1 },
+    { gt: step, lte: step * 2, color: theme.level2 },
+    { gt: step * 2, lte: step * 3, color: theme.level3 },
+    { gt: step * 3, color: theme.level4 },
   ]
 }
 
