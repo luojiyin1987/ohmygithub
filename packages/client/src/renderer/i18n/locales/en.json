@@ -2086,6 +2086,23 @@
       "placeholder": "Write Markdown",
       "save": "Save"
     },
+    "toolbar": {
+      "label": "Markdown formatting",
+      "bold": "Bold",
+      "italic": "Italic",
+      "heading": "Heading",
+      "quote": "Quote",
+      "code": "Inline code",
+      "codeBlock": "Code block",
+      "link": "Link",
+      "unorderedList": "Bulleted list",
+      "orderedList": "Numbered list"
+    },
+    "mention": {
+      "label": "Mention suggestions",
+      "searching": "Searching users…",
+      "empty": "No matching users"
+    },
     "actor": {
       "bot": "Bot"
     },

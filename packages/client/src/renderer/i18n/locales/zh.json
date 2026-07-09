@@ -2086,6 +2086,23 @@
       "placeholder": "编写 Markdown",
       "save": "保存"
     },
+    "toolbar": {
+      "label": "Markdown 格式",
+      "bold": "粗体",
+      "italic": "斜体",
+      "heading": "标题",
+      "quote": "引用",
+      "code": "行内代码",
+      "codeBlock": "代码块",
+      "link": "链接",
+      "unorderedList": "无序列表",
+      "orderedList": "有序列表"
+    },
+    "mention": {
+      "label": "提及候选",
+      "searching": "正在搜索用户…",
+      "empty": "没有匹配的用户"
+    },
     "actor": {
       "bot": "Bot"
     },
