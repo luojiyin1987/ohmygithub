@@ -10,6 +10,10 @@ describe('monaco code editor enter binding', () => {
     // accept-suggestion-on-Enter whenever the suggest widget shows.
     expect(source).toMatch(/addCommand\(KeyCode\.Enter,[\s\S]*?'!suggestWidgetVisible'\)/)
   })
+
+  it('offers unmodified Tab to host overlays', () => {
+    expect(source).toContain("event.keyCode === KeyCode.Tab && !event.shiftKey")
+  })
 })
 
 describe('monaco code editor cursor overlays', () => {

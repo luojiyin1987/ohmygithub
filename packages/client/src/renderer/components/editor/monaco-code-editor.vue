@@ -31,7 +31,7 @@ const settingsStore = useSettingsStore()
 const { activeThemeName } = useCodeTheme()
 let isUpdatingFromOutside = false
 /** Returns true when a host overlay (e.g. mention menu) consumed the key. */
-let keyInterceptor: ((key: 'Enter' | 'ArrowUp' | 'ArrowDown' | 'Escape') => boolean) | null = null
+let keyInterceptor: ((key: 'Enter' | 'Tab' | 'ArrowUp' | 'ArrowDown' | 'Escape') => boolean) | null = null
 const cursorListeners = new Set<() => void>()
 
 function resolveLanguage(): MonacoLanguage {
@@ -90,10 +90,11 @@ onMounted(async () => {
   editor.onKeyDown((event) => {
     if (!keyInterceptor) return
 
-    let key: 'ArrowUp' | 'ArrowDown' | 'Escape' | null = null
+    let key: 'Tab' | 'ArrowUp' | 'ArrowDown' | 'Escape' | null = null
     if (event.keyCode === KeyCode.DownArrow) key = 'ArrowDown'
     else if (event.keyCode === KeyCode.UpArrow) key = 'ArrowUp'
     else if (event.keyCode === KeyCode.Escape) key = 'Escape'
+    else if (event.keyCode === KeyCode.Tab && !event.shiftKey) key = 'Tab'
     if (!key) return
 
     if (keyInterceptor(key)) {
@@ -355,7 +356,7 @@ function onCursorChange(listener: () => void): () => void {
 }
 
 function setKeyInterceptor(
-  interceptor: ((key: 'Enter' | 'ArrowUp' | 'ArrowDown' | 'Escape') => boolean) | null,
+  interceptor: ((key: 'Enter' | 'Tab' | 'ArrowUp' | 'ArrowDown' | 'Escape') => boolean) | null,
 ): void {
   keyInterceptor = interceptor
 }

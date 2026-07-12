@@ -31,4 +31,8 @@ describe('conversation markdown composer shell', () => {
       expect(branch).toContain('return false')
     }
   })
+
+  it('accepts the highlighted mention with Enter or Tab', () => {
+    expect(source).toContain("if (key === 'Enter' || key === 'Tab')")
+  })
 })

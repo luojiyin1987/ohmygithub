@@ -149,7 +149,7 @@ function selectMention(candidate: MentionCandidate): void {
   closeMention()
 }
 
-function handleMentionKey(key: 'Enter' | 'ArrowUp' | 'ArrowDown' | 'Escape'): boolean {
+function handleMentionKey(key: 'Enter' | 'Tab' | 'ArrowUp' | 'ArrowDown' | 'Escape'): boolean {
   if (!mentionOpen.value) return false
 
   if (key === 'Escape') {
@@ -173,7 +173,7 @@ function handleMentionKey(key: 'Enter' | 'ArrowUp' | 'ArrowDown' | 'Escape'): bo
     return true
   }
 
-  if (key === 'Enter') {
+  if (key === 'Enter' || key === 'Tab') {
     const candidate = mentionCandidates.value[mentionActiveIndex.value]
     if (!candidate) return false
     selectMention(candidate)
