@@ -1,6 +1,6 @@
 {
   "name": "@oh-my-github/client",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "private": true,
   "description": "Electron desktop client for Oh My GitHub.",
   "author": "Oh My GitHub",
@@ -42,7 +42,6 @@
     "lucide-vue-next": "^0.562.0",
     "markstream-vue": "1.0.5-beta.0",
     "mermaid": "^11.16.0",
-    "misans": "^4.1.0",
     "monaco-editor": "^0.55.1",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
