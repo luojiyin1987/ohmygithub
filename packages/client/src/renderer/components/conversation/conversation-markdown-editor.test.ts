@@ -13,4 +13,8 @@ describe('conversation markdown editor save button', () => {
     expect(source).toMatch(/:loading="isSubmitting"\s+loading-mode="manual"/)
     expect(source).toMatch(/<Spinner\s+v-if="isSubmitting"[\s\S]*?<Check\s+v-else/)
   })
+
+  it('hosts the shared markdown composer shell with the formatting toolbar', () => {
+    expect(source).toContain('ConversationMarkdownComposerShell')
+  })
 })

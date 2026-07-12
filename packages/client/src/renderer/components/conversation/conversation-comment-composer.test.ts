@@ -13,4 +13,8 @@ describe('conversation comment composer submit button', () => {
     expect(source).toMatch(/:loading="isSubmitting"\s+loading-mode="manual"/)
     expect(source).toMatch(/<Spinner\s+v-if="isSubmitting"[\s\S]*?<Send\s+v-else/)
   })
+
+  it('hosts the shared markdown composer shell with the formatting toolbar', () => {
+    expect(source).toContain('ConversationMarkdownComposerShell')
+  })
 })
