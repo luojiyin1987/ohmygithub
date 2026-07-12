@@ -10,6 +10,16 @@ describe('conversation markdown composer shell', () => {
     expect(source).toContain('@action="applyFormatAction"')
   })
 
+  it('positions the mention menu through the viewport-aware placement helper', () => {
+    expect(source).toContain('computeMentionMenuPlacement(screen, {')
+  })
+
+  it('resets the highlight when the mention query changes', () => {
+    expect(source).toMatch(
+      /if \(detected\.query !== mentionQuery\.value\) mentionActiveIndex\.value = 0/,
+    )
+  })
+
   it('lets the editor move the caret when the mention menu has no candidates', () => {
     // Returning true from the key interceptor preventDefaults the arrow keys,
     // which would trap Up/Down while the menu is open but still empty.

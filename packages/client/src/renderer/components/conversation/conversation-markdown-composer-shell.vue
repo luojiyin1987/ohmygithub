@@ -11,6 +11,7 @@ import {
 import MarkdownFormatToolbar from './markdown-format-toolbar.vue'
 import {
   buildMentionInsertText,
+  computeMentionMenuPlacement,
   detectMentionQuery,
   type MentionCandidate,
   type MentionQuery,
@@ -52,7 +53,8 @@ const mentionRange = ref<{
   endLineNumber: number
   endColumn: number
 } | null>(null)
-const mentionTop = ref(0)
+const mentionTop = ref<number | null>(0)
+const mentionBottom = ref<number | null>(null)
 const mentionLeft = ref(0)
 const mentionActiveIndex = ref(0)
 const mentionCandidates = ref<MentionCandidate[]>([])
@@ -116,6 +118,10 @@ function syncMentionFromCursor(): void {
     return
   }
 
+  // A changed query reorders the candidates, so the highlight restarts at
+  // the top instead of pointing at whatever now occupies the old index.
+  if (detected.query !== mentionQuery.value) mentionActiveIndex.value = 0
+
   mentionOpen.value = true
   mentionQuery.value = detected.query
   mentionRange.value = {
@@ -124,8 +130,14 @@ function syncMentionFromCursor(): void {
     endLineNumber: context.lineNumber,
     endColumn: detected.endColumn,
   }
-  mentionTop.value = screen.top + 4
-  mentionLeft.value = Math.max(8, screen.left)
+
+  const placement = computeMentionMenuPlacement(screen, {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  })
+  mentionTop.value = placement.top
+  mentionBottom.value = placement.bottom
+  mentionLeft.value = placement.left
 }
 
 function selectMention(candidate: MentionCandidate): void {
@@ -226,6 +238,7 @@ onBeforeUnmount(() => {
 
         <MentionSuggestionMenu
           :active-index="mentionActiveIndex"
+          :bottom="mentionBottom"
           :left="mentionLeft"
           :open="mentionOpen"
           :owner="owner"

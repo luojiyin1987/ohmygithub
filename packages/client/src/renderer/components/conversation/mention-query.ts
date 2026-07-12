@@ -7,9 +7,10 @@ export type MentionQuery = {
   endColumn: number
 }
 
-// GitHub login chars after `@`. Keep it conservative so we don't swallow
-// emails (`user@domain`) or markdown that already closed the mention.
-const MENTION_TAIL = /^@([a-zA-Z0-9-]{0,39})$/
+// GitHub login shape after `@`: starts alphanumeric, single hyphens only.
+// A trailing hyphen stays accepted because the user may still be typing
+// (`@ab-` on the way to `@ab-c`); `@-x` and `@a--b` can never become valid.
+const MENTION_TAIL = /^@(?:[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9]|$)){0,38})?$/
 
 /**
  * Detect an in-progress `@mention` immediately before the cursor on a line.
@@ -42,6 +43,53 @@ export function detectMentionQuery(
 
 export function buildMentionInsertText(login: string): string {
   return `@${login} `
+}
+
+/** Rendered menu box: w-64 shell around the max-h-64 options list. */
+export const MENTION_MENU_WIDTH = 256
+export const MENTION_MENU_MAX_HEIGHT = 272
+const MENTION_MENU_GAP = 4
+const MENTION_MENU_VIEWPORT_MARGIN = 8
+
+export type MentionMenuAnchor = {
+  /** Viewport-relative top of the caret's line. */
+  top: number
+  /** Viewport-relative left of the caret. */
+  left: number
+  /** Rendered line height, so the menu can sit below the line. */
+  height: number
+}
+
+export type MentionMenuPlacement = {
+  /** Set when the menu opens downward from below the caret line. */
+  top: number | null
+  /** Set when the menu is bottom-anchored above the caret line instead. */
+  bottom: number | null
+  left: number
+}
+
+/**
+ * Position the mention menu against the viewport: below the caret line by
+ * default, flipped above it when the space below cannot fit the menu, and
+ * clamped so the fixed-width box never leaves the viewport horizontally.
+ */
+export function computeMentionMenuPlacement(
+  anchor: MentionMenuAnchor,
+  viewport: { width: number, height: number },
+): MentionMenuPlacement {
+  const left = Math.min(
+    Math.max(MENTION_MENU_VIEWPORT_MARGIN, anchor.left),
+    Math.max(MENTION_MENU_VIEWPORT_MARGIN, viewport.width - MENTION_MENU_WIDTH - MENTION_MENU_VIEWPORT_MARGIN),
+  )
+
+  const below = anchor.top + anchor.height + MENTION_MENU_GAP
+  const spaceBelow = viewport.height - below
+  const spaceAbove = anchor.top - MENTION_MENU_GAP
+  if (spaceBelow < MENTION_MENU_MAX_HEIGHT && spaceAbove > spaceBelow) {
+    return { top: null, bottom: viewport.height - anchor.top + MENTION_MENU_GAP, left }
+  }
+
+  return { top: below, bottom: null, left }
 }
 
 export type MentionCandidate = {

@@ -81,6 +81,12 @@ onMounted(async () => {
     notifyCursorListeners()
   })
 
+  // Cursor overlays are anchored in viewport coordinates, so they must
+  // re-measure when the editor content scrolls under a stationary caret.
+  editor.onDidScrollChange(() => {
+    notifyCursorListeners()
+  })
+
   editor.onKeyDown((event) => {
     if (!keyInterceptor) return
 
@@ -97,7 +103,8 @@ onMounted(async () => {
   })
 
   // Enter continues markdown lists (1. / -) the way GitHub's composer does.
-  // Mention menus can claim Enter first via setKeyInterceptor.
+  // Mention menus can claim Enter first via setKeyInterceptor. The context
+  // guard leaves Enter to Monaco's suggest widget while it is open.
   editor.addCommand(KeyCode.Enter, () => {
     if (keyInterceptor?.('Enter')) return
 
@@ -142,7 +149,7 @@ onMounted(async () => {
       forceMoveMarkers: true,
     }])
     editor.focus()
-  })
+  }, '!suggestWidgetVisible')
 
   // Shift+Enter always inserts a plain newline without list continuation.
   editor.addCommand(KeyMod.Shift | KeyCode.Enter, () => {
@@ -300,7 +307,11 @@ function getCursorContext(): {
   }
 }
 
-function getCursorScreenPosition(): { top: number, left: number } | null {
+/**
+ * Caret position in viewport coordinates, so overlays can render through a
+ * teleport and escape the composer's overflow-hidden shell.
+ */
+function getCursorScreenPosition(): { top: number, left: number, height: number } | null {
   const editor = monaco.getEditorView()
   const position = editor?.getPosition()
   if (!editor || !position || !editorElement.value) return null
@@ -308,9 +319,11 @@ function getCursorScreenPosition(): { top: number, left: number } | null {
   const coords = editor.getScrolledVisiblePosition(position)
   if (!coords) return null
 
+  const hostRect = editorElement.value.getBoundingClientRect()
   return {
-    top: coords.top + coords.height,
-    left: coords.left,
+    top: hostRect.top + coords.top,
+    left: hostRect.left + coords.left,
+    height: coords.height,
   }
 }
 

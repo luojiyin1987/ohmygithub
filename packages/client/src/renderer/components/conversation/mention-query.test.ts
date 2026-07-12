@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildMentionInsertText,
+  computeMentionMenuPlacement,
   detectMentionQuery,
+  MENTION_MENU_MAX_HEIGHT,
+  MENTION_MENU_WIDTH,
   mergeMentionCandidates,
 } from './mention-query'
 
@@ -35,6 +38,20 @@ describe('detectMentionQuery', () => {
     expect(detectMentionQuery('(@ab', 5)).toEqual({
       query: 'ab',
       startColumn: 2,
+      endColumn: 5,
+    })
+  })
+
+  it('rejects logins GitHub can never accept', () => {
+    // Leading hyphen and consecutive hyphens are invalid in any login.
+    expect(detectMentionQuery('@-foo', 6)).toBeNull()
+    expect(detectMentionQuery('@a--b', 6)).toBeNull()
+  })
+
+  it('keeps a trailing hyphen while the user is still typing', () => {
+    expect(detectMentionQuery('@ab-', 5)).toEqual({
+      query: 'ab-',
+      startColumn: 1,
       endColumn: 5,
     })
   })
@@ -73,5 +90,45 @@ describe('mergeMentionCandidates', () => {
       '',
       8,
     )).toEqual([{ login: 'alice' }, { login: 'bob' }])
+  })
+})
+
+describe('computeMentionMenuPlacement', () => {
+  const viewport = { width: 1200, height: 800 }
+
+  it('opens below the caret line when there is room', () => {
+    expect(computeMentionMenuPlacement(
+      { top: 100, left: 300, height: 20 },
+      viewport,
+    )).toEqual({ top: 124, bottom: null, left: 300 })
+  })
+
+  it('flips above the caret when the space below cannot fit the menu', () => {
+    const placement = computeMentionMenuPlacement(
+      { top: 700, left: 300, height: 20 },
+      viewport,
+    )
+    expect(placement.top).toBeNull()
+    // Bottom-anchored above the caret line: 800 - 700 + 4.
+    expect(placement.bottom).toBe(104)
+  })
+
+  it('stays below near the top even when neither side fully fits', () => {
+    const shortViewport = { width: 1200, height: MENTION_MENU_MAX_HEIGHT }
+    expect(computeMentionMenuPlacement(
+      { top: 10, left: 300, height: 20 },
+      shortViewport,
+    ).top).toBe(34)
+  })
+
+  it('clamps the menu inside the viewport horizontally', () => {
+    expect(computeMentionMenuPlacement(
+      { top: 100, left: -50, height: 20 },
+      viewport,
+    ).left).toBe(8)
+    expect(computeMentionMenuPlacement(
+      { top: 100, left: 1180, height: 20 },
+      viewport,
+    ).left).toBe(1200 - MENTION_MENU_WIDTH - 8)
   })
 })
